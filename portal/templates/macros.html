@@ -1,0 +1,11 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+{% macro pagination(page) %}
+{% if page.pages > 1 %}<nav class="pagination" aria-label="Страницы">
+  {% if page.has_prev %}<a class="button secondary" href="{{ url_for(request.endpoint, **dict(request.args, page=page.prev_num)) }}">← Назад</a>{% endif %}
+  <span>{{ page.page }} / {{ page.pages }}</span>
+  {% if page.has_next %}<a class="button secondary" href="{{ url_for(request.endpoint, **dict(request.args, page=page.next_num)) }}">Далее →</a>{% endif %}
+</nav>{% endif %}
+{% endmacro %}
+{% macro event_table(events) %}<div class="table-wrap"><table><thead><tr><th>Занятие</th><th>Дата и время</th><th>Аудитория</th><th>Записались</th><th>Статус</th><th></th></tr></thead><tbody>
+{% for e in events %}<tr><td><strong>{{ e.subject.name }}</strong><small>{{ e.teacher.full_name }} · {{ e.allowed_course }} курс</small></td><td>{{ e.starts_at|localtime }}<small>до {{ e.ends_at|localtime('%H:%M') }}</small></td><td>{{ e.room }}</td><td>{{ e.occupied }} / {{ e.capacity }}</td><td><span class="badge {{ e.status }}">{{ statuses[e.status] }}</span></td><td><a href="{{ url_for('main.event_detail',event_id=e.id) }}">Открыть →</a></td></tr>
+{% else %}<tr><td colspan="6" class="empty">Занятий пока нет. Создайте первое занятие.</td></tr>{% endfor %}</tbody></table></div>{% endmacro %}

@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: misis-consultations
+    runtime: docker
+    plan: free
+    region: frankfurt
+    autoDeployTrigger: commit
+    healthCheckPath: /health
+    preDeployCommand: alembic upgrade head
+    initialDeployHook: flask --app wsgi seed-demo
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: misis-consultations-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEMO_ADMIN_PASSWORD
+        generateValue: true
+      - key: APP_TIMEZONE
+        value: Asia/Yekaterinburg
+      - key: CORPORATE_DOMAIN
+        value: misis.ru
+      - key: BOOKING_LEAD_HOURS
+        value: "48"
+      - key: COOKIE_SECURE
+        value: "1"
+      - key: FORCE_INITIAL_PASSWORD_CHANGE
+        value: "0"
+
+databases:
+  - name: misis-consultations-db
+    plan: free
+    region: frankfurt
+    databaseName: consultations
+    user: consult_app
+    postgresMajorVersion: "16"
