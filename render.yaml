@@ -14,7 +14,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DEMO_ADMIN_PASSWORD
-        generateValue: true
+        sync: false
       - key: APP_TIMEZONE
         value: Asia/Yekaterinburg
       - key: CORPORATE_DOMAIN

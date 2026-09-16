@@ -22,8 +22,11 @@ def test_role_dispatch(app,client,role):
     assert client.get('/',follow_redirects=True).status_code==200
 
 def test_email_alias_and_distinct_password(app,client):
+    with app.app_context():
+        create_user(dict(role='admin',login='kurenkov.ee',full_name='Администратор Проверки',initial_password='Shared!123'))
+        db.session.commit()
     assert client.post('/login',data={'login':'KURENKOV.EE@MISIS.RU','password':'Kurenkov'}).status_code==302
-    response=client.post('/settings',data={'action':'password','current_password':'Kurenkov','new_password':'Admin!1234','repeat_password':'Admin!1234'},follow_redirects=True)
+    response=client.post('/settings',data={'action':'password','current_password':'Kurenkov','new_password':'Shared!123','repeat_password':'Shared!123'},follow_redirects=True)
     assert 'занят другой ролью' in response.text
     with app.app_context():
         assert db.session.get(User,app.config['IDS']['teacher']).password_hash
@@ -68,10 +71,11 @@ def test_shared_login_lock_and_console_recovery(app,client):
     for _ in range(10):
         client.post('/login',data={'login':'kurenkov.ee','password':'wrong'})
     assert sign_in(client,'teacher').status_code==429
-    assert sign_in(client,'admin').status_code==429
-    result=app.test_cli_runner().invoke(args=['recover-admin','--login','kurenkov.ee'],input='Recovery!123\nRecovery!123\n')
+    assert sign_in(client,'admin').status_code==302
+    client.post('/logout')
+    result=app.test_cli_runner().invoke(args=['recover-admin','--login','lxrdx'],input='Recovery!123\nRecovery!123\n')
     assert result.exit_code==0,result.output
-    assert client.post('/login',data={'login':'kurenkov.ee','password':'Recovery!123'}).status_code==302
+    assert client.post('/login',data={'login':'lxrdx','password':'Recovery!123'}).status_code==302
 
 def test_permissions(app,client):
     sign_in(client)
@@ -176,6 +180,24 @@ def test_admin_pages_and_catalog_workflow(app,client):
     client.post('/admin/catalogs',data={'kind':'assignment','teacher_id':ids['teacher'],'subject_id':sid})
     with app.app_context():
         assert sid in [s.id for s in db.session.get(User,ids['teacher']).subjects]
+
+def test_admin_impersonation_and_safe_delete(app,client):
+    ids=app.config['IDS'];sign_in(client,'admin')
+    assert client.post('/admin/impersonate/student').status_code==302
+    student_page=client.get('/events')
+    assert student_page.status_code==200
+    assert 'Сценарий: Студент' in student_page.text
+    assert client.post('/admin/stop-impersonation').status_code==302
+    assert client.get('/admin/').status_code==200
+    with app.app_context():
+        spare=create_user(dict(role='admin',login='flvmming',full_name='Администратор flvmming',initial_password='Admin!1234'))
+        db.session.commit()
+        spare_id=spare.id
+    assert client.post(f'/admin/users/{spare_id}/delete').status_code==302
+    with app.app_context():
+        assert db.session.get(User,spare_id) is None
+    response=client.post(f'/admin/users/{ids["student"]}/delete',follow_redirects=True)
+    assert 'у которого уже есть записи' in response.text or 'Учётная запись удалена' in response.text
 
 def test_teacher_overlap_and_ownership(app,client):
     ids=app.config['IDS'];sign_in(client,'teacher')

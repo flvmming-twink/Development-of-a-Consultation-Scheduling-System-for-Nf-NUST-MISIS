@@ -2,8 +2,8 @@ import csv
 import io
 import re
 from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, session, url_for
-from sqlalchemy import select, func, or_
-from .models import db, User, Group, Subject, Event, Booking, LoginGate, AuditLog, utcnow
+from sqlalchemy import select, func, or_, delete, update
+from .models import db, User, Group, Subject, Event, Booking, LoginGate, AuditLog, teacher_subject, utcnow
 from .auth import roles_required, normalize_login, hash_password, validate_name, check_password_distinct, lock_gate, clear_gate, audit
 from .services import integer, cancel_event, cancel_booking
 
@@ -61,7 +61,39 @@ def dashboard():
     counts = {role:db.session.scalar(select(func.count(User.id)).where(User.role == role, User.active)) for role in ('student','teacher','admin')}
     counts['events'] = db.session.scalar(select(func.count(Event.id)).where(Event.status == 'active', Event.ends_at > utcnow()))
     locked = db.session.scalars(select(LoginGate).where(or_(LoginGate.permanent, LoginGate.locked_until > utcnow())).order_by(LoginGate.updated_at.desc()).limit(20)).all()
-    return render_template('admin_dashboard.html', counts=counts, locked=locked, logs=db.session.scalars(select(AuditLog).order_by(AuditLog.id.desc()).limit(8)).all())
+    demo_student = db.session.scalar(select(User).where(User.login == '2300431', User.role == 'student'))
+    demo_teacher = db.session.scalar(select(User).where(User.login == 'kurenkov.ee', User.role == 'teacher'))
+    return render_template('admin_dashboard.html', counts=counts, locked=locked, logs=db.session.scalars(select(AuditLog).order_by(AuditLog.id.desc()).limit(8)).all(), demo_student=demo_student, demo_teacher=demo_teacher)
+
+@bp.post('/impersonate/<role>')
+@roles_required('admin')
+def impersonate(role):
+    targets = {'student': '2300431', 'teacher': 'kurenkov.ee'}
+    if role not in targets:
+        abort(404)
+    target = db.session.scalar(select(User).where(User.login == targets[role], User.role == role))
+    if not target or not target.active:
+        flash('Демонстрационная учётная запись для этого сценария не найдена или отключена.', 'error')
+        return redirect(url_for('admin.dashboard'))
+    session.update(admin_uid=g.user.id, admin_version=g.user.session_version, uid=target.id, version=target.session_version)
+    session.permanent = True
+    audit('admin_impersonation_started', target.id, f'{g.user.login} → {target.role}:{target.login}')
+    db.session.commit()
+    flash('Открыт сценарий роли. Возврат в админскую панель доступен сверху страницы.', 'success')
+    return redirect(url_for('main.home'))
+
+@bp.post('/stop-impersonation')
+def stop_impersonation():
+    if not getattr(g, 'admin_user', None):
+        abort(403)
+    admin = g.admin_user
+    session.clear()
+    session.update(uid=admin.id, version=admin.session_version)
+    session.permanent = True
+    audit('admin_impersonation_stopped', admin.id, actor_id=admin.id)
+    db.session.commit()
+    flash('Вы вернулись в админскую панель.', 'success')
+    return redirect(url_for('admin.dashboard'))
 
 @bp.get('/users')
 @roles_required('admin')
@@ -169,6 +201,38 @@ def user_toggle(user_id):
     db.session.commit()
     flash('Статус учётной записи изменён.', 'success')
     return redirect(url_for('admin.user_edit',user_id=user.id))
+
+@bp.post('/users/<int:user_id>/delete')
+@roles_required('admin')
+def user_delete(user_id):
+    user = db.get_or_404(User, user_id)
+    if user.id == g.user.id:
+        flash('Нельзя удалить собственную учётную запись.', 'error')
+        return redirect(url_for('admin.user_edit', user_id=user.id))
+    try:
+        gate = lock_gate(user.login)
+        user = db.session.execute(select(User).where(User.id == user_id).with_for_update().execution_options(populate_existing=True)).scalar_one()
+        if user.role == 'teacher' and db.session.scalar(select(Event.id).where(Event.teacher_id == user.id).limit(1)):
+            raise ValueError('Нельзя удалить преподавателя, у которого уже есть занятия. Отключите аккаунт или отмените занятия.')
+        if user.role == 'student' and db.session.scalar(select(Booking.id).where(Booking.student_id == user.id).limit(1)):
+            raise ValueError('Нельзя удалить студента, у которого уже есть записи. Отключите аккаунт или отмените записи.')
+        login, role = user.login, user.role
+        db.session.execute(delete(teacher_subject).where(teacher_subject.c.teacher_id == user.id))
+        db.session.execute(update(AuditLog).where(AuditLog.actor_id == user.id).values(actor_id=None))
+        db.session.delete(user)
+        db.session.flush()
+        if db.session.scalar(select(User.id).where(User.login == login).limit(1)):
+            clear_gate(gate)
+        else:
+            db.session.delete(gate)
+        audit('user_deleted', f'{role}:{login}')
+        db.session.commit()
+        flash('Учётная запись удалена.', 'success')
+        return redirect(url_for('admin.users'))
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), 'error')
+        return redirect(url_for('admin.user_edit', user_id=user_id))
 
 @bp.route('/catalogs', methods=['GET','POST'])
 @roles_required('admin')

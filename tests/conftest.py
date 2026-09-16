@@ -32,7 +32,7 @@ def app():
         student.full_name='Куренков Егор Евгеньевич'
         student.name_locked=True
         teacher = create_user(dict(role='teacher',login='kurenkov.ee',full_name=student.full_name))
-        admin = create_user(dict(role='admin',login='kurenkov.ee',full_name=student.full_name,initial_password='Admin!1234'))
+        admin = create_user(dict(role='admin',login='lxrdx',full_name='Администратор lxrdx',initial_password='Admin!1234'))
         second = create_user(dict(role='teacher',login='second.ee',full_name='Иванов Иван Иванович'))
         subject=Subject(name='Базы данных')
         other=Subject(name='Веб-программирование')
@@ -57,5 +57,5 @@ def client(app):
     return app.test_client()
 
 def sign_in(client,role='student'):
-    login,password={'student':('2300431','Student'),'teacher':('kurenkov.ee','Kurenkov'),'admin':('kurenkov.ee','Admin!1234'),'second':('second.ee','Ivanov')}[role]
+    login,password={'student':('2300431','Student'),'teacher':('kurenkov.ee','Kurenkov'),'admin':('lxrdx','Admin!1234'),'second':('second.ee','Ivanov')}[role]
     return client.post('/login',data={'login':login,'password':password})

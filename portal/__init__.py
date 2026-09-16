@@ -54,8 +54,18 @@ def create_app(test_config=None):
     @app.before_request
     def load_user():
         g.user = None
+        g.admin_user = None
         if request.endpoint == 'static':
             return
+        admin_uid = session.get('admin_uid')
+        if admin_uid:
+            admin = db.session.get(User, admin_uid)
+            admin_gate = db.session.get(LoginGate, admin.login) if admin else None
+            admin_blocked = admin_gate and (admin_gate.permanent or (admin_gate.locked_until and admin_gate.locked_until > utcnow()))
+            if not admin or admin.role != 'admin' or not admin.active or admin.session_version != session.get('admin_version') or admin_blocked:
+                session.clear()
+                return
+            g.admin_user = admin
         uid = session.get('uid')
         if uid:
             user = db.session.get(User, uid)
@@ -100,9 +110,12 @@ def create_app(test_config=None):
             'login_success':'Успешный вход', 'login_temporary_lock':'Блокировка на 5 минут',
             'login_permanent_lock':'Блокировка до обращения', 'catalog_updated':'Обновлён справочник',
             'assignment_added':'Назначена дисциплина', 'assignment_removed':'Снята дисциплина',
+            'admin_impersonation_started':'Администратор открыл сценарий роли',
+            'admin_impersonation_stopped':'Администратор вернулся в панель',
             'event_created':'Создано занятие', 'event_updated':'Изменено занятие',
             'event_cancelled':'Отменено занятие', 'booking_created':'Студент записался',
             'booking_cancelled':'Запись отменена', 'attendance_changed':'Отмечена посещаемость',
+            'user_deleted':'Пользователь удалён',
             'journal_exported':'Выгружен журнал', 'students_imported':'Импортированы студенты',
             'demo_seeded':'Добавлены демонстрационные данные'
         }.get(value,value)
