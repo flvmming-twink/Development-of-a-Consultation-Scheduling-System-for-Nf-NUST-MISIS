@@ -9,11 +9,13 @@ from .auth import audit, hash_password, normalize_login, check_password_distinct
 from .admin import create_user
 
 def register_commands(app):
-    @app.cli.command('seed-demo')
-    def seed_demo():
-        """Create Egor's three accounts and example lessons once. Never reset existing data."""
+    def seed_demo_records(skip_existing=False):
         if db.session.scalar(select(User.id).limit(1)):
-            raise click.ClickException('База уже содержит пользователей. Демоданные не добавлены, пароли не изменены.')
+            message = 'База уже содержит пользователей. Демоданные не добавлены, пароли не изменены.'
+            if skip_existing:
+                click.echo(message)
+                return
+            raise click.ClickException(message)
         password = os.getenv('DEMO_ADMIN_PASSWORD')
         if not password:
             raise click.ClickException('Задайте DEMO_ADMIN_PASSWORD в .env.')
@@ -37,6 +39,16 @@ def register_commands(app):
         audit('demo_seeded','database','Три учётные записи Егора; четыре демонстрационных занятия.')
         db.session.commit()
         click.echo('Готово: один студент, один преподаватель и один администратор. См. START_HERE.md.')
+
+    @app.cli.command('seed-demo')
+    def seed_demo():
+        """Create Egor's three accounts and example lessons once. Never reset existing data."""
+        seed_demo_records()
+
+    @app.cli.command('seed-demo-if-empty')
+    def seed_demo_if_empty():
+        """Create demo records only when the database is empty."""
+        seed_demo_records(skip_existing=True)
 
     @app.cli.command('recover-admin')
     @click.option('--login',required=True,help='Логин администратора')

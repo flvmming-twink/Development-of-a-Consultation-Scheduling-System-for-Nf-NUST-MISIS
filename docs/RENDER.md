@@ -4,9 +4,10 @@
 Blueprint создает Docker web service `misis-consultations` и PostgreSQL
 `misis-consultations-db`.
 
-После подключения репозитория в Render выберите New > Blueprint и репозиторий
-`misis-consultations`. Render использует `render.yaml`, выполнит миграции
-`alembic upgrade head` перед запуском и один раз заполнит демонстрационные данные.
+После подключения репозитория в Render выберите New > Blueprint и этот репозиторий.
+Render использует `render.yaml`. На бесплатном тарифе pre-deploy commands недоступны,
+поэтому контейнер при старте сам выполнит `alembic upgrade head` и команду
+`flask --app wsgi seed-demo-if-empty`.
 
 Публичный адрес будет вида:
 

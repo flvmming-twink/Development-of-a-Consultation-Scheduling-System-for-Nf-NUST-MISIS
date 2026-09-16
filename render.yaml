@@ -6,8 +6,6 @@ services:
     region: frankfurt
     autoDeployTrigger: commit
     healthCheckPath: /health
-    preDeployCommand: alembic upgrade head
-    initialDeployHook: flask --app wsgi seed-demo
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -27,6 +25,8 @@ services:
         value: "1"
       - key: FORCE_INITIAL_PASSWORD_CHANGE
         value: "0"
+      - key: APP_BOOTSTRAP_ON_START
+        value: "1"
 
 databases:
   - name: misis-consultations-db
