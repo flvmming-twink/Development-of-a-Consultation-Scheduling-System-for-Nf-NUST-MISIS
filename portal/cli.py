@@ -22,17 +22,18 @@ def register_commands(app):
             raise click.ClickException('DEMO_ADMIN_PASSWORD должен содержать от 8 до 128 символов.')
         return password
 
-    def ensure_admin(login, password):
+    def ensure_admin(login, password, reset_password=True):
         canonical = normalize_login(login)
         gate = lock_gate(canonical)
         user = db.session.scalar(select(User).where(User.login == canonical, User.role == 'admin').with_for_update())
         full_name = f'Администратор {canonical}'
         if user:
-            check_password_distinct(user, password)
             user.full_name = full_name
             user.name_locked = True
-            user.password_hash = hash_password(password)
-            user.initial_password_hash = user.password_hash
+            if reset_password:
+                check_password_distinct(user, password)
+                user.password_hash = hash_password(password)
+                user.initial_password_hash = user.password_hash
             user.must_change_password = app.config['FORCE_INITIAL_PASSWORD_CHANGE']
             user.active = True
             user.session_version += 1
@@ -88,7 +89,7 @@ def register_commands(app):
         """Ensure the deployed demo admin accounts match the current stand requirements."""
         password = admin_password()
         for login in DEMO_ADMIN_LOGINS:
-            ensure_admin(login, password)
+            ensure_admin(login, password, reset_password=False)
         legacy = db.session.scalar(select(User).where(User.login == DEMO_TEACHER_LOGIN, User.role == 'admin').with_for_update())
         if legacy:
             gate = lock_gate(DEMO_TEACHER_LOGIN)

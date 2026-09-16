@@ -27,4 +27,5 @@ https://misis-consultations.onrender.com
 Пароль администратора задается переменной `DEMO_ADMIN_PASSWORD` в Render. В
 Blueprint она помечена как `sync: false`, поэтому значение вводится в панели Render
 и не публикуется в репозитории. Команда `reconcile-demo-accounts` активирует
-администраторов `lxrdx` и `flvmming`, а логин `kurenkov.ee` оставляет преподавательским.
+администраторов `lxrdx` и `flvmming`, не меняя пароль уже существующих админов, а
+логин `kurenkov.ee` оставляет преподавательским.
