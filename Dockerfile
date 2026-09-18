@@ -6,4 +6,4 @@ RUN pip install --no-cache-dir -r requirements.txt && useradd --create-home appu
 COPY --chown=appuser:appuser . .
 USER appuser
 EXPOSE 8000
-CMD ["sh", "-c", "if [ \"${APP_BOOTSTRAP_ON_START:-0}\" = \"1\" ]; then alembic upgrade head && flask --app wsgi seed-demo-if-empty && flask --app wsgi reconcile-demo-accounts; fi; waitress-serve --listen=0.0.0.0:${PORT:-8000} --threads=4 wsgi:app"]
+CMD ["sh", "-ec", "if [ \"${APP_BOOTSTRAP_ON_START:-0}\" = \"1\" ]; then alembic upgrade head; flask --app wsgi seed-demo-if-empty; fi; exec python server.py"]

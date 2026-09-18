@@ -4,7 +4,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 import click
 from sqlalchemy import select
-from .models import db, User, Group, Subject, Event, utcnow
+from .models import db, User, Group, Department, Subject, Event, utcnow
 from .auth import audit, hash_password, normalize_login, check_password_distinct, lock_gate, clear_gate
 from .admin import create_user
 
@@ -52,13 +52,14 @@ def register_commands(app):
                 return
             raise click.ClickException(message)
         password = admin_password()
-        group = Group(name='БПИ-23')
-        db.session.add(group)
+        group = Group(name='БПИ-23', admission_year=2023)
+        department = Department(name='Учебная кафедра')
+        db.session.add_all([group, department])
         db.session.flush()
         student = create_user({'role':'student','login':DEMO_STUDENT_LOGIN,'group_id':group.id,'course':4,'study_mode':'full_time'})
         student.full_name = DEMO_PERSON_NAME
         student.name_locked = True
-        teacher = create_user({'role':'teacher','login':DEMO_TEACHER_LOGIN,'full_name':student.full_name})
+        teacher = create_user({'role':'teacher','login':DEMO_TEACHER_LOGIN,'full_name':student.full_name,'department_id':department.id})
         for login in DEMO_ADMIN_LOGINS:
             ensure_admin(login, password)
         subjects = [Subject(name='Базы данных'), Subject(name='Веб-программирование')]
@@ -100,6 +101,13 @@ def register_commands(app):
                 audit('user_deactivated', legacy.id, 'Логин kurenkov.ee оставлен только для преподавателя')
         db.session.commit()
         click.echo('Готово: администраторы lxrdx и flvmming активны; kurenkov.ee остается преподавателем.')
+
+    @app.cli.command('maintenance')
+    def maintenance():
+        """Deliver scheduled notifications and permanently purge expired trash."""
+        from .lifecycle import run_maintenance
+        count = run_maintenance()
+        click.echo(f'Maintenance complete; expired accounts removed: {count or 0}')
 
     @app.cli.command('recover-admin')
     @click.option('--login',required=True,help='Логин администратора')

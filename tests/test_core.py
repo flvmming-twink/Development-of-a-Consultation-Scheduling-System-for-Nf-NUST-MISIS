@@ -195,9 +195,9 @@ def test_admin_impersonation_and_safe_delete(app,client):
         spare_id=spare.id
     assert client.post(f'/admin/users/{spare_id}/delete').status_code==302
     with app.app_context():
-        assert db.session.get(User,spare_id) is None
+        assert db.session.get(User,spare_id).deleted_at is not None
     response=client.post(f'/admin/users/{ids["student"]}/delete',follow_redirects=True)
-    assert 'у которого уже есть записи' in response.text or 'Учётная запись удалена' in response.text
+    assert 'перенесён в корзину' in response.text
 
 def test_teacher_overlap_and_ownership(app,client):
     ids=app.config['IDS'];sign_in(client,'teacher')

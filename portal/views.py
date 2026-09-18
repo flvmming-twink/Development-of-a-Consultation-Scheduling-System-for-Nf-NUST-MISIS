@@ -31,7 +31,7 @@ def events():
     if request.args.get('teacher', type=int):
         query = query.where(Event.teacher_id == request.args.get('teacher', type=int))
     if request.args.get('mine','1') == '1':
-        query = query.where(Event.allowed_course == g.user.course, or_(Event.group_id == None, Event.group_id == g.user.group_id))
+        query = query.where(Event.allowed_course == g.user.current_course, or_(Event.group_id == None, Event.group_id == g.user.group_id))
     if request.args.get('date'):
         try:
             day = date.fromisoformat(request.args['date'])
@@ -115,7 +115,7 @@ def event_detail(event_id):
     event = db.get_or_404(Event, event_id)
     if g.user.role == 'teacher' and event.teacher_id != g.user.id:
         abort(403)
-    query = select(Booking).join(User, Booking.student_id == User.id).where(Booking.event_id == event.id)
+    query = select(Booking).outerjoin(User, Booking.student_id == User.id).where(Booking.event_id == event.id)
     if request.args.get('group', type=int):
         query = query.where(User.group_id == request.args.get('group', type=int))
     records = db.session.scalars(query.order_by(User.group_id, User.full_name)).all()
@@ -148,7 +148,7 @@ def attendance(booking_id):
     return redirect(url_for('main.event_detail', event_id=booking.event_id))
 
 def journal_query():
-    query = select(Booking).join(Event, Booking.event_id == Event.id).join(User, Booking.student_id == User.id)
+    query = select(Booking).join(Event, Booking.event_id == Event.id).outerjoin(User, Booking.student_id == User.id)
     if g.user.role == 'teacher':
         query = query.where(Event.teacher_id == g.user.id)
     for arg, column in [('group', User.group_id), ('subject', Event.subject_id), ('event', Event.id), ('teacher',Event.teacher_id)]:
@@ -180,7 +180,7 @@ def export_journal():
         return value.astimezone(ZoneInfo(current_app.config['APP_TIMEZONE'])).replace(tzinfo=None)
     for row in records:
         e, s = row.event, row.student
-        values = [e.id,e.subject.name,e.teacher.full_name,dt(e.starts_at),dt(e.ends_at),e.room,s.full_name,s.group.name,s.course,s.login,dt(row.created_at),statuses[row.status],statuses[row.attendance]]
+        values = [e.id,e.subject.name,e.teacher.full_name if e.teacher else 'Удалённый преподаватель',dt(e.starts_at),dt(e.ends_at),e.room,s.full_name if s else 'Удалённый студент',s.group.name if s and s.group else '',s.current_course if s else '',s.login if s else '',dt(row.created_at),statuses[row.status],statuses[row.attendance]]
         sheet.append(values)
         for cell in sheet[sheet.max_row]:
             if isinstance(cell.value,str):

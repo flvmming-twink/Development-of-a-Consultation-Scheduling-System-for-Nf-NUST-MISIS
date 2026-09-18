@@ -1,4 +1,7 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+import re
+from zoneinfo import ZoneInfo
+from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, ForeignKeyConstraint, text, func
 from sqlalchemy.dialects.postgresql import ExcludeConstraint
@@ -17,6 +20,18 @@ class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(40), unique=True, nullable=False)
     active = db.Column(db.Boolean, nullable=False, default=True)
+    admission_year = db.Column(db.Integer)
+
+    @property
+    def entry_year(self):
+        match = re.search(r'(\d{4}|\d{2})$', self.name)
+        return self.admission_year or (int(match[1]) + (2000 if len(match[1]) == 2 else 0) if match else None)
+
+class Department(db.Model):
+    __tablename__ = 'departments'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(160), unique=True, nullable=False)
+    active = db.Column(db.Boolean, nullable=False, default=True)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -28,6 +43,10 @@ class User(db.Model):
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
     course = db.Column(db.Integer)
     study_mode = db.Column(db.String(12))
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    dismissed_on = db.Column(db.Date)
+    deleted_at = db.Column(db.DateTime(timezone=True), index=True)
+    active_before_delete = db.Column(db.Boolean)
     password_hash = db.Column(db.Text, nullable=False)
     initial_password_hash = db.Column(db.Text, nullable=False)
     must_change_password = db.Column(db.Boolean, nullable=False, default=False)
@@ -36,12 +55,34 @@ class User(db.Model):
     session_version = db.Column(db.Integer, nullable=False, default=1)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     group = db.relationship(Group)
+    department = db.relationship(Department)
     subjects = db.relationship('Subject', secondary=teacher_subject, back_populates='teachers')
     __table_args__ = (
         UniqueConstraint('login', 'role', name='uq_user_login_role'),
         CheckConstraint("role IN ('student','teacher','admin')", name='ck_user_role'),
         CheckConstraint("theme IN ('light','dark')", name='ck_theme'),
         CheckConstraint("role != 'student' OR (group_id IS NOT NULL AND course IS NOT NULL AND course BETWEEN 1 AND 5 AND study_mode IS NOT NULL AND study_mode IN ('full_time','part_time') AND (course < 5 OR study_mode = 'part_time'))", name='ck_student_profile'),)
+
+    def academic_status(self, now=None):
+        if self.role != 'student' or not self.group or not self.group.entry_year:
+            return self.course, False
+        today = (now or utcnow()).astimezone(ZoneInfo(current_app.config['APP_TIMEZONE'])).date()
+        year = today.year - (today.month < 9)
+        course = year - self.group.entry_year + 1
+        duration = 5 if self.study_mode == 'part_time' else 4
+        return max(1, min(course, duration)), course > duration
+
+    @property
+    def current_course(self):
+        return self.academic_status()[0]
+
+    @property
+    def graduation_due(self):
+        return self.academic_status()[1]
+
+    @property
+    def purge_at(self):
+        return self.deleted_at + timedelta(days=10) if self.deleted_at else None
 
 class LoginGate(db.Model):
     __tablename__ = 'login_gates'
@@ -61,7 +102,7 @@ class Subject(db.Model):
 class Event(db.Model):
     __tablename__ = 'events'
     id = db.Column(db.Integer, primary_key=True)
-    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
     subject_id = db.Column(db.Integer, db.ForeignKey('subjects.id'), nullable=False)
     starts_at = db.Column(db.DateTime(timezone=True), nullable=False, index=True)
     ends_at = db.Column(db.DateTime(timezone=True), nullable=False)
@@ -72,6 +113,7 @@ class Event(db.Model):
     description = db.Column(db.String(1200), nullable=False, default='')
     status = db.Column(db.String(12), nullable=False, default='active')
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+    registration_opens_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     teacher = db.relationship(User)
     subject = db.relationship(Subject)
     group = db.relationship(Group)
@@ -93,7 +135,7 @@ class Booking(db.Model):
     __tablename__ = 'bookings'
     id = db.Column(db.Integer, primary_key=True)
     event_id = db.Column(db.Integer, nullable=False)
-    student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
     starts_at = db.Column(db.DateTime(timezone=True), nullable=False)
     ends_at = db.Column(db.DateTime(timezone=True), nullable=False)
     status = db.Column(db.String(12), nullable=False, default='active')
@@ -119,3 +161,16 @@ class AuditLog(db.Model):
     details = db.Column(db.Text, nullable=False, default='')
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, index=True)
     actor = db.relationship(User)
+
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('events.id', ondelete='CASCADE'))
+    key = db.Column(db.String(160), nullable=False)
+    title = db.Column(db.String(160), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    link = db.Column(db.String(200), nullable=False, default='')
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+    read_at = db.Column(db.DateTime(timezone=True))
+    __table_args__ = (UniqueConstraint('user_id', 'key', name='uq_notification_user_key'),)

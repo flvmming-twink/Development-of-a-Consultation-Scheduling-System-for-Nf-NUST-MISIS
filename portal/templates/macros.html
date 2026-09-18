@@ -7,5 +7,5 @@
 </nav>{% endif %}
 {% endmacro %}
 {% macro event_table(events) %}<div class="table-wrap"><table><thead><tr><th>Занятие</th><th>Дата и время</th><th>Аудитория</th><th>Записались</th><th>Статус</th><th></th></tr></thead><tbody>
-{% for e in events %}<tr><td><strong>{{ e.subject.name }}</strong><small>{{ e.teacher.full_name }} · {{ e.allowed_course }} курс</small></td><td>{{ e.starts_at|localtime }}<small>до {{ e.ends_at|localtime('%H:%M') }}</small></td><td>{{ e.room }}</td><td>{{ e.occupied }} / {{ e.capacity }}</td><td><span class="badge {{ e.status }}">{{ statuses[e.status] }}</span></td><td><a href="{{ url_for('main.event_detail',event_id=e.id) }}">Открыть →</a></td></tr>
+{% for e in events %}<tr><td><strong>{{ e.subject.name }}</strong><small>{{ e.teacher.full_name if e.teacher else 'Удалённый преподаватель' }} · {{ e.allowed_course }} курс</small></td><td>{{ e.starts_at|localtime }}<small>до {{ e.ends_at|localtime('%H:%M') }}</small></td><td>{{ e.room }}</td><td>{{ e.occupied }} / {{ e.capacity }}</td><td><span class="badge {{ e.status }}">{{ statuses[e.status] }}</span></td><td><a href="{{ url_for('main.event_detail',event_id=e.id) }}">Открыть →</a></td></tr>
 {% else %}<tr><td colspan="6" class="empty">Занятий пока нет. Создайте первое занятие.</td></tr>{% endfor %}</tbody></table></div>{% endmacro %}

@@ -4,7 +4,8 @@ from zoneinfo import ZoneInfo
 from flask import Flask, g, render_template, request, session, redirect, url_for, flash
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from sqlalchemy.exc import IntegrityError
-from .models import db, User, LoginGate, utcnow
+from .models import db, User, LoginGate, Notification, utcnow
+from sqlalchemy import select, func
 
 csrf = CSRFProtect()
 
@@ -48,6 +49,8 @@ def create_app(test_config=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(views_bp)
     app.register_blueprint(admin_bp)
+    from .notifications import bp as notifications_bp
+    app.register_blueprint(notifications_bp)
     from .cli import register_commands
     register_commands(app)
 
@@ -62,7 +65,7 @@ def create_app(test_config=None):
             admin = db.session.get(User, admin_uid)
             admin_gate = db.session.get(LoginGate, admin.login) if admin else None
             admin_blocked = admin_gate and (admin_gate.permanent or (admin_gate.locked_until and admin_gate.locked_until > utcnow()))
-            if not admin or admin.role != 'admin' or not admin.active or admin.session_version != session.get('admin_version') or admin_blocked:
+            if not admin or admin.role != 'admin' or not admin.active or admin.deleted_at or admin.session_version != session.get('admin_version') or admin_blocked:
                 session.clear()
                 return
             g.admin_user = admin
@@ -71,7 +74,7 @@ def create_app(test_config=None):
             user = db.session.get(User, uid)
             gate = db.session.get(LoginGate, user.login) if user else None
             blocked = gate and (gate.permanent or (gate.locked_until and gate.locked_until > utcnow()))
-            if not user or not user.active or user.session_version != session.get('version') or blocked:
+            if not user or not user.active or user.deleted_at or user.session_version != session.get('version') or blocked:
                 session.clear()
             else:
                 g.user = user
@@ -95,7 +98,8 @@ def create_app(test_config=None):
 
     @app.context_processor
     def common():
-        return {'now': utcnow(), 'roles': {'student':'Студент', 'teacher':'Преподаватель', 'admin':'Администратор'},
+        unread = db.session.scalar(select(func.count(Notification.id)).where(Notification.user_id == g.user.id, Notification.read_at.is_(None))) if getattr(g, 'user', None) else 0
+        return {'now': utcnow(), 'unread_notifications': unread, 'roles': {'student':'Студент', 'teacher':'Преподаватель', 'admin':'Администратор'},
                 'statuses': {'active':'Активна','cancelled':'Отменена','pending':'Не отмечено','present':'Присутствовал','absent':'Не явился'},
                 'lead_hours': app.config['BOOKING_LEAD_HOURS'], 'timezone_name': app.config['APP_TIMEZONE']}
 
@@ -116,6 +120,8 @@ def create_app(test_config=None):
             'event_cancelled':'Отменено занятие', 'booking_created':'Студент записался',
             'booking_cancelled':'Запись отменена', 'attendance_changed':'Отмечена посещаемость',
             'user_deleted':'Пользователь удалён',
+            'user_trashed':'Пользователь перенесён в корзину', 'user_restored':'Пользователь восстановлен',
+            'user_purged':'Пользователь удалён после 10 дней в корзине',
             'journal_exported':'Выгружен журнал', 'students_imported':'Импортированы студенты',
             'demo_seeded':'Добавлены демонстрационные данные'
         }.get(value,value)

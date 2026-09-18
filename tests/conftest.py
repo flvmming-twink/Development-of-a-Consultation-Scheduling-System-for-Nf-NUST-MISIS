@@ -4,8 +4,10 @@ from pathlib import Path
 import pytest
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
+from alembic.config import Config
+from alembic import command
 from portal import create_app
-from portal.models import db, Group, User, Subject, Event, utcnow
+from portal.models import db, Group, Department, User, Subject, Event, utcnow
 from portal.admin import create_user
 
 @pytest.fixture()
@@ -21,19 +23,22 @@ def app():
         db.session.execute(text('CREATE EXTENSION IF NOT EXISTS btree_gist'))
         db.session.commit()
         db.metadata.drop_all(db.engine)
-        schema = (Path(__file__).resolve().parents[1] / 'migrations/0001_schema.sql').read_text(encoding='utf-8')
-        db.session.execute(text(schema))
-        db.session.commit()
+        with db.engine.begin() as connection:
+            connection.execute(text('DROP TABLE IF EXISTS alembic_version'))
+            config = Config(str(Path(__file__).resolve().parents[1] / 'alembic.ini'))
+            config.attributes['connection'] = connection
+            command.upgrade(config, 'head')
         group = Group(name='БПИ-23')
         second_group = Group(name='БПИ-24')
-        db.session.add_all([group,second_group])
+        department = Department(name='Информатика')
+        db.session.add_all([group,second_group,department])
         db.session.flush()
         student = create_user(dict(role='student',login='2300431',group_id=group.id,course=4,study_mode='full_time'))
         student.full_name='Куренков Егор Евгеньевич'
         student.name_locked=True
-        teacher = create_user(dict(role='teacher',login='kurenkov.ee',full_name=student.full_name))
+        teacher = create_user(dict(role='teacher',login='kurenkov.ee',full_name=student.full_name,department_id=department.id))
         admin = create_user(dict(role='admin',login='lxrdx',full_name='Администратор lxrdx',initial_password='Admin!1234'))
-        second = create_user(dict(role='teacher',login='second.ee',full_name='Иванов Иван Иванович'))
+        second = create_user(dict(role='teacher',login='second.ee',full_name='Иванов Иван Иванович',department_id=department.id))
         subject=Subject(name='Базы данных')
         other=Subject(name='Веб-программирование')
         teacher.subjects=[subject,other]

@@ -4,6 +4,7 @@ from flask import current_app
 from sqlalchemy import select, func
 from .models import db, User, Group, Subject, Event, Booking, utcnow
 from .auth import audit
+from .notifications import notify, admins, participants
 
 def integer(value, label, minimum=1, maximum=2**31-1):
     try:
@@ -25,11 +26,16 @@ def local_datetime(value):
 
 def booking_problem(event, student, now=None):
     now = now or utcnow()
-    if event.status != 'active' or not event.teacher.active or not event.subject.active:
+    if event.status != 'active' or not event.teacher or not event.teacher.active or event.teacher.deleted_at or not event.subject.active:
         return 'Запись на занятие закрыта.'
+    course, graduated = student.academic_status(now)
+    if graduated:
+        return 'Обучение завершено. Обратитесь к администратору.'
+    if event.registration_opens_at and now < event.registration_opens_at:
+        return 'Запись на консультацию ещё не открыта.'
     if not student.full_name:
         return 'Сначала укажите ФИО в настройках.'
-    if event.allowed_course != student.course or (event.group_id and event.group_id != student.group_id):
+    if event.allowed_course != course or (event.group_id and event.group_id != student.group_id):
         return 'Занятие предназначено для другого курса или группы.'
     if event.starts_at < now + timedelta(hours=current_app.config['BOOKING_LEAD_HOURS']):
         return f"Запись закрывается за {current_app.config['BOOKING_LEAD_HOURS']} часов до начала."
@@ -42,7 +48,7 @@ def booking_problem(event, student, now=None):
 def book_event(student_id, event_id):
     student = db.session.execute(select(User).where(User.id == student_id).with_for_update().execution_options(populate_existing=True)).scalar_one()
     event = db.session.execute(select(Event).where(Event.id == event_id).with_for_update().execution_options(populate_existing=True)).scalar_one_or_none()
-    if not event or not student.active or student.role != 'student':
+    if not event or not student.active or student.deleted_at or student.role != 'student':
         raise ValueError('Занятие или студент недоступны.')
     db.session.expire(event, ['bookings'])
     problem = booking_problem(event, student)
@@ -61,6 +67,7 @@ def book_event(student_id, event_id):
         db.session.add(booking)
     audit('booking_created', event.id, f'student_id={student.id}')
     db.session.flush()
+    notify([student.id, event.teacher_id, *admins()], 'Запись на консультацию подтверждена', f'{event.subject.name}. Аудитория: {event.room}.', event=event)
     return booking
 
 def cancel_booking(booking_id, actor, reason=''):
@@ -75,6 +82,7 @@ def cancel_booking(booking_id, actor, reason=''):
     if booking.status == 'active':
         booking.status = 'cancelled'
         audit('booking_cancelled', booking.id, reason)
+        notify([booking.student_id, booking.event.teacher_id, *admins()], 'Запись на консультацию отменена', f'{booking.event.subject.name}. {reason[:500]}', event=booking.event)
 
 def cancel_event(event_id, actor, reason):
     event = db.session.execute(select(Event).where(Event.id == event_id).with_for_update().execution_options(populate_existing=True)).scalar_one_or_none()
@@ -82,6 +90,9 @@ def cancel_event(event_id, actor, reason):
         raise ValueError('Занятие недоступно.')
     if not reason.strip():
         raise ValueError('Укажите причину отмены.')
+    if event.status == 'cancelled':
+        return
+    notify(participants(event) + admins(), 'Консультация отменена', f'{event.subject.name}. Причина: {reason[:500]}', event=event)
     event.status = 'cancelled'
     for booking in db.session.scalars(select(Booking).where(Booking.event_id == event.id, Booking.status == 'active')).all():
         booking.status = 'cancelled'
@@ -90,7 +101,7 @@ def cancel_event(event_id, actor, reason):
 def save_event(form, actor, event_id=None):
     teacher_id = actor.id if actor.role == 'teacher' else integer(form.get('teacher_id'), 'Преподаватель')
     teacher = db.session.execute(select(User).where(User.id == teacher_id).with_for_update().execution_options(populate_existing=True)).scalar_one_or_none()
-    if not teacher or teacher.role != 'teacher' or not teacher.active:
+    if not teacher or teacher.role != 'teacher' or not teacher.active or teacher.deleted_at or teacher.dismissed_on:
         raise ValueError('Выберите действующего преподавателя.')
     subject_id = integer(form.get('subject_id'), 'Дисциплина')
     if subject_id not in [s.id for s in teacher.subjects if s.active]:
@@ -99,6 +110,9 @@ def save_event(form, actor, event_id=None):
     ends_at = local_datetime(form.get('ends_at'))
     if starts_at <= utcnow() or ends_at <= starts_at or ends_at - starts_at > timedelta(hours=12):
         raise ValueError('Начало должно быть в будущем, длительность — от 1 минуты до 12 часов.')
+    registration_opens_at = local_datetime(form['registration_opens_at']) if form.get('registration_opens_at') else None
+    if registration_opens_at and registration_opens_at > starts_at - timedelta(hours=current_app.config['BOOKING_LEAD_HOURS']):
+        raise ValueError('Открытие записи должно быть раньше её закрытия за 48 часов до консультации.')
     room = form.get('room', '').strip()
     if not room or len(room) > 80:
         raise ValueError('Укажите аудиторию или место проведения, до 80 символов.')
@@ -131,5 +145,11 @@ def save_event(form, actor, event_id=None):
     for key, value in dict(teacher_id=teacher_id, subject_id=subject_id, starts_at=starts_at, ends_at=ends_at, room=room, capacity=capacity, allowed_course=course, group_id=group_id, description=description).items():
         setattr(event, key, value)
     db.session.flush()
+    if registration_opens_at:
+        event.registration_opens_at = registration_opens_at
+    if event_id:
+        notify(participants(event) + admins(), 'Консультация изменена', f'{event.subject.name}. Аудитория: {event.room}. Проверьте актуальные сведения.', event=event)
+    else:
+        notify([teacher_id, *admins()], 'Консультация опубликована', f'{event.subject.name}. Аудитория: {event.room}.', event=event)
     audit('event_updated' if event_id else 'event_created', event.id)
     return event

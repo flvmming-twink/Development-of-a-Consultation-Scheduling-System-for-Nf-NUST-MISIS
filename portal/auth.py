@@ -89,7 +89,7 @@ def login():
                 matched = [u for u in candidates if check_password_hash(u.password_hash, password)]
                 for _ in range(max(0, 2 - len(candidates))):
                     check_password_hash(_dummy, password)
-                valid = matched[0] if len(matched) == 1 and matched[0].active else None
+                valid = matched[0] if len(matched) == 1 and matched[0].active and not matched[0].deleted_at else None
                 if valid:
                     clear_gate(gate)
                     session.clear()

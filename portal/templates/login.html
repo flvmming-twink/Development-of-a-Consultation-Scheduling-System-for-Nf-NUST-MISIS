@@ -1,10 +1,13 @@
 {% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
 {% block title %}Вход{% endblock %}
-{% block content %}<div class="login-layout">
-<section class="login-story"><div class="brand light"><span class="brand-symbol">К</span><span>Консультации<small>НФ НИТУ МИСИС</small></span></div>
-<div><div class="eyebrow">ВРЕМЯ РАЗОБРАТЬСЯ</div><h1>Ближе к знаниям.<br>По расписанию.</h1><p>Выбирайте дисциплину и удобное время для очной встречи с преподавателем.</p><div class="story-card"><span class="status-dot"></span> Встречаемся в университете<small>Расписание · Запись · Учебные консультации</small></div></div>
-<p class="story-foot">Один сервис для студентов и преподавателей</p></section>
-<section class="login-form"><div class="eyebrow">ЛИЧНЫЙ КАБИНЕТ</div><h2>Рады видеть вас</h2><p class="muted">Введите данные, которые предоставил администратор.</p>
-<form method="post">{{ csrf() }}<label>Логин<input name="login" maxlength="120" value="{{ entered }}" autocomplete="username" placeholder="Номер студенческого или рабочая почта" required autofocus></label><label>Пароль<div class="password-field"><input id="password" type="password" name="password" maxlength="128" autocomplete="current-password" required><button type="button" class="reveal" data-reveal="password" aria-label="Показать пароль">Показать</button></div></label><button class="button full" type="submit">Войти в кабинет <span>→</span></button></form>
-<div class="help-box"><strong>Не получается войти?</strong><p>После 10 ошибок вход закрывается на 5 минут. Ещё 5 ошибок после паузы — восстановление у администратора.</p><p>Если забыли пароль, обратитесь к администратору.</p></div>
-</section></div>{% endblock %}
+{% block content %}
+<header class="guest-header"><span>НОВОТРОИЦКИЙ ФИЛИАЛ</span><a href="https://nf.misis.ru">Сайт университета <i data-lucide="arrow-up-right"></i></a></header>
+<section class="login-form">
+<img class="login-logo" src="{{ url_for('static',filename='misis-logo.png') }}" alt="Новотроицкий филиал Университета МИСИС">
+<h1>Личный кабинет</h1><p class="muted">Запись на очные консультации</p>
+<form method="post">{{ csrf() }}<label>Логин<input name="login" maxlength="120" value="{{ entered }}" autocomplete="username" placeholder="Номер студенческого или рабочий логин" required autofocus></label>
+<label>Пароль<div class="password-field"><input id="password" type="password" name="password" maxlength="128" autocomplete="current-password" required><button type="button" class="reveal" data-reveal="password" aria-label="Показать пароль" title="Показать пароль"><i data-lucide="eye"></i></button></div></label>
+<button class="button full" type="submit">Войти <i data-lucide="arrow-right"></i></button></form>
+<div class="help-box"><strong>Не получается войти?</strong><p>Для восстановления доступа обратитесь к администратору.</p></div>
+</section><footer class="guest-footer">НФ НИТУ МИСИС<span>Консультации студентов и преподавателей</span></footer>
+{% endblock %}

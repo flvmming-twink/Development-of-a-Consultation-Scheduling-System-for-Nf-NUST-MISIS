@@ -1,13 +1,63 @@
 import csv
 import io
 import re
+from datetime import date
+from zoneinfo import ZoneInfo
 from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, session, url_for
-from sqlalchemy import select, func, or_, delete, update
-from .models import db, User, Group, Subject, Event, Booking, LoginGate, AuditLog, teacher_subject, utcnow
+from sqlalchemy import select, func, or_
+from sqlalchemy.orm import selectinload
+from .models import db, User, Group, Department, Subject, Event, Booking, LoginGate, AuditLog, utcnow
 from .auth import roles_required, normalize_login, hash_password, validate_name, check_password_distinct, lock_gate, clear_gate, audit
 from .services import integer, cancel_event, cancel_booking
+from .lifecycle import trash_users, restore_users
+from .notifications import notify
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
+
+def group_from_form(data, current_id=None):
+    name = data.get('new_group', '').strip()
+    if name:
+        if len(name) > 40:
+            raise ValueError('Название группы: не более 40 символов.')
+        group = db.session.scalar(select(Group).where(Group.name == name))
+        if not group:
+            group = Group(name=name, active=True)
+            group.admission_year = integer(data.get('admission_year') or group.entry_year, 'Год поступления', 2000, 2100)
+            db.session.add(group)
+            db.session.flush()
+            audit('catalog_updated', f'group:{group.id}', name)
+    else:
+        group = db.session.get(Group, integer(data.get('group_id'), 'Группа'))
+    if not group or (not group.active and group.id != current_id):
+        raise ValueError('Выберите действующую группу.')
+    return group
+
+def department_from_form(data, current_id=None):
+    name = data.get('new_department', '').strip()
+    if name:
+        if len(name) > 160:
+            raise ValueError('Название кафедры: не более 160 символов.')
+        department = db.session.scalar(select(Department).where(Department.name == name))
+        if not department:
+            department = Department(name=name, active=True)
+            db.session.add(department)
+            db.session.flush()
+            audit('catalog_updated', f'department:{department.id}', name)
+    else:
+        department = db.session.get(Department, integer(data.get('department_id'), 'Кафедра'))
+    if not department or (not department.active and department.id != current_id):
+        raise ValueError('Выберите действующую кафедру.')
+    return department
+
+def form_catalogs():
+    return dict(groups=db.session.scalars(select(Group).order_by(Group.name)).all(),
+        departments=db.session.scalars(select(Department).order_by(Department.name)).all())
+
+def live_user(user_id):
+    user = db.get_or_404(User, user_id)
+    if user.deleted_at:
+        abort(404)
+    return user
 
 def transliterate_surname(surname):
     alphabet = dict(zip('абвгдеёжзийклмнопрстуфхцчшщъыьэюя', ['a','b','v','g','d','e','yo','zh','z','i','j','k','l','m','n','o','p','r','s','t','u','f','kh','ts','ch','sh','shch','','y','','e','yu','ya']))
@@ -27,21 +77,21 @@ def create_user(data):
         raise ValueError('Такая учётная запись уже существует.')
     user = User(login=login, role=role, active=True, name_locked=role != 'student')
     if role == 'student':
-        group_id = integer(data.get('group_id'), 'Группа')
-        group = db.session.get(Group, group_id)
-        if not group or not group.active:
-            raise ValueError('Выберите действующую группу.')
-        user.group_id = group_id
+        group = group_from_form(data)
+        user.group = group
         user.course = integer(data.get('course'), 'Курс', 1, 5)
         user.study_mode = data.get('study_mode','full_time')
         if user.study_mode not in ('full_time','part_time') or (user.course == 5 and user.study_mode != 'part_time'):
             raise ValueError('Пятый курс доступен только при заочной форме обучения.')
+        user.course = user.current_course
         password = 'Student'
     else:
         user.full_name = validate_name(data.get('full_name',''))
         password = (data.get('initial_password') or '').strip()
         if role == 'teacher' and not password:
             password = transliterate_surname(user.full_name.split()[0])
+        if role == 'teacher':
+            user.department = department_from_form(data)
         if not password or len(password) > 128 or (role == 'admin' and len(password) < 8):
             raise ValueError('Укажите начальный пароль. Для администратора — от 8 до 128 символов.')
     with db.session.no_autoflush:
@@ -60,6 +110,8 @@ def create_user(data):
 def dashboard():
     counts = {role:db.session.scalar(select(func.count(User.id)).where(User.role == role, User.active)) for role in ('student','teacher','admin')}
     counts['events'] = db.session.scalar(select(func.count(Event.id)).where(Event.status == 'active', Event.ends_at > utcnow()))
+    counts['trash'] = db.session.scalar(select(func.count(User.id)).where(User.deleted_at.is_not(None)))
+    counts['graduates'] = sum(u.graduation_due for u in db.session.scalars(select(User).where(User.role == 'student', User.deleted_at.is_(None)).options(selectinload(User.group))).all())
     locked = db.session.scalars(select(LoginGate).where(or_(LoginGate.permanent, LoginGate.locked_until > utcnow())).order_by(LoginGate.updated_at.desc()).limit(20)).all()
     demo_student = db.session.scalar(select(User).where(User.login == '2300431', User.role == 'student'))
     demo_teacher = db.session.scalar(select(User).where(User.login == 'kurenkov.ee', User.role == 'teacher'))
@@ -98,15 +150,25 @@ def stop_impersonation():
 @bp.get('/users')
 @roles_required('admin')
 def users():
-    query = select(User).order_by(User.role, User.login)
+    query = select(User).where(User.deleted_at.is_(None)).options(selectinload(User.group), selectinload(User.department)).order_by(User.role, User.login)
     if request.args.get('role') in ('student','teacher','admin'):
         query = query.where(User.role == request.args['role'])
     term = request.args.get('q','').strip()[:120]
     if term:
         query = query.where(or_(User.login.ilike('%'+term+'%'), User.full_name.ilike('%'+term+'%')))
-    page = db.paginate(query, per_page=25, max_per_page=25, error_out=False)
+    for arg, column in [('group', User.group_id), ('department', User.department_id)]:
+        if request.args.get(arg, type=int):
+            query = query.where(column == request.args.get(arg, type=int))
+    if request.args.get('status') == 'graduated':
+        marked = [u.id for u in db.session.scalars(query).all() if u.graduation_due]
+        query = query.where(User.id.in_(marked))
+    elif request.args.get('status') == 'dismissed':
+        query = query.where(User.dismissed_on.is_not(None))
+    elif request.args.get('status') == 'inactive':
+        query = query.where(User.active.is_(False))
+    page = db.paginate(query, per_page=50, max_per_page=50, error_out=False)
     gates = {u.login:db.session.get(LoginGate,u.login) for u in page.items}
-    return render_template('admin_users.html', page=page, gates=gates)
+    return render_template('admin_users.html', page=page, gates=gates, **form_catalogs())
 
 @bp.route('/users/new', methods=['GET','POST'])
 @roles_required('admin')
@@ -120,16 +182,18 @@ def user_new():
         except ValueError as exc:
             db.session.rollback()
             flash(str(exc), 'error')
-    return render_template('admin_user_form.html', user=None, groups=db.session.scalars(select(Group).where(Group.active).order_by(Group.name)).all())
+    return render_template('admin_user_form.html', user=None, **form_catalogs())
 
 @bp.route('/users/<int:user_id>', methods=['GET','POST'])
 @roles_required('admin')
 def user_edit(user_id):
-    user = db.get_or_404(User, user_id)
+    user = live_user(user_id)
     if request.method == 'POST':
         try:
             gate = lock_gate(user.login)
             user = db.session.execute(select(User).where(User.id == user_id).with_for_update().execution_options(populate_existing=True)).scalar_one()
+            if user.deleted_at:
+                abort(404)
             name = request.form.get('full_name','').strip()
             if name != (user.full_name or ''):
                 reason = request.form.get('reason','').strip()
@@ -140,18 +204,32 @@ def user_edit(user_id):
                 user.name_locked = True
                 audit('name_corrected', user.id, f'{old} → {user.full_name}; {reason[:300]}')
             if user.role == 'student':
-                group_id = integer(request.form.get('group_id'), 'Группа')
-                group = db.session.get(Group,group_id)
-                if not group or (not group.active and group.id != user.group_id):
-                    raise ValueError('Выберите действующую группу.')
+                group = group_from_form(request.form, user.group_id)
+                group_id = group.id
                 course = integer(request.form.get('course'),'Курс',1,5)
                 mode = request.form.get('study_mode')
                 if mode not in ('full_time','part_time') or (course == 5 and mode != 'part_time'):
                     raise ValueError('Пятый курс доступен только заочникам.')
+                user.group, user.study_mode = group, mode
+                course = user.current_course if group.entry_year else course
+                user.course = course
                 future = db.session.scalars(select(Booking).join(Event,Booking.event_id == Event.id).where(Booking.student_id == user.id, Booking.status == 'active', Booking.ends_at > utcnow())).all()
                 if any(b.event.allowed_course != course or (b.event.group_id and b.event.group_id != group_id) for b in future):
                     raise ValueError('Новая группа или курс не подходят действующим записям. Сначала отмените их в журнале.')
                 user.group_id, user.course, user.study_mode = group_id, course, mode
+                user.group = group
+            if user.role == 'teacher':
+                user.department = department_from_form(request.form, user.department_id)
+                dismissed = request.form.get('dismissed_on', '').strip()
+                dismissed_on = date.fromisoformat(dismissed) if dismissed else None
+                if dismissed_on and dismissed_on > utcnow().astimezone(ZoneInfo(current_app.config['APP_TIMEZONE'])).date():
+                    raise ValueError('Дата увольнения не может быть в будущем.')
+                if dismissed_on and not user.dismissed_on:
+                    for eid in db.session.scalars(select(Event.id).where(Event.teacher_id == user.id, Event.status == 'active', Event.ends_at > utcnow())).all():
+                        cancel_event(eid, g.user, 'Увольнение преподавателя')
+                    user.active = False
+                    user.session_version += 1
+                user.dismissed_on = dismissed_on
             audit('user_updated', user.id)
             db.session.commit()
             flash('Данные пользователя сохранены.', 'success')
@@ -159,14 +237,16 @@ def user_edit(user_id):
             db.session.rollback()
             flash(str(exc), 'error')
         return redirect(url_for('admin.user_edit', user_id=user.id))
-    return render_template('admin_user_form.html', user=user, groups=db.session.scalars(select(Group).order_by(Group.name)).all(), gate=db.session.get(LoginGate,user.login))
+    return render_template('admin_user_form.html', user=user, gate=db.session.get(LoginGate,user.login), **form_catalogs())
 
 @bp.post('/users/<int:user_id>/reset')
 @roles_required('admin')
 def user_reset(user_id):
-    user = db.get_or_404(User,user_id)
+    user = live_user(user_id)
     gate = lock_gate(user.login)
     user = db.session.execute(select(User).where(User.id == user_id).with_for_update().execution_options(populate_existing=True)).scalar_one()
+    if user.deleted_at:
+        abort(404)
     user.password_hash = user.initial_password_hash
     user.must_change_password = current_app.config['FORCE_INITIAL_PASSWORD_CHANGE']
     user.session_version += 1
@@ -175,6 +255,7 @@ def user_reset(user_id):
     for other in db.session.scalars(select(User).where(User.login == user.login, User.id != user.id)).all():
         other.session_version += 1
     audit('password_reset',user.id,'Начальный пароль восстановлен; блокировка логина снята.')
+    notify([user.id], 'Пароль сброшен администратором', 'Восстановлен начальный пароль. При следующем входе смените его в настройках.', link='/settings')
     db.session.commit()
     flash('Начальный пароль восстановлен. Блокировка общего логина снята.', 'success')
     return redirect(url_for('admin.user_edit',user_id=user.id))
@@ -182,12 +263,17 @@ def user_reset(user_id):
 @bp.post('/users/<int:user_id>/toggle')
 @roles_required('admin')
 def user_toggle(user_id):
-    user = db.get_or_404(User,user_id)
+    user = live_user(user_id)
+    if user.dismissed_on:
+        flash('Для активации сначала снимите отметку об увольнении.', 'error')
+        return redirect(url_for('admin.user_edit', user_id=user.id))
     if user.id == g.user.id:
         flash('Нельзя отключить собственную учётную запись.', 'error')
         return redirect(url_for('admin.user_edit',user_id=user.id))
     lock_gate(user.login)
     user = db.session.execute(select(User).where(User.id == user_id).with_for_update().execution_options(populate_existing=True)).scalar_one()
+    if user.deleted_at or user.dismissed_on:
+        abort(409)
     if user.active:
         if user.role == 'teacher':
             for eid in db.session.scalars(select(Event.id).where(Event.teacher_id == user.id,Event.status == 'active',Event.ends_at > utcnow())).all():
@@ -205,34 +291,37 @@ def user_toggle(user_id):
 @bp.post('/users/<int:user_id>/delete')
 @roles_required('admin')
 def user_delete(user_id):
-    user = db.get_or_404(User, user_id)
-    if user.id == g.user.id:
-        flash('Нельзя удалить собственную учётную запись.', 'error')
-        return redirect(url_for('admin.user_edit', user_id=user.id))
     try:
-        gate = lock_gate(user.login)
-        user = db.session.execute(select(User).where(User.id == user_id).with_for_update().execution_options(populate_existing=True)).scalar_one()
-        if user.role == 'teacher' and db.session.scalar(select(Event.id).where(Event.teacher_id == user.id).limit(1)):
-            raise ValueError('Нельзя удалить преподавателя, у которого уже есть занятия. Отключите аккаунт или отмените занятия.')
-        if user.role == 'student' and db.session.scalar(select(Booking.id).where(Booking.student_id == user.id).limit(1)):
-            raise ValueError('Нельзя удалить студента, у которого уже есть записи. Отключите аккаунт или отмените записи.')
-        login, role = user.login, user.role
-        db.session.execute(delete(teacher_subject).where(teacher_subject.c.teacher_id == user.id))
-        db.session.execute(update(AuditLog).where(AuditLog.actor_id == user.id).values(actor_id=None))
-        db.session.delete(user)
-        db.session.flush()
-        if db.session.scalar(select(User.id).where(User.login == login).limit(1)):
-            clear_gate(gate)
-        else:
-            db.session.delete(gate)
-        audit('user_deleted', f'{role}:{login}')
+        trash_users([user_id], g.user)
         db.session.commit()
-        flash('Учётная запись удалена.', 'success')
+        flash('Пользователь перенесён в корзину на 10 дней.', 'success')
         return redirect(url_for('admin.users'))
     except ValueError as exc:
         db.session.rollback()
         flash(str(exc), 'error')
-        return redirect(url_for('admin.user_edit', user_id=user_id))
+        return redirect(url_for('admin.users'))
+
+@bp.post('/users/bulk')
+@roles_required('admin')
+def users_bulk():
+    restoring = request.form.get('action') == 'restore'
+    try:
+        ids = {integer(value, 'Пользователь') for value in request.form.getlist('user_ids')}
+        if len(ids) > 500:
+            raise ValueError('За один раз можно выбрать до 500 пользователей.')
+        count = restore_users(ids) if restoring else trash_users(ids, g.user)
+        db.session.commit()
+        flash(f'Восстановлено: {count}.' if restoring else f'Перенесено в корзину на 10 дней: {count}.', 'success')
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), 'error')
+    return redirect(url_for('admin.trash' if restoring else 'admin.users'))
+
+@bp.get('/trash')
+@roles_required('admin')
+def trash():
+    query = select(User).where(User.deleted_at.is_not(None)).order_by(User.deleted_at.desc())
+    return render_template('admin_trash.html', page=db.paginate(query, per_page=50, error_out=False))
 
 @bp.route('/catalogs', methods=['GET','POST'])
 @roles_required('admin')
@@ -240,13 +329,23 @@ def catalogs():
     if request.method == 'POST':
         try:
             kind = request.form.get('kind')
-            if kind in ('group','subject'):
-                model = Group if kind == 'group' else Subject
+            if kind in ('group','subject','department'):
+                model = {'group': Group, 'subject': Subject, 'department': Department}[kind]
                 entity = db.get_or_404(model,integer(request.form.get('id'),'ID')) if request.form.get('id') else model()
+                if kind == 'department' and request.form.get('delete') == 'yes':
+                    if db.session.scalar(select(User.id).where(User.department_id == entity.id).limit(1)):
+                        raise ValueError('Кафедра связана с пользователями. Перенесите их в другую кафедру или отправьте кафедру в архив.')
+                    audit('catalog_updated', f'department:{entity.id}', 'Кафедра удалена')
+                    db.session.delete(entity)
+                    db.session.commit()
+                    flash('Кафедра удалена.', 'success')
+                    return redirect(url_for('admin.catalogs'))
                 name = request.form.get('name','').strip()
-                if not name or len(name) > (40 if kind == 'group' else 120):
+                if not name or len(name) > (40 if kind == 'group' else 160 if kind == 'department' else 120):
                     raise ValueError('Название пустое или слишком длинное.')
                 entity.name = name
+                if kind == 'group':
+                    entity.admission_year = integer(request.form.get('admission_year') or entity.entry_year, 'Год поступления', 2000, 2100)
                 active = request.form.get('active') == 'yes'
                 if entity.id and not active:
                     if kind == 'group' and db.session.scalar(select(User.id).where(User.group_id == entity.id, User.active).limit(1)):
@@ -260,7 +359,7 @@ def catalogs():
             elif kind == 'assignment':
                 teacher = db.session.execute(select(User).where(User.id == integer(request.form.get('teacher_id'),'Преподаватель')).with_for_update()).scalar_one_or_none()
                 subject = db.session.get(Subject,integer(request.form.get('subject_id'),'Дисциплина'))
-                if not teacher or teacher.role != 'teacher' or not subject:
+                if not teacher or teacher.role != 'teacher' or teacher.deleted_at or not subject:
                     raise ValueError('Выберите преподавателя и дисциплину.')
                 remove = request.form.get('remove') == 'yes'
                 if remove:
@@ -279,7 +378,7 @@ def catalogs():
             db.session.rollback()
             flash(str(exc), 'error')
         return redirect(url_for('admin.catalogs'))
-    return render_template('admin_catalogs.html', groups=db.session.scalars(select(Group).order_by(Group.name)).all(), subjects=db.session.scalars(select(Subject).order_by(Subject.name)).all(), teachers=db.session.scalars(select(User).where(User.role == 'teacher').order_by(User.full_name)).all())
+    return render_template('admin_catalogs.html', **form_catalogs(), subjects=db.session.scalars(select(Subject).order_by(Subject.name)).all(), teachers=db.session.scalars(select(User).where(User.role == 'teacher', User.deleted_at.is_(None)).order_by(User.full_name)).all())
 
 @bp.route('/import',methods=['GET','POST'])
 @roles_required('admin')
