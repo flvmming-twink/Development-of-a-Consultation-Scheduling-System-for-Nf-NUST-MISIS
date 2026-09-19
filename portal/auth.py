@@ -1,3 +1,4 @@
+from flask_babel import gettext as _, lazy_gettext as _l
 import re
 from datetime import timedelta
 from functools import wraps
@@ -50,13 +51,23 @@ def roles_required(*roles):
 def validate_name(value):
     name = ' '.join(value.split())
     if not 3 <= len(name) <= 160 or len(name.split()) < 2 or not all(c.isalpha() or c in " -'’" for c in name):
-        raise ValueError('Введите фамилию, имя и отчество при наличии, без цифр.')
+        raise ValueError(_('Введите фамилию, имя и отчество при наличии, без цифр.'))
     return name
+
+
+def name_parts(data):
+    if not any(key in data for key in ('last_name', 'first_name', 'middle_name')):
+        return (validate_name(data.get('full_name', '')).split(maxsplit=2) + [''])[:3]
+    parts = [' '.join(data.get(key, '').split()) for key in ('last_name', 'first_name', 'middle_name')]
+    if not parts[0] or not parts[1] or any(len(part) > 80 or not all(c.isalpha() or c in " -'’" for c in part) for part in parts):
+        raise ValueError(_('Укажите фамилию и имя. Отчество необязательно. В каждом поле допустимы только буквы, пробелы, дефис и апостроф, не более 80 символов.'))
+    validate_name(' '.join(filter(None, parts)))
+    return parts
 
 def check_password_distinct(user, password):
     others = db.session.scalars(select(User).where(User.login == user.login, User.id != user.id)).all()
     if any(check_password_hash(u.password_hash, password) or check_password_hash(u.initial_password_hash, password) for u in others):
-        raise ValueError('Этот пароль занят другой ролью с таким логином. Выберите другой.')
+        raise ValueError(_('Этот пароль занят другой ролью с таким логином. Выберите другой.'))
 
 @bp.route('/login', methods=['GET','POST'])
 def login():
@@ -69,29 +80,32 @@ def login():
         password = request.form.get('password', '')
         canonical = normalize_login(entered)
         if not canonical or not password:
-            flash('Заполните логин и пароль. Пустые поля не считаются попыткой.', 'error')
+            flash(_('Заполните логин и пароль. Пустые поля не считаются попыткой.'), 'error')
             status = 400
         elif len(canonical) > 120 or len(password) > 128:
-            flash('Слишком длинный логин или пароль.', 'error')
+            flash(_('Слишком длинный логин или пароль.'), 'error')
             status = 400
         else:
             gate = lock_gate(canonical)
             now = utcnow()
             if gate.permanent:
-                flash('Вход заблокирован. Обратитесь к администратору для сброса пароля.', 'error')
+                flash(_('Вход заблокирован. Обратитесь к администратору для сброса пароля.'), 'error')
                 status = 423
             elif gate.locked_until and gate.locked_until > now:
                 seconds = int((gate.locked_until - now).total_seconds()) + 1
-                flash(f'Вход временно заблокирован. Повторите через {seconds} сек.', 'error')
+                flash(_('Вход временно заблокирован. Повторите через %(value0)s сек.', value0=seconds), 'error')
                 status = 429
             else:
                 candidates = db.session.scalars(select(User).where(User.login == canonical).order_by(User.id)).all()
                 matched = [u for u in candidates if check_password_hash(u.password_hash, password)]
-                for _ in range(max(0, 2 - len(candidates))):
+                for attempt in range(max(0, 2 - len(candidates))):
                     check_password_hash(_dummy, password)
                 valid = matched[0] if len(matched) == 1 and matched[0].active and not matched[0].deleted_at else None
                 if valid:
                     clear_gate(gate)
+                    language = session.get('language')
+                    if language in ('ru', 'en'):
+                        valid.language = language
                     session.clear()
                     session.update(uid=valid.id, version=valid.session_version)
                     session.permanent = True
@@ -103,23 +117,26 @@ def login():
                 if gate.failures >= 15:
                     gate.permanent = True
                     gate.locked_until = None
-                    flash('Вход заблокирован. Обратитесь к администратору для сброса пароля.', 'error')
+                    flash(_('Вход заблокирован. Обратитесь к администратору для сброса пароля.'), 'error')
                     audit('login_permanent_lock', canonical)
                     status = 423
                 elif gate.failures == 10:
                     gate.locked_until = now + timedelta(minutes=5)
-                    flash('10 неудачных попыток. Вход заблокирован на 5 минут.', 'error')
+                    flash(_('10 неудачных попыток. Вход заблокирован на 5 минут.'), 'error')
                     audit('login_temporary_lock', canonical)
                     status = 429
                 else:
-                    flash('Неверный логин или пароль.', 'error')
+                    flash(_('Неверный логин или пароль.'), 'error')
                     status = 401
             db.session.commit()
     return render_template('login.html', entered=entered), status
 
 @bp.post('/logout')
 def logout():
+    from .i18n import current_language
+    language = current_language()
     session.clear()
+    session['language'] = language
     return redirect(url_for('auth.login'))
 
 @bp.route('/settings', methods=['GET','POST'])
@@ -133,24 +150,33 @@ def settings():
             if action == 'theme':
                 theme = request.form.get('theme')
                 if theme not in ('light','dark'):
-                    raise ValueError('Выберите светлую или тёмную тему.')
+                    raise ValueError(_('Выберите светлую или тёмную тему.'))
                 user.theme = theme
             elif action == 'name':
                 if user.role != 'student' or user.name_locked:
                     abort(403)
                 if request.form.get('confirm_name') != 'yes':
-                    raise ValueError('Подтвердите правильность ФИО.')
-                user.full_name = validate_name(request.form.get('full_name', ''))
+                    raise ValueError(_('Подтвердите правильность ФИО.'))
+                user.set_name_parts(*name_parts(request.form))
                 user.name_locked = True
                 audit('student_name_set', user.id, user.full_name)
+            elif action == 'language':
+                language = request.form.get('language')
+                if language not in ('ru', 'en'):
+                    abort(400)
+                owner = g.admin_user or user
+                owner.language = language
+                session['language'] = language
+                from flask_babel import refresh
+                refresh()
             elif action == 'password':
                 if not check_password_hash(user.password_hash, request.form.get('current_password','')):
-                    raise ValueError('Текущий пароль указан неверно.')
+                    raise ValueError(_('Текущий пароль указан неверно.'))
                 password = request.form.get('new_password','')
                 if not 8 <= len(password) <= 128 or password != request.form.get('repeat_password'):
-                    raise ValueError('Пароль должен содержать 8–128 символов. Повтор пароля должен совпадать.')
+                    raise ValueError(_('Пароль должен содержать 8–128 символов. Повтор пароля должен совпадать.'))
                 if check_password_hash(user.initial_password_hash, password):
-                    raise ValueError('Новый пароль должен отличаться от начального.')
+                    raise ValueError(_('Новый пароль должен отличаться от начального.'))
                 check_password_distinct(user, password)
                 user.password_hash = hash_password(password)
                 user.must_change_password = False
@@ -161,7 +187,7 @@ def settings():
             else:
                 abort(400)
             db.session.commit()
-            flash('Настройки сохранены.', 'success')
+            flash(_('Настройки сохранены.'), 'success')
         except ValueError as exc:
             db.session.rollback()
             flash(str(exc), 'error')

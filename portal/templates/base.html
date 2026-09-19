@@ -1,45 +1,45 @@
-<!doctype html>
-<html lang="ru" data-theme="{{ g.user.theme if g.user else 'light' }}">
+{% from 'macros.html' import language_switch with context %}<!doctype html>
+<html lang="{{ language }}" data-theme="{{ g.user.theme if g.user and not maintenance_page else 'light' }}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark"><meta name="description" content="Запись на очные консультации преподавателей НФ НИТУ МИСИС">
-  <title>{% block title %}Консультации{% endblock %} · НФ НИТУ МИСИС</title>
+  <meta name="color-scheme" content="light dark"><meta name="description" content="{{ _('Запись на очные консультации преподавателей НФ НИТУ МИСИС') }}">
+  <title>{% block title %}{{ _('Консультации') }}{% endblock %} {{ _('· НФ НИТУ МИСИС') }}</title>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static',filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static',filename='app.css') }}">
   <script defer src="{{ url_for('static',filename='lucide.min.js') }}"></script>
   <script defer src="{{ url_for('static',filename='app.js') }}"></script>
 </head>
-<body class="{{ 'authenticated' if g.user else 'guest' }}">
-{% if g.user %}
+<body class="{{ 'authenticated' if g.user and not maintenance_page else 'guest' }}" data-language="{{ language }}" data-selected-label="{{ _('Выбрано:') }}" data-show-password="{{ _('Показать пароль') }}" data-hide-password="{{ _('Скрыть пароль') }}">
+{% if g.user and not maintenance_page %}
 <aside class="sidebar">
-  <a class="brand" href="{{ url_for('main.home') }}"><img class="logo-light" src="{{ url_for('static',filename='misis-logo.png') }}" alt="НФ МИСИС"><img class="logo-dark" src="{{ url_for('static',filename='misis-logo-white.png') }}" alt="НФ МИСИС"></a>
+  <a class="brand" href="{{ url_for('main.home') }}"><img class="logo-light" src="{{ url_for('static',filename='misis-logo.png') }}" alt="{{ _('НФ МИСИС') }}"><img class="logo-dark" src="{{ url_for('static',filename='misis-logo-white.png') }}" alt="{{ _('НФ МИСИС') }}"></a>
   <div class="nav-label">{{ roles[g.user.role] }}</div>
-  <nav aria-label="Главное меню">
+  <nav aria-label="{{ _('Главное меню') }}">
   {% set ep = request.endpoint %}
   {% if g.user.role == 'student' %}
-    <a class="{{ 'selected' if ep=='main.events' }}" href="{{ url_for('main.events') }}">Расписание <span>↗</span></a>
-    <a class="{{ 'selected' if ep=='main.bookings' }}" href="{{ url_for('main.bookings') }}">Мои записи</a>
+    <a class="{{ 'selected' if ep=='main.events' }}" href="{{ url_for('main.events') }}">{{ _('Расписание') }} <span>↗</span></a>
+    <a class="{{ 'selected' if ep=='main.bookings' }}" href="{{ url_for('main.bookings') }}">{{ _('Мои записи') }}</a>
   {% elif g.user.role == 'teacher' %}
-    <a class="{{ 'selected' if ep=='main.teacher' }}" href="{{ url_for('main.teacher') }}">Мои занятия</a>
-    <a class="{{ 'selected' if ep=='main.event_form' }}" href="{{ url_for('main.event_form') }}">Создать занятие <span>+</span></a>
-    <a class="{{ 'selected' if ep=='main.journal' }}" href="{{ url_for('main.journal') }}">Журнал студентов</a>
+    <a class="{{ 'selected' if ep=='main.teacher' }}" href="{{ url_for('main.teacher') }}">{{ _('Мои занятия') }}</a>
+    <a class="{{ 'selected' if ep=='main.event_form' }}" href="{{ url_for('main.event_form') }}">{{ _('Создать занятие') }} <span>+</span></a>
+    <a class="{{ 'selected' if ep=='main.journal' }}" href="{{ url_for('main.journal') }}">{{ _('Журнал студентов') }}</a>
   {% else %}
-    {% for endpoint, label in [('admin.dashboard','Обзор'),('admin.users','Пользователи'),('admin.catalogs','Справочники'),('admin.trash','Корзина'),('admin.events','Все занятия'),('main.journal','Журнал записей'),('admin.import_students','Импорт студентов'),('admin.logs','История действий')] %}
+    {% for endpoint, label in [('admin.dashboard',_('Главная')),('admin.users',_('Пользователи')),('admin.catalogs',_('Справочники')),('admin.trash',_('Корзина')),('admin.events',_('Все занятия')),('main.journal',_('Журнал записей')),('admin.import_students',_('Импорт студентов')),('admin.logs',_('История действий'))] %}
     <a class="{{ 'selected' if ep==endpoint }}" href="{{ url_for(endpoint) }}">{{ label }}</a>
     {% endfor %}
   {% endif %}
-    <a class="{{ 'selected' if ep=='notifications.inbox' }}" href="{{ url_for('notifications.inbox') }}">Уведомления <span data-notification-count>{{ unread_notifications or '' }}</span></a>
-    <a class="{{ 'selected' if ep=='auth.settings' }}" href="{{ url_for('auth.settings') }}">Настройки</a>
+    <a class="{{ 'selected' if ep=='notifications.inbox' }}" href="{{ url_for('notifications.inbox') }}">{{ _('Уведомления') }} <span data-notification-count>{{ unread_notifications or '' }}</span></a>
+    <a class="{{ 'selected' if ep=='auth.settings' }}" href="{{ url_for('auth.settings') }}">{{ _('Настройки') }}</a>
   </nav>
-  <div class="sidebar-bottom"><span class="avatar">{{ (g.user.full_name or g.user.login)[0] }}</span><div><strong>{{ g.user.full_name or 'Заполните ФИО' }}</strong><small>{{ g.user.login }}</small></div></div>
-  <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">Выйти из аккаунта</button></form>
+  <div class="sidebar-bottom"><span class="avatar">{{ (g.user.full_name or g.user.login)[0] }}</span><div><strong>{{ g.user.full_name or _('Заполните ФИО') }}</strong><small>{{ g.user.login }}</small></div></div>
+  <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">{{ _('Выйти из аккаунта') }}</button></form>
 </aside>
 {% endif %}
 <main id="main" class="main">
-{% if g.user %}<div class="topline"><span>КОНСУЛЬТАЦИИ · НФ МИСИС</span><div class="actions"><span>{{ now|localtime('%d.%m.%Y') }}</span><a class="notification-bell" href="{{ url_for('notifications.inbox') }}" title="Уведомления" aria-label="Уведомления" data-notifications-url="{{ url_for('notifications.count') }}"><i data-lucide="bell"></i><span data-notification-count>{{ unread_notifications or '' }}</span></a></div></div>{% endif %}
-{% if g.admin_user %}<div class="impersonation-bar"><div><strong>Сценарий: {{ roles[g.user.role] }}</strong><span>Вы смотрите сайт как {{ g.user.login }}. Администратор: {{ g.admin_user.login }}.</span></div><form method="post" action="{{ url_for('admin.stop_impersonation') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">Вернуться в админку</button></form></div>{% endif %}
+{% if g.user and not maintenance_page %}<div class="topline"><span>{{ _('КОНСУЛЬТАЦИИ · НФ МИСИС') }}</span><div class="actions">{{ language_switch() }}<span class="header-date">{{ now|localtime('%d.%m.%Y') }}</span><a class="notification-bell" href="{{ url_for('notifications.inbox') }}" title="{{ _('Уведомления') }}" aria-label="{{ _('Уведомления') }}" data-notifications-url="{{ url_for('notifications.count') }}"><i data-lucide="bell"></i><span data-notification-count>{{ unread_notifications or '' }}</span></a></div></div>{% endif %}
+{% if g.admin_user %}<div class="impersonation-bar"><div><strong>{{ _('Сценарий:') }} {{ roles[g.user.role] }}</strong><span>{{ _('Вы смотрите сайт как') }} {{ g.user.login }}{{ _('. Администратор:') }} {{ g.admin_user.login }}.</span></div><form method="post" action="{{ url_for('admin.stop_impersonation') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">{{ _('Вернуться в админку') }}</button></form></div>{% endif %}
 {% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div role="status" class="alert {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
 {% block content %}{% endblock %}
-{% if g.user %}<footer>Консультации · НФ НИТУ МИСИС <span>Поддержка учётных записей — администратор системы</span></footer>{% endif %}
+{% if g.user and not maintenance_page %}<footer>{{ _('Консультации · НФ НИТУ МИСИС') }} <span>{{ _('Поддержка учётных записей — администратор системы') }}</span></footer>{% endif %}
 </main>
 </body></html>

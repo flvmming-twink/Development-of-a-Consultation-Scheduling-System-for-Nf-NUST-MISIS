@@ -10,8 +10,8 @@ document.querySelectorAll('[data-reveal]').forEach(button => {
     input.type = show ? 'text' : 'password';
     button.innerHTML = '<i data-lucide="' + (show ? 'eye-off' : 'eye') + '"></i>';
     if (window.lucide) lucide.createIcons();
-    button.setAttribute('aria-label', show ? 'Скрыть пароль' : 'Показать пароль');
-    button.title = show ? 'Скрыть пароль' : 'Показать пароль';
+    button.title = show ? document.body.dataset.hidePassword : document.body.dataset.showPassword;
+    button.setAttribute('aria-label', button.title);
   });
 });
 const roleSelect = document.getElementById('account-role');
@@ -55,7 +55,7 @@ document.querySelectorAll('[data-selection-form]').forEach(form => {
   const boxes = [...form.querySelectorAll('[name=user_ids]:not(:disabled)')];
   const sync = () => {
     const count = boxes.filter(box => box.checked).length;
-    form.querySelector('[data-selection-count]').textContent = 'Выбрано: ' + count;
+    form.querySelector('[data-selection-count]').textContent = document.body.dataset.selectedLabel + ' ' + count;
     form.querySelector('[data-selection-submit]').disabled = count === 0;
     all.checked = count > 0 && count === boxes.length;
     all.indeterminate = count > 0 && count < boxes.length;
@@ -70,9 +70,21 @@ if (notificationLink) {
     if (document.hidden) return;
     try {
       const response = await fetch(notificationLink.dataset.notificationsUrl, {credentials: 'same-origin'});
-      if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) return;
+      if (!response.headers.get('content-type')?.includes('application/json')) return;
       const data = await response.json();
+      if (response.status === 503 && data.maintenance) { window.location.reload(); return; }
+      if (!response.ok) return;
       document.querySelectorAll('[data-notification-count]').forEach(badge => { badge.textContent = data.unread || ''; });
     } catch (_) { /* Retry on the next interval after network recovery. */ }
+  }, 30000);
+}
+const serviceStatus = document.querySelector('[data-service-status]');
+if (serviceStatus) {
+  setInterval(async () => {
+    if (document.hidden) return;
+    try {
+      const response = await fetch(serviceStatus.dataset.serviceStatus, {credentials: 'same-origin'});
+      if (response.ok && response.headers.get('content-type')?.includes('application/json') && !(await response.json()).maintenance) window.location.reload();
+    } catch (_) { /* Keep the maintenance page during network interruptions. */ }
   }, 30000);
 }

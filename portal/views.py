@@ -1,3 +1,4 @@
+from flask_babel import gettext as _, lazy_gettext as _l
 from datetime import date, datetime, time, timezone
 from io import BytesIO
 from zoneinfo import ZoneInfo
@@ -22,6 +23,24 @@ def health():
     db.session.execute(select(1))
     return {'status':'ok'}
 
+
+@bp.get('/service-status')
+@roles_required()
+def service_status():
+    return {'maintenance': g.maintenance}
+
+
+@bp.post('/event-view')
+@roles_required('student', 'teacher')
+def event_view():
+    view = request.form.get('view')
+    if view not in ('grid', 'list'):
+        abort(400)
+    g.user.event_view = view
+    db.session.commit()
+    from .i18n import safe_return
+    return redirect(safe_return(request.form.get('next', '/')))
+
 @bp.get('/events')
 @roles_required('student')
 def events():
@@ -38,14 +57,14 @@ def events():
             begin = datetime.combine(day, time.min, tzinfo=ZoneInfo(current_app.config['APP_TIMEZONE'])).astimezone(timezone.utc)
             query = query.where(Event.starts_at >= begin)
         except ValueError:
-            flash('Некорректная дата фильтра.', 'error')
-    page = db.paginate(query, per_page=12, max_per_page=12, error_out=False)
+            flash(_('Некорректная дата фильтра.'), 'error')
+    page = db.paginate(query, per_page=30 if g.user.event_view == 'list' else 12, max_per_page=30, error_out=False)
     mine = db.session.scalars(select(Booking).where(Booking.student_id == g.user.id, Booking.status == 'active', Booking.ends_at > utcnow())).all()
     problems = {}
     for event in page.items:
         problem = booking_problem(event, g.user)
         if not problem and any(b.starts_at < event.ends_at and b.ends_at > event.starts_at for b in mine):
-            problem = 'Пересекается с вашей записью.'
+            problem = _('Пересекается с вашей записью.')
         problems[event.id] = problem
     return render_template('events.html', page=page, problems=problems, subjects=db.session.scalars(select(Subject).where(Subject.active).order_by(Subject.name)).all(), teachers=db.session.scalars(select(User).where(User.role == 'teacher', User.active).order_by(User.full_name)).all(), mine_count=len(mine))
 
@@ -55,7 +74,7 @@ def book(event_id):
     try:
         book_event(g.user.id, event_id)
         db.session.commit()
-        flash('Вы записаны на занятие. Оно появилось в разделе «Мои записи».', 'success')
+        flash(_('Вы записаны на занятие. Оно появилось в разделе «Мои записи».'), 'success')
     except ValueError as exc:
         db.session.rollback()
         flash(str(exc), 'error')
@@ -74,7 +93,7 @@ def cancel(booking_id):
     try:
         cancel_booking(booking_id, g.user, request.form.get('reason','Отмена студентом'))
         db.session.commit()
-        flash('Запись отменена.', 'success')
+        flash(_('Запись отменена.'), 'success')
     except ValueError as exc:
         db.session.rollback()
         flash(str(exc), 'error')
@@ -86,7 +105,7 @@ def teacher():
     query = select(Event).where(Event.teacher_id == g.user.id).order_by(Event.starts_at.desc())
     if request.args.get('subject', type=int):
         query = query.where(Event.subject_id == request.args.get('subject', type=int))
-    page = db.paginate(query, per_page=15, max_per_page=15, error_out=False)
+    page = db.paginate(query, per_page=30 if g.user.event_view == 'list' else 12, max_per_page=30, error_out=False)
     return render_template('teacher.html', page=page)
 
 @bp.route('/events/new', methods=['GET','POST'])
@@ -100,7 +119,7 @@ def event_form(event_id=None):
         try:
             result = save_event(request.form, g.user, event_id)
             db.session.commit()
-            flash('Занятие сохранено.', 'success')
+            flash(_('Занятие сохранено.'), 'success')
             return redirect(url_for('main.event_detail', event_id=result.id))
         except ValueError as exc:
             db.session.rollback()
@@ -110,9 +129,14 @@ def event_form(event_id=None):
         subjects=db.session.scalars(select(Subject).where(Subject.active).order_by(Subject.name)).all() if g.user.role == 'admin' else [s for s in g.user.subjects if s.active])
 
 @bp.get('/events/<int:event_id>')
-@roles_required('teacher','admin')
+@roles_required('student','teacher','admin')
 def event_detail(event_id):
     event = db.get_or_404(Event, event_id)
+    if g.user.role == 'student':
+        problem = booking_problem(event, g.user)
+        if not problem and db.session.scalar(select(Booking.id).where(Booking.student_id == g.user.id, Booking.status == 'active', Booking.starts_at < event.ends_at, Booking.ends_at > event.starts_at).limit(1)):
+            problem = _('Пересекается с вашей записью.')
+        return render_template('student_event.html', event=event, problem=problem)
     if g.user.role == 'teacher' and event.teacher_id != g.user.id:
         abort(403)
     query = select(Booking).outerjoin(User, Booking.student_id == User.id).where(Booking.event_id == event.id)
@@ -127,7 +151,7 @@ def cancel_class(event_id):
     try:
         cancel_event(event_id, g.user, request.form.get('reason',''))
         db.session.commit()
-        flash('Занятие и все записи на него отменены.', 'success')
+        flash(_('Занятие и все записи на него отменены.'), 'success')
     except ValueError as exc:
         db.session.rollback()
         flash(str(exc), 'error')
@@ -169,7 +193,7 @@ def journal():
 def export_journal():
     records = db.session.scalars(journal_query().limit(10001)).all()
     if len(records) > 10000:
-        flash('Для выгрузки свыше 10 000 строк уточните фильтры.', 'error')
+        flash(_('Для выгрузки свыше 10 000 строк уточните фильтры.'), 'error')
         return redirect(url_for('main.journal'))
     book = Workbook()
     sheet = book.active

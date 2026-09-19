@@ -5,6 +5,7 @@ from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, ForeignKeyConstraint, text, func
 from sqlalchemy.dialects.postgresql import ExcludeConstraint
+from sqlalchemy.orm import validates
 
 db = SQLAlchemy()
 
@@ -39,6 +40,9 @@ class User(db.Model):
     login = db.Column(db.String(120), nullable=False, index=True)
     role = db.Column(db.String(12), nullable=False)
     full_name = db.Column(db.String(160))
+    last_name = db.Column(db.String(80))
+    first_name = db.Column(db.String(80))
+    middle_name = db.Column(db.String(80))
     name_locked = db.Column(db.Boolean, nullable=False, default=False)
     group_id = db.Column(db.Integer, db.ForeignKey('groups.id'))
     course = db.Column(db.Integer)
@@ -52,6 +56,8 @@ class User(db.Model):
     must_change_password = db.Column(db.Boolean, nullable=False, default=False)
     active = db.Column(db.Boolean, nullable=False, default=True)
     theme = db.Column(db.String(8), nullable=False, default='light')
+    language = db.Column(db.String(2), nullable=False, default='ru')
+    event_view = db.Column(db.String(8), nullable=False, default='grid')
     session_version = db.Column(db.Integer, nullable=False, default=1)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     group = db.relationship(Group)
@@ -61,7 +67,23 @@ class User(db.Model):
         UniqueConstraint('login', 'role', name='uq_user_login_role'),
         CheckConstraint("role IN ('student','teacher','admin')", name='ck_user_role'),
         CheckConstraint("theme IN ('light','dark')", name='ck_theme'),
+        CheckConstraint("language IN ('ru','en')", name='ck_user_language'),
+        CheckConstraint("event_view IN ('grid','list')", name='ck_user_event_view'),
         CheckConstraint("role != 'student' OR (group_id IS NOT NULL AND course IS NOT NULL AND course BETWEEN 1 AND 5 AND study_mode IS NOT NULL AND study_mode IN ('full_time','part_time') AND (course < 5 OR study_mode = 'part_time'))", name='ck_student_profile'),)
+
+    @validates('full_name')
+    def split_legacy_name(self, key, value):
+        parts = (value or '').split(maxsplit=2)
+        self.last_name, self.first_name, self.middle_name = (parts + [None] * 3)[:3]
+        return value
+
+    def set_name_parts(self, last_name, first_name, middle_name=''):
+        self.full_name = ' '.join(filter(None, (last_name, first_name, middle_name)))
+        self.last_name, self.first_name, self.middle_name = last_name, first_name, middle_name or None
+
+    @property
+    def personal_address(self):
+        return ' '.join(filter(None, (self.first_name, self.middle_name)))
 
     def academic_status(self, now=None):
         if self.role != 'student' or not self.group or not self.group.entry_year:
@@ -170,7 +192,14 @@ class Notification(db.Model):
     key = db.Column(db.String(160), nullable=False)
     title = db.Column(db.String(160), nullable=False)
     body = db.Column(db.Text, nullable=False)
+    body_en = db.Column(db.Text)
     link = db.Column(db.String(200), nullable=False, default='')
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     read_at = db.Column(db.DateTime(timezone=True))
     __table_args__ = (UniqueConstraint('user_id', 'key', name='uq_notification_user_key'),)
+
+class SiteSettings(db.Model):
+    __tablename__ = 'site_settings'
+    id = db.Column(db.Integer, primary_key=True)
+    maintenance = db.Column(db.Boolean, nullable=False, default=False)
+    __table_args__ = (CheckConstraint('id = 1', name='ck_site_settings_singleton'),)

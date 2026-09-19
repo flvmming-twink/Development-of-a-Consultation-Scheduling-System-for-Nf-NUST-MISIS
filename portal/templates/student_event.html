@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
+{% block title %}{{ event.subject.name }}{% endblock %}
+{% block content %}<div class="page-heading"><div><h1>{{ event.subject.name }}</h1><p>{{ event.teacher.full_name if event.teacher else _('Удалённый преподаватель') }}</p></div><a href="{{ url_for('main.events') }}">{{ _('К расписанию') }}</a></div>
+<div class="stats"><div><small>{{ _('Дата и время') }}</small><strong>{{ event.starts_at|localtime }}</strong><span>{{ _('до %(time)s', time=event.ends_at|localtime('%H:%M')) }}</span></div><div><small>{{ _('Аудитория') }}</small><strong>{{ event.room }}</strong><span>{{ _('Курс %(course)s', course=event.allowed_course) }} · {{ event.group.name if event.group else _('Все группы') }}</span></div><div><small>{{ _('Свободные места') }}</small><strong>{{ event.capacity-event.occupied }} / {{ event.capacity }}</strong><span>{{ _(statuses[event.status]) }}</span></div></div>
+{% if event.description %}<p class="event-description">{{ event.description }}</p>{% endif %}
+<p class="muted">{{ _('Открытие записи') }}: {{ event.registration_opens_at|localtime }}</p>
+<form method="post" action="{{ url_for('main.book',event_id=event.id) }}">{{ csrf() }}<button class="button" {{ 'disabled' if problem }}><i data-lucide="calendar-plus"></i>{{ _('Записаться') }}</button></form>{% if problem %}<p class="muted spaced">{{ problem }}</p>{% endif %}{% endblock %}

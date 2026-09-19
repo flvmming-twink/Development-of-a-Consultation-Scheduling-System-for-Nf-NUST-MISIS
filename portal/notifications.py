@@ -5,6 +5,7 @@ from sqlalchemy import select, func, update
 from sqlalchemy.dialects.postgresql import insert
 from .models import db, User, Notification, Booking, utcnow
 from .auth import roles_required
+from flask_babel import force_locale, gettext as _
 
 bp = Blueprint('notifications', __name__, url_prefix='/notifications')
 
@@ -13,16 +14,23 @@ def notify(user_ids, title, body, key=None, event=None, link=''):
     if not ids:
         return
     key = key or uuid4().hex
-    if event:
-        local_start = event.starts_at.astimezone(ZoneInfo(current_app.config['APP_TIMEZONE']))
-        body = f'{body} Начало: {local_start:%d.%m.%Y %H:%M} (Екатеринбург).'
+    messages = {}
+    for locale in ('ru', 'en'):
+        with force_locale(locale):
+            message = str(body)
+            if event:
+                local_start = event.starts_at.astimezone(ZoneInfo(current_app.config['APP_TIMEZONE']))
+                message = _('%(body)s Начало: %(time)s (Екатеринбург).', body=message, time=local_start.strftime('%d.%m.%Y %H:%M'))
+            messages[locale] = message
+    with force_locale('ru'):
+        title = str(title)
     users = db.session.scalars(select(User).where(User.id.in_(ids), User.active, User.deleted_at.is_(None))).all()
     for user in users:
         target = link
         if event and not target:
             target = '/bookings' if user.role == 'student' else f'/events/{event.id}'
         db.session.execute(insert(Notification).values(user_id=user.id, event_id=event.id if event else None,
-            key=key, title=title, body=body, link=target, created_at=utcnow()).on_conflict_do_nothing(constraint='uq_notification_user_key'))
+            key=key, title=title, body=messages['ru'], body_en=messages['en'], link=target, created_at=utcnow()).on_conflict_do_nothing(constraint='uq_notification_user_key'))
 
 def admins():
     return db.session.scalars(select(User.id).where(User.role == 'admin', User.active, User.deleted_at.is_(None))).all()

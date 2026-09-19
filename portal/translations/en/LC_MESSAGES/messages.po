@@ -1,0 +1,2088 @@
+# English translations for MISIS Consultation Portal.
+# Copyright (C) 2026 MISIS Consultation Portal contributors
+# This file is distributed under the same license as the MISIS Consultation
+# Portal project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: MISIS Consultation Portal 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-19 05:42+0500\n"
+"PO-Revision-Date: 2026-09-19 12:40+0500\n"
+"Last-Translator: MISIS Consultation Portal contributors\n"
+"Language: en\n"
+"Language-Team: English\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: portal/templates/teacher.html:4
+msgid " · архив"
+msgstr " · archived"
+
+#: portal/notifications.py:23
+#, python-format
+msgid "%(body)s Начало: %(time)s (Екатеринбург)."
+msgstr "%(body)s Starts: %(time)s (Yekaterinburg)."
+
+#: portal/templates/notifications.html:5
+#, python-format
+msgid "%(name)s,"
+msgstr "%(name)s,"
+
+#: portal/lifecycle.py:103
+#, python-format
+msgid "%(value0)s · %(value1)s. Учётная запись отмечена к удалению."
+msgstr "%(value0)s · %(value1)s. Account marked for deletion."
+
+#: portal/lifecycle.py:85 portal/lifecycle.py:89 portal/lifecycle.py:91
+#: portal/services.py:71 portal/services.py:154
+#, python-format
+msgid "%(value0)s. Аудитория: %(value1)s."
+msgstr "%(value0)s. Room: %(value1)s."
+
+#: portal/services.py:152
+#, python-format
+msgid "%(value0)s. Аудитория: %(value1)s. Проверьте актуальные сведения."
+msgstr "%(value0)s. Room: %(value1)s. Please review the updated details."
+
+#: portal/services.py:96
+#, python-format
+msgid "%(value0)s. Причина: %(value1)s"
+msgstr "%(value0)s. Reason: %(value1)s"
+
+#: portal/services.py:14
+#, python-format
+msgid "%(value0)s: введите целое число."
+msgstr "%(value0)s: enter a whole number."
+
+#: portal/services.py:16
+#, python-format
+msgid "%(value0)s: допустимы значения от %(value1)s до %(value2)s."
+msgstr "%(value0)s: enter a value from %(value1)s to %(value2)s."
+
+#: portal/lifecycle.py:21
+#, python-format
+msgid "%(value0)s: пользователь уже в корзине."
+msgstr "%(value0)s: this user is already in Trash."
+
+#: portal/lifecycle.py:23
+#, python-format
+msgid "%(value0)s: сначала укажите дату увольнения преподавателя."
+msgstr "%(value0)s: enter the teacher's dismissal date first."
+
+#: portal/templates/admin_user_form.html:9
+msgid "+ Новая группа"
+msgstr "+ New group"
+
+#: portal/templates/admin_user_form.html:15
+msgid "+ Новая кафедра"
+msgstr "+ New department"
+
+#: portal/templates/base.html:40
+msgid ". Администратор:"
+msgstr ". Administrator:"
+
+#: portal/auth.py:125
+msgid "10 неудачных попыток. Вход заблокирован на 5 минут."
+msgstr "10 failed attempts. Sign-in is locked for 5 minutes."
+
+#: portal/templates/admin_import.html:1
+msgid "CSV-файл"
+msgstr "CSV file"
+
+#: portal/templates/admin_import.html:1
+msgid ""
+"login;group;course;study_mode\n"
+"2300432;БПИ-23;4;full_time"
+msgstr ""
+"login;group;course;study_mode\n"
+"2300432;БПИ-23;4;full_time"
+
+#: portal/templates/base.html:6
+msgid "· НФ НИТУ МИСИС"
+msgstr "· MISIS Novotroitsk"
+
+#: portal/templates/admin_catalogs.html:5
+msgid "· архив"
+msgstr "· archived"
+
+#: portal/__init__.py:114
+msgid "Администратор"
+msgstr "Administrator"
+
+msgid "Администратор вернулся в панель"
+msgstr "Administrator returned to administration"
+
+msgid "Администратор восстановлен через консоль"
+msgstr "Administrator recovered from console"
+
+msgid "Администратор открыл сценарий роли"
+msgstr "Administrator opened a role view"
+
+#: portal/templates/admin_dashboard.html:6
+msgid "Администраторы"
+msgstr "Administrators"
+
+msgid "Аккаунт включён"
+msgstr "Account activated"
+
+msgid "Аккаунт отключён"
+msgstr "Account disabled"
+
+#: portal/templates/admin_user_form.html:20
+#: portal/templates/admin_users.html:20
+msgid "Активен"
+msgstr "Active"
+
+#: portal/templates/admin_user_form.html:22
+msgid "Активировать"
+msgstr "Activate"
+
+#: portal/__init__.py:115
+msgid "Активна"
+msgstr "Active"
+
+#: portal/templates/admin_dashboard.html:9
+msgid "Активных блокировок нет."
+msgstr "No active locks."
+
+#: portal/templates/events.html:10 portal/templates/macros.html:12
+#: portal/templates/student_event.html:4
+msgid "Аудитория"
+msgstr "Room"
+
+#: portal/templates/event_form.html:8
+msgid "Аудитория 201"
+msgstr "Room 201"
+
+#: portal/templates/event_form.html:8
+msgid "Аудитория или место"
+msgstr "Room or location"
+
+#: portal/lifecycle.py:70
+#, python-format
+msgid "Безвозвратно удалено учётных записей: %(value0)s."
+msgstr "Accounts permanently deleted: %(value0)s."
+
+#: portal/templates/events.html:8
+msgid "Ближайшие занятия"
+msgstr "Upcoming sessions"
+
+msgid "Блокировка до обращения"
+msgstr "Locked pending administrator assistance"
+
+msgid "Блокировка на 5 минут"
+msgstr "Locked for 5 minutes"
+
+#: portal/templates/admin_dashboard.html:9
+msgid "Блокировки входа"
+msgstr "Sign-in locks"
+
+#: portal/admin.py:369
+msgid "В группе есть действующие студенты. Сначала переведите или отключите их."
+msgstr "This group has active students. Move or disable them first."
+
+#: portal/templates/admin_user_form.html:23
+#: portal/templates/admin_users.html:15
+msgid "В корзину"
+msgstr "Move to Trash"
+
+#: portal/admin.py:427
+msgid "В файле нет студентов."
+msgstr "The file contains no students."
+
+#: portal/services.py:60
+msgid "В это время у вас уже есть занятие. Выберите другой интервал."
+msgstr "You already have a session at this time. Choose a different time slot."
+
+#: portal/templates/settings.html:2
+msgid "Ваш профиль"
+msgstr "Your profile"
+
+#: portal/templates/teacher.html:3
+msgid "Ваше расписание"
+msgstr "Your schedule"
+
+#: portal/templates/bookings.html:2
+msgid "Ваши ближайшие встречи и история консультаций."
+msgstr "Your upcoming sessions and consultation history."
+
+#: portal/templates/teacher.html:4
+msgid "Ваши дисциплины"
+msgstr "Your subjects"
+
+#: portal/auth.py:54
+msgid "Введите фамилию, имя и отчество при наличии, без цифр."
+msgstr ""
+"Enter your last name, first name and patronymic, if applicable, without "
+"digits."
+
+#: portal/templates/base.html:40
+msgid "Вернуться в админку"
+msgstr "Back to administration"
+
+#: portal/templates/macros.html:3
+msgid "Вид расписания"
+msgstr "Schedule view"
+
+msgid "Включено техническое обслуживание"
+msgstr "Maintenance enabled"
+
+#: portal/templates/admin_dashboard.html:5
+msgid "Включить обслуживание"
+msgstr "Enable maintenance"
+
+#: portal/templates/login.html:10
+msgid "Войти"
+msgstr "Log In"
+
+#: portal/templates/admin_trash.html:5
+msgid "Восстановить"
+msgstr "Restore"
+
+#: portal/templates/admin_trash.html:4
+msgid ""
+"Восстановить выбранные учётные записи? Отменённые консультации и записи "
+"не восстанавливаются."
+msgstr ""
+"Restore the selected accounts? Cancelled consultations and bookings will "
+"not be restored."
+
+#: portal/admin.py:275
+msgid ""
+"Восстановлен начальный пароль. При следующем входе смените его в "
+"настройках."
+msgstr ""
+"Your initial password has been restored. Change it in Settings after "
+"signing in."
+
+#: portal/templates/admin_trash.html:3
+msgid ""
+"Восстановление доступно 10 дней. После этого учётная запись удаляется "
+"безвозвратно."
+msgstr ""
+"Accounts can be restored for 10 days. After that, they are permanently "
+"deleted."
+
+#: portal/lifecycle.py:55
+#, python-format
+msgid ""
+"Восстановлено учётных записей: %(value0)s. Отменённые записи и занятия "
+"остаются отменёнными."
+msgstr ""
+"Accounts restored: %(value0)s. Cancelled bookings and sessions remain "
+"cancelled."
+
+#: portal/admin.py:331
+#, python-format
+msgid "Восстановлено: %(value0)s."
+msgstr "Restored: %(value0)s."
+
+#: portal/templates/admin_users.html:10 portal/templates/notifications.html:4
+msgid "Все"
+msgstr "All"
+
+#: portal/templates/admin_users.html:8 portal/templates/event_detail.html:2
+#: portal/templates/journal.html:2 portal/templates/macros.html:4
+#: portal/templates/student_event.html:4
+msgid "Все группы"
+msgstr "All groups"
+
+#: portal/templates/event_form.html:9
+msgid "Все группы выбранного курса"
+msgstr "All groups in the selected year"
+
+#: portal/templates/events.html:7 portal/templates/journal.html:2
+#: portal/templates/teacher.html:5
+msgid "Все дисциплины"
+msgstr "All subjects"
+
+#: portal/templates/admin_events.html:1 portal/templates/base.html:27
+#: portal/templates/events.html:7
+msgid "Все занятия"
+msgstr "All sessions"
+
+#: portal/templates/event_detail.html:3
+msgid ""
+"Все записи на это занятие тоже будут отменены. Студенты увидят отмену в "
+"своих кабинетах."
+msgstr ""
+"All bookings for this session will also be cancelled. Students will see "
+"the cancellation in their accounts."
+
+#: portal/templates/admin_users.html:9
+msgid "Все кафедры"
+msgstr "All departments"
+
+#: portal/templates/events.html:7
+msgid "Все преподаватели"
+msgstr "All teachers"
+
+#: portal/templates/admin_users.html:7
+msgid "Все роли"
+msgstr "All roles"
+
+#: portal/templates/journal.html:2
+msgid "Все статусы"
+msgstr "All statuses"
+
+#: portal/templates/notifications.html:5
+msgid "Все уведомления прочитаны."
+msgstr "All notifications have been read."
+
+#: portal/templates/admin_dashboard.html:10
+msgid "Вся история"
+msgstr "Full history"
+
+#: portal/templates/login.html:2
+msgid "Вход"
+msgstr "Log In"
+
+#: portal/auth.py:96
+#, python-format
+msgid "Вход временно заблокирован. Повторите через %(value0)s сек."
+msgstr "Sign-in is temporarily locked. Try again in %(value0)s seconds."
+
+#: portal/templates/admin_user_form.html:20
+msgid "Вход заблокирован до сброса пароля."
+msgstr "Sign-in is locked until the password is reset."
+
+#: portal/auth.py:92 portal/auth.py:120
+msgid "Вход заблокирован. Обратитесь к администратору для сброса пароля."
+msgstr "Sign-in is locked. Contact an administrator to reset your password."
+
+#: portal/templates/admin_user_form.html:20
+msgid "Вход закрыт до"
+msgstr "Sign-in locked until"
+
+#: portal/admin.py:161
+msgid "Вы вернулись в админскую панель."
+msgstr "You have returned to administration."
+
+#: portal/templates/bookings.html:2
+msgid "Вы ещё никуда не записались. Выберите занятие в расписании."
+msgstr "You have no bookings yet. Choose a session in the schedule."
+
+#: portal/views.py:77
+msgid "Вы записаны на занятие. Оно появилось в разделе «Мои записи»."
+msgstr "You are registered. The session is now in My bookings."
+
+#: portal/templates/base.html:40
+msgid "Вы смотрите сайт как"
+msgstr "You are viewing the site as"
+
+#: portal/services.py:44
+msgid "Вы уже записаны."
+msgstr "You are already registered."
+
+#: portal/admin.py:407
+msgid "Выберите CSV-файл."
+msgstr "Select a CSV file."
+
+#: portal/templates/admin_user_form.html:9
+msgid "Выберите группу"
+msgstr "Select a group"
+
+#: portal/services.py:106
+msgid "Выберите действующего преподавателя."
+msgstr "Select an active teacher."
+
+#: portal/admin.py:33 portal/services.py:125
+msgid "Выберите действующую группу."
+msgstr "Select an active group."
+
+#: portal/admin.py:50
+msgid "Выберите действующую кафедру."
+msgstr "Select an active department."
+
+#: portal/templates/event_form.html:5
+msgid "Выберите дисциплину"
+msgstr "Select a subject"
+
+#: portal/templates/admin_user_form.html:15
+msgid "Выберите кафедру"
+msgstr "Select a department"
+
+#: portal/admin.py:380
+msgid "Выберите преподавателя и дисциплину."
+msgstr "Select a teacher and subject."
+
+#: portal/auth.py:153
+msgid "Выберите светлую или тёмную тему."
+msgstr "Select the light or dark theme."
+
+#: portal/lifecycle.py:16 portal/lifecycle.py:46
+msgid "Выберите существующих пользователей."
+msgstr "Select existing users."
+
+#: portal/templates/base.html:12
+msgid "Выбрано:"
+msgstr "Selected:"
+
+#: portal/templates/admin_trash.html:5 portal/templates/admin_users.html:15
+msgid "Выбрано: 0"
+msgstr "Selected: 0"
+
+#: portal/templates/admin_trash.html:6 portal/templates/admin_users.html:18
+msgid "Выбрать"
+msgstr "Select"
+
+#: portal/templates/admin_trash.html:6 portal/templates/admin_users.html:16
+msgid "Выбрать всех на странице"
+msgstr "Select everyone on this page"
+
+#: portal/templates/bookings.html:2
+msgid "Выбрать занятие +"
+msgstr "Find a session +"
+
+msgid "Выгружен журнал"
+msgstr "Register exported"
+
+#: portal/templates/base.html:35 portal/templates/maintenance.html:5
+msgid "Выйти из аккаунта"
+msgstr "Log out"
+
+msgid "Выключено техническое обслуживание"
+msgstr "Maintenance disabled"
+
+#: portal/templates/admin_dashboard.html:7
+msgid "Выпускники к удалению"
+msgstr "Graduates marked for deletion"
+
+#: portal/templates/admin_dashboard.html:2
+#: portal/templates/admin_dashboard.html:4 portal/templates/base.html:27
+msgid "Главная"
+msgstr "Home"
+
+#: portal/templates/base.html:17
+msgid "Главное меню"
+msgstr "Main navigation"
+
+#: portal/admin.py:26 portal/admin.py:365
+#: portal/templates/admin_catalogs.html:6
+#: portal/templates/admin_catalogs.html:9
+#: portal/templates/admin_user_form.html:10
+msgid "Год поступления"
+msgstr "Admission year"
+
+#: portal/admin.py:31 portal/services.py:122
+#: portal/templates/admin_user_form.html:9 portal/templates/admin_users.html:8
+#: portal/templates/event_detail.html:2 portal/templates/event_form.html:9
+#: portal/templates/journal.html:2 portal/templates/settings.html:2
+msgid "Группа"
+msgstr "Group"
+
+#: portal/templates/admin_users.html:16
+msgid "Группа / кафедра"
+msgstr "Group / department"
+
+#: portal/templates/journal.html:2
+msgid "Группа и курс"
+msgstr "Group and year"
+
+#: portal/templates/admin_catalogs.html:4
+msgid "Группы"
+msgstr "Groups"
+
+#: portal/templates/admin_dashboard.html:7
+msgid "Группы, кафедры и дисциплины"
+msgstr "Groups, departments and subjects"
+
+#: portal/templates/macros.html:9
+msgid "Далее →"
+msgstr "Next →"
+
+#: portal/admin.py:252
+msgid "Данные пользователя сохранены."
+msgstr "User details saved."
+
+#: portal/templates/admin_audit.html:1
+msgid "Дата"
+msgstr "Date"
+
+#: portal/templates/event_detail.html:2 portal/templates/events.html:10
+#: portal/templates/macros.html:12 portal/templates/student_event.html:4
+msgid "Дата и время"
+msgstr "Date and time"
+
+#: portal/templates/event_form.html:2
+msgid "Дата и время указываются по Екатеринбургу, UTC+5."
+msgstr "Dates and times use Yekaterinburg time, UTC+5."
+
+#: portal/templates/admin_user_form.html:17
+msgid "Дата увольнения"
+msgstr "Dismissal date"
+
+#: portal/admin.py:243
+msgid "Дата увольнения не может быть в будущем."
+msgstr "The dismissal date cannot be in the future."
+
+#: portal/templates/admin_audit.html:1 portal/templates/admin_dashboard.html:10
+msgid "Действие"
+msgstr "Action"
+
+#: portal/templates/admin_catalogs.html:7
+msgid "Действует"
+msgstr "Active"
+
+#: portal/templates/admin_dashboard.html:6
+msgid "Действующие"
+msgstr "Active"
+
+#: portal/admin.py:129
+msgid ""
+"Демонстрационная учётная запись для этого сценария не найдена или "
+"отключена."
+msgstr "The demo account for this role was not found or is disabled."
+
+#: portal/admin.py:378 portal/services.py:107
+#: portal/templates/admin_catalogs.html:10 portal/templates/bookings.html:2
+#: portal/templates/event_form.html:5 portal/templates/events.html:7
+#: portal/templates/journal.html:2 portal/templates/teacher.html:5
+msgid "Дисциплина"
+msgstr "Subject"
+
+#: portal/templates/admin_catalogs.html:4
+msgid "Дисциплины"
+msgstr "Subjects"
+
+#: portal/templates/teacher.html:4
+msgid "Дисциплины ещё не назначены. Обратитесь к администратору."
+msgstr "No subjects assigned yet. Contact an administrator."
+
+#: portal/templates/admin_catalogs.html:10
+msgid "Дисциплины преподавателей"
+msgstr "Teacher subjects"
+
+#: portal/admin.py:285
+msgid "Для активации сначала снимите отметку об увольнении."
+msgstr "Clear the dismissal date before activating this account."
+
+#: portal/templates/login.html:12
+msgid "Для восстановления доступа обратитесь к администратору."
+msgstr "Contact an administrator to restore access."
+
+#: portal/views.py:196
+msgid "Для выгрузки свыше 10 000 строк уточните фильтры."
+msgstr "Refine your filters to export fewer than 10,001 rows."
+
+#: portal/templates/settings.html:3
+msgid "Для исправления ФИО или учебных данных обратитесь к администратору."
+msgstr "Contact an administrator to correct your name or study details."
+
+#: portal/templates/event_form.html:9
+msgid "Для какого курса"
+msgstr "Eligible year"
+
+#: portal/templates/admin_user_form.html:18
+msgid ""
+"Для преподавателя можно оставить пустым: фамилия в транслите. Для "
+"администратора: от 8 символов."
+msgstr ""
+"For teachers, leave blank to use the transliterated last name. "
+"Administrators need at least 8 characters."
+
+#: portal/admin.py:75
+msgid "Для сотрудника нужен логин корпоративной почты."
+msgstr "Staff must use their institutional email username."
+
+msgid "Для этой страницы нужны другие права доступа."
+msgstr "You do not have permission to access this page."
+
+#: portal/templates/admin_dashboard.html:9
+msgid "До "
+msgstr "Until "
+
+#: portal/templates/admin_dashboard.html:9
+msgid "До сброса администратором"
+msgstr "Until reset by an administrator"
+
+#: portal/templates/admin_catalogs.html:9 portal/templates/admin_users.html:4
+msgid "Добавить"
+msgstr "Add"
+
+#: portal/templates/admin_events.html:1
+msgid "Добавить занятие +"
+msgstr "Add session +"
+
+#: portal/templates/admin_dashboard.html:4
+msgid "Добавить пользователя"
+msgstr "Add user"
+
+#: portal/templates/admin_import.html:1
+msgid "Добавление списка из CSV за один раз."
+msgstr "Add multiple students from a CSV file."
+
+#: portal/admin.py:430
+#, python-format
+msgid "Добавлено студентов: %(value0)s. Начальный пароль — Student."
+msgstr "Students added: %(value0)s. Initial password: Student."
+
+msgid "Добавлены демонстрационные данные"
+msgstr "Demo data added"
+
+#: portal/templates/teacher.html:3
+msgid "Добрый день!"
+msgstr "Good afternoon!"
+
+#: portal/templates/teacher.html:3
+#, python-format
+msgid "Добрый день, %(name)s!"
+msgstr "Good afternoon, %(name)s!"
+
+#: portal/templates/admin_user_form.html:20
+msgid "Доступ"
+msgstr "Access"
+
+#: portal/lifecycle.py:13
+msgid "Доступ администратора изменён. Войдите в систему заново."
+msgstr "Administrator access has changed. Sign in again."
+
+#: portal/templates/events.html:7
+msgid "Доступность"
+msgstr "Eligibility"
+
+#: portal/templates/event_form.html:10
+msgid ""
+"Если на занятие уже записывались, изменить время и состав слушателей "
+"нельзя. Для переноса отмените занятие и создайте новое."
+msgstr ""
+"After a booking has been made, the time and eligible audience cannot be "
+"changed. To reschedule, cancel the session and create a new one."
+
+#: portal/templates/admin_import.html:1
+msgid "Если обнаружится ошибка или повторный логин, импорт будет отменён целиком."
+msgstr "Any error or duplicate username cancels the entire import."
+
+#: portal/templates/settings.html:2
+msgid "Ещё не заполнено"
+msgstr "Not provided yet"
+
+#: portal/templates/base.html:27 portal/templates/journal.html:2
+msgid "Журнал записей"
+msgstr "Booking register"
+
+#: portal/templates/base.html:25
+msgid "Журнал студентов"
+msgstr "Student register"
+
+#: portal/admin.py:415
+msgid "За один импорт допускается не более 500 студентов."
+msgstr "A single import can contain up to 500 students."
+
+#: portal/admin.py:328
+msgid "За один раз можно выбрать до 500 пользователей."
+msgstr "You can select up to 500 users at a time."
+
+#: portal/templates/admin_users.html:20
+msgid "Заблокирован"
+msgstr "Locked"
+
+#: portal/templates/admin_catalogs.html:10
+msgid "Закрепить"
+msgstr "Assign"
+
+#: portal/templates/events.html:10 portal/templates/journal.html:2
+#: portal/templates/macros.html:12
+msgid "Занятие"
+msgstr "Session"
+
+#: portal/views.py:154
+msgid "Занятие и все записи на него отменены."
+msgstr "The session and all its bookings have been cancelled."
+
+#: portal/services.py:53
+msgid "Занятие или студент недоступны."
+msgstr "The session or student is unavailable."
+
+#: portal/services.py:133
+msgid "Занятие недоступно для редактирования."
+msgstr "This session cannot be edited."
+
+#: portal/services.py:91
+msgid "Занятие недоступно."
+msgstr "This session is unavailable."
+
+#: portal/services.py:40
+msgid "Занятие предназначено для другого курса или группы."
+msgstr "This session is for a different year or group."
+
+#: portal/views.py:122
+msgid "Занятие сохранено."
+msgstr "Session saved."
+
+#: portal/templates/macros.html:4
+msgid "Занятий пока нет."
+msgstr "No sessions yet."
+
+#: portal/templates/macros.html:14
+msgid "Занятий пока нет. Создайте первое занятие."
+msgstr "No sessions yet. Create your first session."
+
+#: portal/templates/settings.html:2
+msgid "Заочная"
+msgstr "Part-time"
+
+#: portal/templates/admin_user_form.html:11
+msgid "Заочная · 5 лет"
+msgstr "Part-time · 5 years"
+
+#: portal/templates/event_detail.html:2
+msgid "Записавшиеся студенты"
+msgstr "Registered students"
+
+#: portal/templates/event_detail.html:2 portal/templates/macros.html:12
+msgid "Записались"
+msgstr "Registered"
+
+#: portal/templates/student_event.html:7
+msgid "Записаться"
+msgstr "Book session"
+
+#: portal/templates/admin_audit.html:1
+msgid "Записей пока нет."
+msgstr "No records yet."
+
+#: portal/services.py:42
+#, python-format
+msgid "Запись закрывается за %(value0)s часов до начала."
+msgstr "Registration closes %(value0)s hours before the session."
+
+#: portal/services.py:31
+msgid "Запись на занятие закрыта."
+msgstr "Registration for this session is closed."
+
+#: portal/services.py:36
+msgid "Запись на консультацию ещё не открыта."
+msgstr "Registration for this consultation is not open yet."
+
+#: portal/services.py:86
+msgid "Запись на консультацию отменена"
+msgstr "Consultation booking cancelled"
+
+#: portal/services.py:71
+msgid "Запись на консультацию подтверждена"
+msgstr "Consultation booking confirmed"
+
+#: portal/templates/login.html:7
+msgid "Запись на очные консультации"
+msgstr "Book an in-person consultation"
+
+#: portal/templates/base.html:5
+msgid "Запись на очные консультации преподавателей НФ НИТУ МИСИС"
+msgstr "Book in-person consultations with teachers at MISIS Novotroitsk"
+
+#: portal/services.py:77
+msgid "Запись недоступна."
+msgstr "This booking is unavailable."
+
+#: portal/templates/events.html:5
+#, python-format
+msgid ""
+"Запись открыта до %(hours)s часов перед началом. Все занятия проходят "
+"очно."
+msgstr ""
+"Registration closes %(hours)s hours before the start. All sessions are in"
+" person."
+
+msgid "Запись отменена"
+msgstr "Booking cancelled"
+
+#: portal/views.py:96
+msgid "Запись отменена."
+msgstr "Booking cancelled."
+
+#: portal/templates/base.html:34
+msgid "Заполните ФИО"
+msgstr "Enter your name"
+
+#: portal/auth.py:83
+msgid "Заполните логин и пароль. Пустые поля не считаются попыткой."
+msgstr ""
+"Enter your username and password. Empty fields do not count as a failed "
+"attempt."
+
+#: portal/templates/admin_catalogs.html:9
+msgid "Из названия, например БПИ-26"
+msgstr "From the group name, e.g. BPI-26"
+
+#: portal/__init__.py:150
+msgid ""
+"Изменение конфликтует с существующими данными. Проверьте время, логин или"
+" название и повторите действие."
+msgstr ""
+"This change conflicts with existing data. Check the time, username or "
+"name and try again."
+
+#: portal/templates/admin_audit.html:1
+msgid "Изменения данных, сбросы паролей, блокировки и выгрузки журнала."
+msgstr "Data changes, password resets, account locks and register exports."
+
+msgid "Изменено занятие"
+msgstr "Session updated"
+
+msgid "Изменены данные пользователя"
+msgstr "User details updated"
+
+#: portal/templates/admin_users.html:21 portal/templates/event_form.html:2
+msgid "Изменить"
+msgstr "Edit"
+
+#: portal/templates/admin_user_form.html:22
+msgid "Изменить доступ? При отключении будущие записи и занятия будут отменены."
+msgstr ""
+"Change access? Disabling the account cancels upcoming bookings and "
+"sessions."
+
+#: portal/templates/event_form.html:2
+msgid "Изменить занятие"
+msgstr "Edit session"
+
+#: portal/templates/settings.html:4
+msgid "Изменить пароль"
+msgstr "Change password"
+
+#: portal/templates/admin_import.html:1 portal/templates/base.html:27
+msgid "Импорт студентов"
+msgstr "Import students"
+
+msgid "Импортированы студенты"
+msgstr "Students imported"
+
+#: portal/templates/admin_import.html:1
+msgid "Импортировать"
+msgstr "Import"
+
+#: portal/templates/admin_user_form.html:7 portal/templates/settings.html:2
+#: portal/templates/settings.html:3
+msgid "Имя"
+msgstr "First name"
+
+msgid "Исправлено ФИО"
+msgstr "Name corrected"
+
+#: portal/templates/admin_audit.html:1 portal/templates/base.html:27
+msgid "История действий"
+msgstr "Activity log"
+
+#: portal/templates/admin_trash.html:3
+msgid "К пользователям"
+msgstr "Back to users"
+
+#: portal/templates/student_event.html:3
+msgid "К расписанию"
+msgstr "Back to schedule"
+
+#: portal/templates/admin_user_form.html:3
+msgid "К списку"
+msgstr "Back to list"
+
+#: portal/templates/admin_users.html:10
+msgid "К удалению"
+msgstr "Marked for deletion"
+
+#: portal/templates/admin_users.html:20
+msgid "К удалению · выпуск"
+msgstr "For deletion · graduated"
+
+#: portal/templates/admin_user_form.html:4
+msgid "К удалению: срок обучения завершён."
+msgstr "Marked for deletion: studies completed."
+
+#: portal/templates/base.html:39
+msgid "КОНСУЛЬТАЦИИ · НФ МИСИС"
+msgstr "CONSULTATIONS · MISIS"
+
+#: portal/admin.py:48 portal/templates/admin_user_form.html:15
+#: portal/templates/admin_users.html:9 portal/templates/settings.html:2
+msgid "Кафедра"
+msgstr "Department"
+
+#: portal/admin.py:354
+msgid ""
+"Кафедра связана с пользователями. Перенесите их в другую кафедру или "
+"отправьте кафедру в архив."
+msgstr ""
+"Users are assigned to this department. Move them to another department or"
+" archive this one."
+
+#: portal/admin.py:358
+msgid "Кафедра удалена."
+msgstr "Department deleted."
+
+#: portal/templates/admin_catalogs.html:4
+msgid "Кафедры"
+msgstr "Departments"
+
+#: portal/templates/admin_dashboard.html:10 portal/templates/journal.html:2
+msgid "Когда"
+msgstr "When"
+
+#: portal/templates/bookings.html:2
+msgid "Когда и где"
+msgstr "When and where"
+
+#: portal/templates/event_form.html:8
+msgid "Количество мест"
+msgstr "Capacity"
+
+#: portal/templates/base.html:6
+msgid "Консультации"
+msgstr "Consultations"
+
+#: portal/templates/base.html:43
+msgid "Консультации · НФ НИТУ МИСИС"
+msgstr "Consultations · MISIS Novotroitsk"
+
+#: portal/templates/login.html:13
+msgid "Консультации студентов и преподавателей"
+msgstr "Student and teacher consultations"
+
+#: portal/services.py:152
+msgid "Консультация изменена"
+msgstr "Consultation updated"
+
+#: portal/lifecycle.py:91
+msgid "Консультация началась"
+msgstr "Consultation has started"
+
+#: portal/lifecycle.py:89
+msgid "Консультация начнётся в течение часа"
+msgstr "Consultation starts within an hour"
+
+#: portal/services.py:154
+msgid "Консультация опубликована"
+msgstr "Consultation published"
+
+#: portal/services.py:96
+msgid "Консультация отменена"
+msgstr "Consultation cancelled"
+
+#: portal/templates/admin_dashboard.html:7 portal/templates/admin_trash.html:2
+#: portal/templates/admin_trash.html:3 portal/templates/admin_users.html:4
+#: portal/templates/base.html:27
+msgid "Корзина"
+msgstr "Trash"
+
+#: portal/lifecycle.py:70
+msgid "Корзина очищена"
+msgstr "Trash cleared"
+
+#: portal/templates/admin_trash.html:6
+msgid "Корзина пуста."
+msgstr "Trash is empty."
+
+#: portal/templates/admin_audit.html:1 portal/templates/admin_dashboard.html:10
+msgid "Кто"
+msgstr "By"
+
+#: portal/admin.py:83 portal/admin.py:226 portal/services.py:121
+#: portal/templates/admin_user_form.html:12
+#: portal/templates/admin_users.html:16 portal/templates/event_detail.html:2
+#: portal/templates/settings.html:2
+msgid "Курс"
+msgstr "Year"
+
+#: portal/templates/macros.html:4 portal/templates/student_event.html:4
+#, python-format
+msgid "Курс %(course)s"
+msgstr "Year %(course)s"
+
+#: portal/templates/admin_user_form.html:7
+msgid "Личное обращение"
+msgstr "In-person request"
+
+#: portal/templates/settings.html:2
+msgid "Личные данные, оформление и безопасность входа."
+msgstr "Personal details, appearance and sign-in security."
+
+#: portal/templates/login.html:7
+msgid "Личный кабинет"
+msgstr "Your account"
+
+#: portal/templates/admin_trash.html:6 portal/templates/admin_user_form.html:6
+#: portal/templates/admin_users.html:16 portal/templates/login.html:8
+#: portal/templates/settings.html:2
+msgid "Логин"
+msgstr "Username"
+
+#: portal/templates/event_detail.html:2
+msgid "Место встречи"
+msgstr "Location"
+
+#: portal/templates/base.html:23 portal/templates/teacher.html:2
+#: portal/templates/teacher.html:6
+msgid "Мои занятия"
+msgstr "My sessions"
+
+#: portal/templates/base.html:21 portal/templates/bookings.html:2
+#: portal/templates/events.html:4
+msgid "Мои записи"
+msgstr "My bookings"
+
+#: portal/templates/events.html:7
+msgid "Мой курс и группа"
+msgstr "My year and group"
+
+#: portal/templates/login.html:4
+msgid "НОВОТРОИЦКИЙ ФИЛИАЛ"
+msgstr "NOVOTROITSK BRANCH"
+
+#: portal/templates/base.html:15 portal/templates/maintenance.html:6
+msgid "НФ МИСИС"
+msgstr "MISIS Novotroitsk"
+
+#: portal/templates/login.html:13 portal/templates/maintenance.html:5
+msgid "НФ НИТУ МИСИС"
+msgstr "MISIS Novotroitsk"
+
+#: portal/templates/error.html:1
+msgid "На главную"
+msgstr "Go to home page"
+
+#: portal/services.py:137
+msgid ""
+"На занятие уже записывались студенты. Для смены времени, дисциплины или "
+"аудитории слушателей отмените его и создайте новое."
+msgstr ""
+"Students have already booked this session. To change the time, subject or"
+" eligible audience, cancel it and create a new session."
+
+#: portal/templates/admin_catalogs.html:6
+msgid "Название"
+msgstr "Name"
+
+#: portal/templates/admin_user_form.html:10
+msgid "Название группы"
+msgstr "Group name"
+
+#: portal/admin.py:22
+msgid "Название группы: не более 40 символов."
+msgstr "Group names cannot exceed 40 characters."
+
+#: portal/templates/admin_user_form.html:16
+msgid "Название кафедры"
+msgstr "Department name"
+
+#: portal/admin.py:40
+msgid "Название кафедры: не более 160 символов."
+msgstr "Department names cannot exceed 160 characters."
+
+#: portal/admin.py:362
+msgid "Название пустое или слишком длинное."
+msgstr "The name is empty or too long."
+
+msgid "Назначена дисциплина"
+msgstr "Subject assigned"
+
+#: portal/templates/events.html:4
+msgid "Найдите свою консультацию"
+msgstr "Find your consultation"
+
+#: portal/templates/events.html:7
+msgid "Найти"
+msgstr "Search"
+
+#: portal/templates/base.html:32 portal/templates/settings.html:2
+msgid "Настройки"
+msgstr "Settings"
+
+#: portal/auth.py:190
+msgid "Настройки сохранены."
+msgstr "Settings saved."
+
+#: portal/templates/event_form.html:6
+msgid "Начало"
+msgstr "Start"
+
+#: portal/services.py:113
+msgid "Начало должно быть в будущем, длительность — от 1 минуты до 12 часов."
+msgstr ""
+"The start must be in the future and the duration between 1 minute and 12 "
+"hours."
+
+#: portal/templates/admin_user_form.html:18
+msgid "Начальный пароль"
+msgstr "Initial password"
+
+#: portal/admin.py:277
+msgid "Начальный пароль восстановлен. Блокировка общего логина снята."
+msgstr "Initial password restored. The shared username is now unlocked."
+
+#: portal/templates/events.html:7
+msgid "Начиная с даты"
+msgstr "From date"
+
+#: portal/templates/admin_trash.html:6 portal/templates/admin_users.html:19
+msgid "Не заполнено"
+msgstr "Not provided"
+
+#: portal/templates/settings.html:2
+msgid "Не назначена"
+msgstr "Not assigned"
+
+#: portal/__init__.py:115
+msgid "Не отмечено"
+msgstr "Not recorded"
+
+#: portal/templates/login.html:12
+msgid "Не получается войти?"
+msgstr "Having trouble signing in?"
+
+#: portal/__init__.py:115
+msgid "Не явился"
+msgstr "Absent"
+
+#: portal/auth.py:129
+msgid "Неверный логин или пароль."
+msgstr "Incorrect username or password."
+
+#: portal/views.py:60
+msgid "Некорректная дата фильтра."
+msgstr "Invalid filter date."
+
+#: portal/admin.py:288
+msgid "Нельзя отключить собственную учётную запись."
+msgstr "You cannot disable your own account."
+
+#: portal/lifecycle.py:19
+msgid "Нельзя удалить собственную учётную запись."
+msgstr "You cannot delete your own account."
+
+#: portal/templates/notifications.html:4
+msgid "Непрочитанные"
+msgstr "Unread"
+
+#: portal/templates/admin_catalogs.html:11
+msgid "Нет дисциплин"
+msgstr "No subjects"
+
+#: portal/templates/admin_catalogs.html:8
+msgid "Нет записей."
+msgstr "No records."
+
+#: portal/admin.py:235
+msgid ""
+"Новая группа или курс не подходят действующим записям. Сначала отмените "
+"их в журнале."
+msgstr ""
+"The new group or year does not match existing bookings. Cancel those "
+"bookings in the register first."
+
+#: portal/templates/event_form.html:2
+msgid "Новое"
+msgstr "New"
+
+#: portal/templates/event_form.html:2
+msgid "Новое занятие"
+msgstr "New session"
+
+#: portal/templates/admin_catalogs.html:9
+msgid "Новое название"
+msgstr "New name"
+
+#: portal/templates/login.html:6
+msgid "Новотроицкий филиал Университета МИСИС"
+msgstr "MISIS University, Novotroitsk Branch"
+
+#: portal/templates/settings.html:4
+msgid "Новый пароль"
+msgstr "New password"
+
+#: portal/auth.py:179
+msgid "Новый пароль должен отличаться от начального."
+msgstr "The new password must differ from the initial password."
+
+#: portal/templates/admin_user_form.html:2
+#: portal/templates/admin_user_form.html:3
+msgid "Новый пользователь"
+msgstr "New user"
+
+#: portal/templates/notifications.html:5
+msgid "Новых уведомлений пока нет."
+msgstr "No new notifications yet."
+
+#: portal/admin.py:73
+msgid "Номер студенческого должен содержать только цифры."
+msgstr "The student ID must contain digits only."
+
+#: portal/templates/login.html:8
+msgid "Номер студенческого или рабочий логин"
+msgstr "Student ID or institutional username"
+
+#: portal/templates/event_detail.html:2
+msgid "ОК"
+msgstr "OK"
+
+#: portal/templates/event_detail.html:2
+msgid "ОЧНОЕ ЗАНЯТИЕ №"
+msgstr "IN-PERSON SESSION #"
+
+#: portal/templates/error.html:1
+msgid "ОШИБКА"
+msgstr "ERROR"
+
+msgid "Обновлён справочник"
+msgstr "Catalog updated"
+
+#: portal/services.py:34
+msgid "Обучение завершено. Обратитесь к администратору."
+msgstr "Your studies have ended. Contact an administrator."
+
+#: portal/templates/admin_audit.html:1 portal/templates/admin_dashboard.html:10
+msgid "Объект"
+msgstr "Object"
+
+#: portal/admin.py:411
+msgid "Ожидаются заголовки login;group;course;study_mode в указанном порядке."
+msgstr "Expected headers: login;group;course;study_mode, in this order."
+
+#: portal/templates/event_form.html:6
+msgid "Окончание"
+msgstr "End"
+
+#: portal/templates/event_form.html:10
+msgid "Описание"
+msgstr "Description"
+
+#: portal/services.py:128
+msgid "Описание: не более 1200 символов."
+msgstr "Descriptions cannot exceed 1,200 characters."
+
+#: portal/templates/admin_user_form.html:7
+msgid "Основание исправления ФИО"
+msgstr "Reason for name correction"
+
+#: portal/templates/settings.html:4
+msgid ""
+"От 8 символов. После смены пароля остальные сеансы этого аккаунта "
+"завершатся."
+msgstr ""
+"At least 8 characters. Changing the password signs out all other sessions"
+" for this account."
+
+#: portal/templates/admin_users.html:10
+msgid "Отключены"
+msgstr "Disabled"
+
+#: portal/templates/admin_user_form.html:22
+msgid "Отключить"
+msgstr "Disable"
+
+#: portal/templates/admin_user_form.html:20
+#: portal/templates/admin_users.html:20
+msgid "Отключён"
+msgstr "Disabled"
+
+#: portal/admin.py:135
+msgid "Открыт сценарий роли. Возврат в админскую панель доступен сверху страницы."
+msgstr "Role view opened. You can return to administration at the top of the page."
+
+#: portal/lifecycle.py:86 portal/lifecycle.py:87
+msgid "Открыта запись на консультацию"
+msgstr "Consultation registration is open"
+
+#: portal/templates/event_form.html:7 portal/templates/student_event.html:6
+msgid "Открытие записи"
+msgstr "Registration opens"
+
+#: portal/services.py:116
+msgid ""
+"Открытие записи должно быть раньше её закрытия за 48 часов до "
+"консультации."
+msgstr "Registration must open before it closes, 48 hours before the consultation."
+
+#: portal/templates/events.html:11 portal/templates/macros.html:4
+msgid "Открыть занятие"
+msgstr "Open session"
+
+#: portal/templates/notifications.html:5
+msgid "Открыть уведомление"
+msgstr "Open notification"
+
+#: portal/templates/macros.html:13
+msgid "Открыть →"
+msgstr "Open →"
+
+#: portal/__init__.py:115
+msgid "Отменена"
+msgstr "Cancelled"
+
+msgid "Отменено занятие"
+msgstr "Session cancelled"
+
+#: portal/templates/bookings.html:2 portal/templates/journal.html:2
+msgid "Отменить"
+msgstr "Cancel"
+
+#: portal/templates/bookings.html:2
+msgid "Отменить вашу запись на это занятие?"
+msgstr "Cancel your booking for this session?"
+
+#: portal/templates/event_detail.html:3
+msgid "Отменить занятие"
+msgstr "Cancel session"
+
+#: portal/templates/event_detail.html:3
+msgid "Отменить занятие и все записи на него?"
+msgstr "Cancel this session and all its bookings?"
+
+#: portal/templates/journal.html:2
+msgid "Отменить запись студента?"
+msgstr "Cancel this student's booking?"
+
+msgid "Отмечена посещаемость"
+msgstr "Attendance recorded"
+
+#: portal/templates/settings.html:2
+msgid "Отчество"
+msgstr "Patronymic"
+
+#: portal/templates/admin_user_form.html:7 portal/templates/settings.html:3
+msgid "Отчество (при наличии)"
+msgstr "Patronymic (if applicable)"
+
+#: portal/templates/settings.html:4
+msgid "Оформление"
+msgstr "Appearance"
+
+#: portal/templates/settings.html:2
+msgid "Очная"
+msgstr "Full-time"
+
+#: portal/templates/admin_user_form.html:11
+msgid "Очная · 4 года"
+msgstr "Full-time · 4 years"
+
+#: portal/templates/error.html:1
+msgid "Ошибка"
+msgstr "Error"
+
+#: portal/templates/login.html:9
+msgid "Пароль"
+msgstr "Password"
+
+#: portal/auth.py:177
+msgid "Пароль должен содержать 8–128 символов. Повтор пароля должен совпадать."
+msgstr ""
+"The password must contain 8 to 128 characters. Both new password fields "
+"must match."
+
+#: portal/admin.py:275
+msgid "Пароль сброшен администратором"
+msgstr "Password reset by an administrator"
+
+#: portal/templates/admin_users.html:20
+msgid "Пауза 5 минут"
+msgstr "5-minute lock"
+
+#: portal/admin.py:331
+#, python-format
+msgid "Перенесено в корзину на 10 дней: %(value0)s."
+msgstr "Moved to Trash for 10 days: %(value0)s."
+
+#: portal/lifecycle.py:38
+#, python-format
+msgid "Перенесено учётных записей: %(value0)s. Срок восстановления: 10 дней."
+msgstr "Accounts moved: %(value0)s. Available for recovery for 10 days."
+
+#: portal/templates/admin_users.html:13
+msgid ""
+"Перенести выбранных пользователей в корзину? Вход будет отключён, будущие"
+" записи и занятия отменены. Восстановление доступно 10 дней."
+msgstr ""
+"Move selected users to Trash? Sign-in will be disabled and upcoming "
+"bookings and sessions cancelled. Accounts can be restored for 10 days."
+
+#: portal/templates/admin_user_form.html:23
+msgid ""
+"Перенести пользователя в корзину на 10 дней? Будущие записи и занятия "
+"будут отменены."
+msgstr ""
+"Move this user to Trash for 10 days? Upcoming bookings and sessions will "
+"be cancelled."
+
+#: portal/views.py:67 portal/views.py:138
+msgid "Пересекается с вашей записью."
+msgstr "Overlaps with your booking."
+
+#: portal/templates/events.html:5
+msgid "Планируйте заранее"
+msgstr "Plan ahead"
+
+#: portal/templates/macros.html:3
+msgid "Плитки"
+msgstr "Grid"
+
+#: portal/templates/journal.html:2
+msgid "По выбранным условиям записей нет."
+msgstr "No bookings match these filters."
+
+#: portal/admin.py:371
+msgid "По дисциплине есть будущие занятия. Сначала отмените их."
+msgstr "This subject has upcoming sessions. Cancel them first."
+
+#: portal/templates/events.html:11
+msgid "По этим условиям занятий пока нет. Измените фильтры или зайдите позже."
+msgstr "No sessions match these filters. Change the filters or check back later."
+
+#: portal/templates/settings.html:4
+msgid "Повтор нового пароля"
+msgstr "Repeat new password"
+
+#: portal/templates/base.html:43
+msgid "Поддержка учётных записей — администратор системы"
+msgstr "Account support: system administrator"
+
+#: portal/templates/admin_audit.html:1
+msgid "Подробности"
+msgstr "Details"
+
+#: portal/auth.py:159
+msgid "Подтвердите правильность ФИО."
+msgstr "Confirm that your name is correct."
+
+#: portal/templates/admin_users.html:6
+msgid "Поиск"
+msgstr "Search"
+
+#: portal/templates/admin_dashboard.html:10
+msgid "Пока нет действий."
+msgstr "No activity yet."
+
+#: portal/templates/event_detail.html:2 portal/templates/teacher.html:5
+msgid "Показать"
+msgstr "Show"
+
+#: portal/templates/base.html:12 portal/templates/login.html:9
+msgid "Показать пароль"
+msgstr "Show password"
+
+#: portal/templates/admin_users.html:2 portal/templates/admin_users.html:4
+#: portal/templates/base.html:27
+msgid "Пользователи"
+msgstr "Users"
+
+#: portal/lifecycle.py:38
+msgid "Пользователи в корзине"
+msgstr "Users moved to Trash"
+
+#: portal/lifecycle.py:55
+msgid "Пользователи восстановлены"
+msgstr "Users restored"
+
+#: portal/templates/admin_users.html:22
+msgid "Пользователи не найдены."
+msgstr "No users found."
+
+#: portal/admin.py:326 portal/templates/admin_user_form.html:2
+msgid "Пользователь"
+msgstr "User"
+
+msgid "Пользователь восстановлен"
+msgstr "User restored"
+
+msgid "Пользователь перенесён в корзину"
+msgstr "User moved to Trash"
+
+#: portal/admin.py:314
+msgid "Пользователь перенесён в корзину на 10 дней."
+msgstr "User moved to Trash for 10 days."
+
+msgid "Пользователь сменил пароль"
+msgstr "User changed password"
+
+msgid "Пользователь удалён"
+msgstr "User deleted"
+
+msgid "Пользователь удалён после 10 дней в корзине"
+msgstr "User deleted after 10 days in Trash"
+
+#: portal/templates/bookings.html:2 portal/templates/event_detail.html:2
+msgid "Посещаемость"
+msgstr "Attendance"
+
+#: portal/services.py:82
+msgid "После начала занятия отмена доступна только администратору."
+msgstr "Only an administrator can cancel a booking after the session starts."
+
+#: portal/templates/admin_dashboard.html:10
+msgid "Последние действия"
+msgstr "Recent activity"
+
+#: portal/templates/admin_dashboard.html:6
+msgid "Предстоящие занятия"
+msgstr "Upcoming sessions"
+
+#: portal/templates/admin_dashboard.html:6
+msgid "Преподаватели"
+msgstr "Teachers"
+
+#: portal/__init__.py:114 portal/admin.py:377 portal/services.py:103
+#: portal/templates/admin_catalogs.html:10
+#: portal/templates/admin_dashboard.html:8 portal/templates/event_form.html:4
+#: portal/templates/events.html:7
+msgid "Преподаватель"
+msgstr "Teacher"
+
+#: portal/templates/admin_user_form.html:17
+msgid "При увольнении вход отключается, будущие консультации отменяются."
+msgstr "Dismissal disables sign-in and cancels upcoming consultations."
+
+#: portal/templates/events.html:4
+msgid "Привет!"
+msgstr "Hi!"
+
+#: portal/templates/events.html:4
+#, python-format
+msgid "Привет, %(name)s!"
+msgstr "Hi, %(name)s!"
+
+#: portal/templates/admin_dashboard.html:5 portal/templates/journal.html:2
+msgid "Применить"
+msgstr "Apply"
+
+#: portal/templates/settings.html:4
+msgid "Применить тему"
+msgstr "Apply theme"
+
+#: portal/templates/admin_users.html:11
+msgid "Применить фильтры"
+msgstr "Apply filters"
+
+#: portal/__init__.py:115
+msgid "Присутствовал"
+msgstr "Present"
+
+#: portal/templates/event_detail.html:3
+msgid "Причина"
+msgstr "Reason"
+
+#: portal/templates/maintenance.html:6
+msgid "Проверить доступность"
+msgstr "Check availability"
+
+#: portal/templates/notifications.html:3
+msgid "Прочитать все"
+msgstr "Mark all as read"
+
+#: portal/templates/event_form.html:7
+msgid "Пустое поле: сразу после публикации."
+msgstr "Leave blank to open registration on publication."
+
+#: portal/admin.py:229
+msgid "Пятый курс доступен только заочникам."
+msgstr "Year 5 is available only to part-time students."
+
+#: portal/admin.py:86
+msgid "Пятый курс доступен только при заочной форме обучения."
+msgstr "Year 5 is available only for part-time study."
+
+#: portal/templates/base.html:20 portal/templates/events.html:2
+msgid "Расписание"
+msgstr "Schedule"
+
+#: portal/templates/admin_events.html:1
+msgid "Расписание преподавателей и списки участников."
+msgstr "Teacher schedules and participant lists."
+
+#: portal/templates/event_detail.html:2
+msgid "Редактировать"
+msgstr "Edit"
+
+#: portal/admin.py:148
+msgid "Режим обслуживания включён."
+msgstr "Maintenance mode is on."
+
+#: portal/admin.py:148
+msgid "Режим обслуживания выключен."
+msgstr "Maintenance mode is off."
+
+#: portal/templates/admin_trash.html:6 portal/templates/admin_user_form.html:6
+#: portal/templates/admin_users.html:7 portal/templates/admin_users.html:16
+msgid "Роль"
+msgstr "Role"
+
+#: portal/templates/login.html:4
+msgid "Сайт университета"
+msgstr "University website"
+
+#: portal/templates/events.html:7
+msgid "Сбросить"
+msgstr "Reset"
+
+#: portal/templates/admin_user_form.html:21
+msgid "Сбросить пароль до начального и завершить сеансы пользователя?"
+msgstr "Restore the initial password and end this user's sessions?"
+
+#: portal/templates/admin_user_form.html:21
+msgid "Сбросить пароль и разблокировать"
+msgstr "Reset password and unlock"
+
+#: portal/templates/admin_users.html:11
+msgid "Сбросить фильтры"
+msgstr "Reset filters"
+
+msgid "Сброшен пароль"
+msgstr "Password reset"
+
+#: portal/templates/settings.html:4
+msgid "Светлая"
+msgstr "Light"
+
+#: portal/templates/events.html:10 portal/templates/student_event.html:4
+msgid "Свободные места"
+msgstr "Places available"
+
+#: portal/services.py:46
+msgid "Свободных мест нет."
+msgstr "No places available."
+
+#: portal/templates/macros.html:4
+#, python-format
+msgid "Свободных мест: %(free)s из %(total)s"
+msgstr "Places available: %(free)s of %(total)s"
+
+#: portal/templates/maintenance.html:6
+msgid ""
+"Сейчас сервис находится на техническом обслуживании. Приносим своим "
+"извинения за принесенные неудобства!"
+msgstr ""
+"The service is currently undergoing maintenance. We apologize for the "
+"inconvenience!"
+
+#: portal/templates/admin_dashboard.html:5
+msgid "Сервис доступен студентам и преподавателям."
+msgstr "The service is available to students and teachers."
+
+#: portal/templates/admin_audit.html:1 portal/templates/admin_dashboard.html:10
+msgid "Система"
+msgstr "System"
+
+#: portal/templates/event_detail.html:2 portal/templates/journal.html:2
+msgid "Скачать Excel ↓"
+msgstr "Download Excel ↓"
+
+#: portal/templates/base.html:12
+msgid "Скрыть пароль"
+msgstr "Hide password"
+
+#: portal/auth.py:86
+msgid "Слишком длинный логин или пароль."
+msgstr "The username or password is too long."
+
+#: portal/templates/settings.html:4
+msgid "Смена пароля"
+msgstr "Change password"
+
+#: portal/admin.py:384
+msgid "Сначала отмените будущие занятия по этой дисциплине."
+msgstr "Cancel upcoming sessions for this subject first."
+
+#: portal/templates/admin_import.html:1
+msgid ""
+"Сначала создайте группы в справочниках. Файл должен быть в UTF-8, поля "
+"разделяются точкой с запятой. ФИО в файле не требуется."
+msgstr ""
+"Create the groups in Catalogs first. Use a UTF-8 file with semicolon-"
+"separated fields. Student names are not required."
+
+#: portal/services.py:38
+msgid "Сначала укажите ФИО в настройках."
+msgstr "Enter your name in Settings first."
+
+msgid "Снята дисциплина"
+msgstr "Subject unassigned"
+
+#: portal/templates/admin_catalogs.html:11
+msgid "Снять"
+msgstr "Unassign"
+
+#: portal/templates/admin_catalogs.html:11
+msgid "Снять дисциплину"
+msgstr "Unassign subject"
+
+#: portal/templates/admin_catalogs.html:11
+msgid "Снять дисциплину с преподавателя?"
+msgstr "Unassign this subject from the teacher?"
+
+msgid "Создан пользователь"
+msgstr "User created"
+
+msgid "Создано занятие"
+msgstr "Session created"
+
+#: portal/templates/base.html:24 portal/templates/teacher.html:3
+msgid "Создать занятие"
+msgstr "Create session"
+
+#: portal/templates/admin_user_form.html:19
+msgid "Создать пользователя"
+msgstr "Create user"
+
+#: portal/templates/admin_catalogs.html:7
+#: portal/templates/admin_user_form.html:19
+msgid "Сохранить"
+msgstr "Save"
+
+#: portal/templates/settings.html:3
+msgid "Сохранить ФИО"
+msgstr "Save name"
+
+#: portal/templates/event_form.html:10
+msgid "Сохранить занятие"
+msgstr "Save session"
+
+#: portal/templates/settings.html:4
+msgid "Сохранить язык"
+msgstr "Save language"
+
+#: portal/templates/macros.html:3
+msgid "Список"
+msgstr "List"
+
+#: portal/admin.py:393
+msgid "Справочник обновлён."
+msgstr "Catalog updated."
+
+#: portal/templates/admin_catalogs.html:2
+#: portal/templates/admin_catalogs.html:3 portal/templates/base.html:27
+msgid "Справочники"
+msgstr "Catalogs"
+
+#: portal/templates/admin_trash.html:6
+msgid "Срок восстановления истёк"
+msgstr "Recovery period expired"
+
+#: portal/lifecycle.py:48
+msgid "Срок восстановления истёк или пользователь уже восстановлен."
+msgstr "The recovery period has expired or the user has already been restored."
+
+#: portal/templates/admin_users.html:10 portal/templates/admin_users.html:16
+#: portal/templates/bookings.html:2 portal/templates/event_detail.html:2
+#: portal/templates/journal.html:2 portal/templates/macros.html:12
+msgid "Статус"
+msgstr "Status"
+
+#: portal/admin.py:305
+msgid "Статус учётной записи изменён."
+msgstr "Account status updated."
+
+msgid "Страница или запись не найдена."
+msgstr "Page or record not found."
+
+#: portal/templates/macros.html:6
+msgid "Страницы"
+msgstr "Pages"
+
+#: portal/admin.py:424
+#, python-format
+msgid "Строка %(value0)s: %(value1)s"
+msgstr "Row %(value0)s: %(value1)s"
+
+#: portal/admin.py:417
+#, python-format
+msgid "Строка %(value0)s: неверное число полей."
+msgstr "Row %(value0)s: incorrect number of fields."
+
+#: portal/admin.py:420
+#, python-format
+msgid "Строка %(value0)s: сначала создайте группу %(value1)s."
+msgstr "Row %(value0)s: create group %(value1)s first."
+
+#: portal/__init__.py:114 portal/templates/admin_dashboard.html:8
+#: portal/templates/event_detail.html:2 portal/templates/journal.html:2
+msgid "Студент"
+msgstr "Student"
+
+#: portal/lifecycle.py:103
+msgid "Студент завершил обучение"
+msgstr "Student has completed their studies"
+
+msgid "Студент записался"
+msgstr "Student registered"
+
+msgid "Студент указал ФИО"
+msgstr "Student entered their name"
+
+#: portal/templates/event_detail.html:2
+msgid "Студентов с выбранными условиями пока нет."
+msgstr "No students match these filters."
+
+#: portal/templates/admin_dashboard.html:6
+msgid "Студенты"
+msgstr "Students"
+
+#: portal/templates/admin_dashboard.html:5
+msgid "Студенты и преподаватели видят заглушку. Администраторы сохраняют доступ."
+msgstr ""
+"Students and teachers see the maintenance page. Administrators retain "
+"access."
+
+#: portal/templates/journal.html:2
+msgid "Студенты, дисциплины и результаты очных встреч."
+msgstr "Students, subjects and session outcomes."
+
+#: portal/templates/admin_dashboard.html:8
+msgid "Сценарии проверки"
+msgstr "Role views"
+
+#: portal/templates/base.html:40
+msgid "Сценарий:"
+msgstr "Role view:"
+
+#: portal/admin.py:78
+msgid "Такая учётная запись уже существует."
+msgstr "This account already exists."
+
+#: portal/templates/settings.html:4
+msgid "Текущий пароль"
+msgstr "Current password"
+
+#: portal/auth.py:174
+msgid "Текущий пароль указан неверно."
+msgstr "The current password is incorrect."
+
+#: portal/templates/settings.html:4
+msgid "Тема сохраняется в вашей учётной записи."
+msgstr "Your theme is saved to your account."
+
+#: portal/templates/admin_dashboard.html:5 portal/templates/maintenance.html:3
+#: portal/templates/maintenance.html:6
+msgid "Техническое обслуживание"
+msgstr "Scheduled maintenance"
+
+#: portal/templates/settings.html:4
+msgid "Тёмная"
+msgstr "Dark"
+
+#: portal/services.py:142
+msgid "У преподавателя уже есть занятие, пересекающееся с этим временем."
+msgstr "The teacher already has a session that overlaps this time."
+
+#: portal/templates/admin_dashboard.html:4
+msgid "УПРАВЛЕНИЕ СИСТЕМОЙ"
+msgstr "ADMINISTRATION"
+
+#: portal/templates/base.html:31 portal/templates/base.html:39
+#: portal/templates/notifications.html:2 portal/templates/notifications.html:3
+msgid "Уведомления"
+msgstr "Notifications"
+
+#: portal/templates/admin_users.html:20
+msgid "Уволен"
+msgstr "Dismissed"
+
+#: portal/templates/admin_users.html:10
+msgid "Уволены"
+msgstr "Dismissed"
+
+#: portal/templates/admin_user_form.html:23
+msgid "Удаление доступно после указания даты увольнения."
+msgstr "Enter a dismissal date to enable deletion."
+
+#: portal/templates/admin_trash.html:6
+msgid "Удаление навсегда"
+msgstr "Permanent deletion"
+
+#: portal/templates/admin_catalogs.html:8
+msgid "Удалить кафедру"
+msgstr "Delete department"
+
+#: portal/templates/admin_catalogs.html:8
+msgid ""
+"Удалить кафедру? Удаление доступно только при отсутствии связанных "
+"пользователей."
+msgstr ""
+"Delete this department? It can only be deleted when no users are assigned"
+" to it."
+
+#: portal/templates/admin_trash.html:6
+msgid "Удалён"
+msgstr "Deleted"
+
+#: portal/templates/bookings.html:2 portal/templates/event_detail.html:2
+#: portal/templates/events.html:11 portal/templates/journal.html:2
+#: portal/templates/macros.html:4 portal/templates/macros.html:13
+#: portal/templates/student_event.html:3
+msgid "Удалённый преподаватель"
+msgstr "Deleted teacher"
+
+#: portal/templates/event_detail.html:2 portal/templates/journal.html:2
+msgid "Удалённый студент"
+msgstr "Deleted student"
+
+#: portal/services.py:119
+msgid "Укажите аудиторию или место проведения, до 80 символов."
+msgstr "Enter a room or location, up to 80 characters."
+
+#: portal/services.py:26
+msgid "Укажите корректную дату и время занятия."
+msgstr "Enter a valid session date and time."
+
+#: portal/admin.py:71
+msgid "Укажите корректные роль и логин."
+msgstr "Enter a valid role and username."
+
+#: portal/admin.py:97
+msgid "Укажите начальный пароль. Для администратора — от 8 до 128 символов."
+msgstr ""
+"Enter an initial password. Administrator passwords must contain 8 to 128 "
+"characters."
+
+#: portal/admin.py:216
+msgid "Укажите основание исправления ФИО, например личное обращение студента."
+msgstr ""
+"Enter a reason for correcting the name, such as a student's in-person "
+"request."
+
+#: portal/services.py:93
+msgid "Укажите причину отмены."
+msgstr "Enter a reason for cancellation."
+
+#: portal/auth.py:63
+msgid ""
+"Укажите фамилию и имя. Отчество необязательно. В каждом поле допустимы "
+"только буквы, пробелы, дефис и апостроф, не более 80 символов."
+msgstr ""
+"Enter a last name and first name. Patronymic is optional. Each field "
+"accepts letters, spaces, hyphens and apostrophes only, up to 80 "
+"characters."
+
+msgid "Успешный вход"
+msgstr "Successful sign-in"
+
+#: portal/__init__.py:94
+msgid "Установите собственный пароль, чтобы продолжить."
+msgstr "Set your own password to continue."
+
+#: portal/templates/settings.html:2
+msgid "Учётная запись"
+msgstr "Account"
+
+#: portal/admin.py:194
+msgid "Учётная запись создана."
+msgstr "Account created."
+
+#: portal/templates/admin_dashboard.html:7
+msgid "Учётные записи"
+msgstr "Accounts"
+
+#: portal/templates/admin_trash.html:6 portal/templates/admin_users.html:16
+msgid "ФИО"
+msgstr "Full name"
+
+#: portal/templates/admin_users.html:6
+msgid "ФИО или логин"
+msgstr "Name or username"
+
+#: portal/templates/settings.html:3
+msgid ""
+"ФИО сохраняется один раз. Исправить ошибку сможет администратор после "
+"личного обращения."
+msgstr ""
+"You can enter your name only once. An administrator can correct it after "
+"an in-person request."
+
+#: portal/templates/admin_user_form.html:13
+msgid "ФИО студент заполнит самостоятельно. Начальный пароль: Student."
+msgstr "The student will enter their own name. Initial password: Student."
+
+msgid "Файл слишком большой. Максимум 1 МБ."
+msgstr "The file is too large. Maximum size: 1 MB."
+
+#: portal/templates/admin_user_form.html:7 portal/templates/settings.html:2
+#: portal/templates/settings.html:3
+msgid "Фамилия"
+msgstr "Last name"
+
+#: portal/admin.py:219
+msgid "Фамилия и имя обязательны."
+msgstr "Last name and first name are required."
+
+#: portal/templates/admin_user_form.html:11
+msgid "Форма обучения"
+msgstr "Study mode"
+
+#: portal/__init__.py:145
+msgid "Форма устарела. Обновите страницу и повторите действие."
+msgstr "This form has expired. Refresh the page and try again."
+
+#: portal/services.py:120
+msgid "Число мест"
+msgstr "Capacity"
+
+#: portal/services.py:139
+msgid "Число мест меньше количества записанных студентов."
+msgstr "Capacity cannot be lower than the number of registered students."
+
+#: portal/templates/event_form.html:10
+msgid "Что обсудим и что подготовить"
+msgstr "Topics and preparation"
+
+#: portal/templates/events.html:6
+msgid "Чтобы записаться, укажите ФИО в настройках."
+msgstr "Enter your name in Settings to make a booking."
+
+#: portal/services.py:109
+msgid "Эта дисциплина не закреплена за преподавателем."
+msgstr "This subject is not assigned to the teacher."
+
+#: portal/auth.py:70
+msgid "Этот пароль занят другой ролью с таким логином. Выберите другой."
+msgstr ""
+"Another role with this username already uses that password. Choose a "
+"different one."
+
+#: portal/templates/settings.html:3
+msgid "Я проверил ФИО и подтверждаю правильность написания"
+msgstr "I have checked my name and confirm that it is correct"
+
+#: portal/templates/macros.html:2 portal/templates/settings.html:4
+msgid "Язык"
+msgstr "Language"
+
+#: portal/templates/settings.html:4
+msgid "Язык интерфейса"
+msgstr "Interface language"
+
+#: portal/templates/event_detail.html:2 portal/templates/macros.html:13
+msgid "до"
+msgstr "until"
+
+#: portal/templates/student_event.html:4
+#, python-format
+msgid "до %(time)s"
+msgstr "until %(time)s"
+
+#: portal/templates/event_form.html:2
+msgid "занятие"
+msgstr "session"
+
+#: portal/templates/event_form.html:9 portal/templates/journal.html:2
+#: portal/templates/macros.html:13
+msgid "курс"
+msgstr "year"
+
+#: portal/templates/event_detail.html:2
+msgid "курс ·"
+msgstr "year ·"
+
+#: portal/templates/settings.html:2
+msgid "форма"
+msgstr "study"
+
+#: portal/templates/admin_import.html:1
+msgid "— заочная. Не более 500 студентов и 1 МБ за один импорт."
+msgstr "means part-time study. Up to 500 students and 1 MB per import."
+
+#: portal/templates/admin_import.html:1
+msgid "— очная форма,"
+msgstr "means full-time study;"
+
+#: portal/templates/macros.html:7
+msgid "← Назад"
+msgstr "← Previous"

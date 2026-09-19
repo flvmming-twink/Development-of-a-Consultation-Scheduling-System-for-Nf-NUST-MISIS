@@ -4,7 +4,8 @@ from zoneinfo import ZoneInfo
 from flask import Flask, g, render_template, request, session, redirect, url_for, flash
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from sqlalchemy.exc import IntegrityError
-from .models import db, User, LoginGate, Notification, utcnow
+from .models import db, User, LoginGate, Notification, SiteSettings, utcnow
+from flask_babel import gettext as _
 from sqlalchemy import select, func
 
 csrf = CSRFProtect()
@@ -42,6 +43,9 @@ def create_app(test_config=None):
         raise RuntimeError('DATABASE_URL должен указывать на PostgreSQL.')
     db.init_app(app)
     csrf.init_app(app)
+    from .i18n import babel, bp as language_bp, current_language
+    babel.init_app(app, default_locale='ru', locale_selector=current_language)
+    app.register_blueprint(language_bp)
     app.jinja_env.globals['int'] = int
     from .auth import bp as auth_bp
     from .views import bp as views_bp
@@ -58,6 +62,7 @@ def create_app(test_config=None):
     def load_user():
         g.user = None
         g.admin_user = None
+        g.maintenance = False
         if request.endpoint == 'static':
             return
         admin_uid = session.get('admin_uid')
@@ -78,8 +83,15 @@ def create_app(test_config=None):
                 session.clear()
             else:
                 g.user = user
-        if g.user and g.user.must_change_password and request.endpoint not in ('auth.settings','auth.logout','static'):
-            flash('Установите собственный пароль, чтобы продолжить.', 'info')
+        if g.user:
+            settings = db.session.get(SiteSettings, 1)
+            g.maintenance = bool(settings and settings.maintenance)
+        if g.maintenance and g.user.role != 'admin' and not g.admin_user and request.endpoint not in ('auth.logout', 'language.change', 'main.service_status', 'main.health'):
+            if request.endpoint == 'notifications.count':
+                return {'maintenance': True}, 503, {'Retry-After': '60'}
+            return render_template('maintenance.html'), 503, {'Retry-After': '60'}
+        if g.user and g.user.must_change_password and request.endpoint not in ('auth.settings','auth.logout','static','language.change','main.service_status','admin.stop_impersonation'):
+            flash(_('Установите собственный пароль, чтобы продолжить.'), 'info')
             return redirect(url_for('auth.settings'))
 
     @app.after_request
@@ -99,13 +111,13 @@ def create_app(test_config=None):
     @app.context_processor
     def common():
         unread = db.session.scalar(select(func.count(Notification.id)).where(Notification.user_id == g.user.id, Notification.read_at.is_(None))) if getattr(g, 'user', None) else 0
-        return {'now': utcnow(), 'unread_notifications': unread, 'roles': {'student':'Студент', 'teacher':'Преподаватель', 'admin':'Администратор'},
-                'statuses': {'active':'Активна','cancelled':'Отменена','pending':'Не отмечено','present':'Присутствовал','absent':'Не явился'},
+        return {'now': utcnow(), 'language': current_language(), 'unread_notifications': unread, 'roles': {'student':_('Студент'), 'teacher':_('Преподаватель'), 'admin':_('Администратор')},
+                'statuses': {'active':_('Активна'),'cancelled':_('Отменена'),'pending':_('Не отмечено'),'present':_('Присутствовал'),'absent':_('Не явился')},
                 'lead_hours': app.config['BOOKING_LEAD_HOURS'], 'timezone_name': app.config['APP_TIMEZONE']}
 
     @app.template_filter('action_label')
     def action_label(value):
-        return {
+        labels = {
             'user_created':'Создан пользователь', 'user_updated':'Изменены данные пользователя',
             'user_activated':'Аккаунт включён', 'user_deactivated':'Аккаунт отключён',
             'name_corrected':'Исправлено ФИО', 'student_name_set':'Студент указал ФИО',
@@ -123,18 +135,21 @@ def create_app(test_config=None):
             'user_trashed':'Пользователь перенесён в корзину', 'user_restored':'Пользователь восстановлен',
             'user_purged':'Пользователь удалён после 10 дней в корзине',
             'journal_exported':'Выгружен журнал', 'students_imported':'Импортированы студенты',
-            'demo_seeded':'Добавлены демонстрационные данные'
-        }.get(value,value)
+            'demo_seeded':'Добавлены демонстрационные данные',
+            'maintenance_enabled':'Включено техническое обслуживание',
+            'maintenance_disabled':'Выключено техническое обслуживание'
+        }
+        return _(labels.get(value, value))
 
     @app.errorhandler(CSRFError)
     def csrf_error(error):
-        return render_template('error.html', code=400, message='Форма устарела. Обновите страницу и повторите действие.'), 400
+        return render_template('error.html', code=400, message=_('Форма устарела. Обновите страницу и повторите действие.')), 400
 
     @app.errorhandler(IntegrityError)
     def integrity_error(error):
         db.session.rollback()
-        return render_template('error.html', code=409, message='Изменение конфликтует с существующими данными. Проверьте время, логин или название и повторите действие.'), 409
+        return render_template('error.html', code=409, message=_('Изменение конфликтует с существующими данными. Проверьте время, логин или название и повторите действие.')), 409
 
     for code, msg in [(403,'Для этой страницы нужны другие права доступа.'),(404,'Страница или запись не найдена.'),(413,'Файл слишком большой. Максимум 1 МБ.')]:
-        app.register_error_handler(code, lambda error, c=code, m=msg: (render_template('error.html',code=c,message=m),c))
+        app.register_error_handler(code, lambda error, c=code, m=msg: (render_template('error.html',code=c,message=_(m)),c))
     return app

@@ -1,24 +1,24 @@
 {% extends 'base.html' %}{% from 'macros.html' import csrf,pagination with context %}
-{% block title %}Пользователи{% endblock %}
+{% block title %}{{ _('Пользователи') }}{% endblock %}
 {% block content %}
-<div class="page-heading"><h1>Пользователи <span class="total">{{ page.total }}</span></h1><div class="actions"><a class="button secondary" href="{{ url_for('admin.trash') }}"><i data-lucide="trash-2"></i>Корзина</a><a class="button" href="{{ url_for('admin.user_new') }}"><i data-lucide="user-plus"></i>Добавить</a></div></div>
+<div class="page-heading"><h1>{{ _('Пользователи') }} <span class="total">{{ page.total }}</span></h1><div class="actions"><a class="button secondary" href="{{ url_for('admin.trash') }}"><i data-lucide="trash-2"></i>{{ _('Корзина') }}</a><a class="button" href="{{ url_for('admin.user_new') }}"><i data-lucide="user-plus"></i>{{ _('Добавить') }}</a></div></div>
 <form class="filters compact-filters" method="get">
-  <label>Поиск<input name="q" placeholder="ФИО или логин" value="{{ request.args.get('q','') }}"></label>
-  <label>Роль<select name="role"><option value="">Все роли</option>{% for key,label in roles.items() %}<option value="{{ key }}" {{ 'selected' if request.args.get('role')==key }}>{{ label }}</option>{% endfor %}</select></label>
-  <label>Группа<select name="group"><option value="">Все группы</option>{% for gr in groups %}<option value="{{ gr.id }}" {{ 'selected' if request.args.get('group',type=int)==gr.id }}>{{ gr.name }}</option>{% endfor %}</select></label>
-  <label>Кафедра<select name="department"><option value="">Все кафедры</option>{% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if request.args.get('department',type=int)==d.id }}>{{ d.name }}</option>{% endfor %}</select></label>
-  <label>Статус<select name="status"><option value="">Все</option>{% for key,label in [('graduated','К удалению'),('dismissed','Уволены'),('inactive','Отключены')] %}<option value="{{ key }}" {{ 'selected' if request.args.get('status')==key }}>{{ label }}</option>{% endfor %}</select></label>
-  <button class="button icon-button" title="Применить фильтры" aria-label="Применить фильтры"><i data-lucide="search"></i></button><a class="icon-button button secondary" href="{{ url_for('admin.users') }}" title="Сбросить фильтры" aria-label="Сбросить фильтры"><i data-lucide="rotate-ccw"></i></a>
+  <label>{{ _('Поиск') }}<input name="q" placeholder="{{ _('ФИО или логин') }}" value="{{ request.args.get('q','') }}"></label>
+  <label>{{ _('Роль') }}<select name="role"><option value="">{{ _('Все роли') }}</option>{% for key,label in roles.items() %}<option value="{{ key }}" {{ 'selected' if request.args.get('role')==key }}>{{ label }}</option>{% endfor %}</select></label>
+  <label>{{ _('Группа') }}<select name="group"><option value="">{{ _('Все группы') }}</option>{% for gr in groups %}<option value="{{ gr.id }}" {{ 'selected' if request.args.get('group',type=int)==gr.id }}>{{ gr.name }}</option>{% endfor %}</select></label>
+  <label>{{ _('Кафедра') }}<select name="department"><option value="">{{ _('Все кафедры') }}</option>{% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if request.args.get('department',type=int)==d.id }}>{{ d.name }}</option>{% endfor %}</select></label>
+  <label>{{ _('Статус') }}<select name="status"><option value="">{{ _('Все') }}</option>{% for key,label in [('graduated',_('К удалению')),('dismissed',_('Уволены')),('inactive',_('Отключены'))] %}<option value="{{ key }}" {{ 'selected' if request.args.get('status')==key }}>{{ label }}</option>{% endfor %}</select></label>
+  <button class="button icon-button" title="{{ _('Применить фильтры') }}" aria-label="{{ _('Применить фильтры') }}"><i data-lucide="search"></i></button><a class="icon-button button secondary" href="{{ url_for('admin.users') }}" title="{{ _('Сбросить фильтры') }}" aria-label="{{ _('Сбросить фильтры') }}"><i data-lucide="rotate-ccw"></i></a>
 </form>
-<form method="post" action="{{ url_for('admin.users_bulk') }}" data-selection-form data-confirm="Перенести выбранных пользователей в корзину? Вход будет отключён, будущие записи и занятия отменены. Восстановление доступно 10 дней.">
+<form method="post" action="{{ url_for('admin.users_bulk') }}" data-selection-form data-confirm="{{ _('Перенести выбранных пользователей в корзину? Вход будет отключён, будущие записи и занятия отменены. Восстановление доступно 10 дней.') }}">
 {{ csrf() }}<input type="hidden" name="action" value="trash">
-<div class="bulk-toolbar"><span data-selection-count>Выбрано: 0</span><button class="button secondary danger" data-selection-submit disabled><i data-lucide="trash-2"></i>В корзину</button></div>
-<div class="table-wrap compact-table"><table><thead><tr><th class="select-cell"><input type="checkbox" data-select-all aria-label="Выбрать всех на странице"></th><th>Логин</th><th>ФИО</th><th>Роль</th><th>Группа / кафедра</th><th>Курс</th><th>Статус</th><th></th></tr></thead><tbody>
+<div class="bulk-toolbar"><span data-selection-count>{{ _('Выбрано: 0') }}</span><button class="button secondary danger" data-selection-submit disabled><i data-lucide="trash-2"></i>{{ _('В корзину') }}</button></div>
+<div class="table-wrap compact-table"><table><thead><tr><th class="select-cell"><input type="checkbox" data-select-all aria-label="{{ _('Выбрать всех на странице') }}"></th><th>{{ _('Логин') }}</th><th>{{ _('ФИО') }}</th><th>{{ _('Роль') }}</th><th>{{ _('Группа / кафедра') }}</th><th>{{ _('Курс') }}</th><th>{{ _('Статус') }}</th><th></th></tr></thead><tbody>
 {% for u in page.items %}{% set gate=gates[u.login] %}<tr class="{{ 'graduation-row' if u.graduation_due }}">
-<td class="select-cell"><input type="checkbox" name="user_ids" value="{{ u.id }}" aria-label="Выбрать {{ u.login }}" {{ 'disabled' if u.id==g.user.id or (u.role=='teacher' and not u.dismissed_on) }}></td>
-<td><a href="{{ url_for('admin.user_edit',user_id=u.id) }}">{{ u.login }}</a></td><td>{{ u.full_name or 'Не заполнено' }}</td><td>{{ roles[u.role] }}</td><td>{{ u.group.name if u.group else u.department.name if u.department else '—' }}</td><td>{{ u.current_course if u.role=='student' else '—' }}</td>
-<td>{% if u.graduation_due %}<strong class="danger-text">К удалению · выпуск</strong>{% elif u.dismissed_on %}Уволен{% elif not u.active %}Отключён{% elif gate and gate.permanent %}<span class="danger-text">Заблокирован</span>{% elif gate and gate.locked_until and gate.locked_until>now %}Пауза 5 минут{% else %}Активен{% endif %}</td>
-<td><a class="icon-link" href="{{ url_for('admin.user_edit',user_id=u.id) }}" title="Изменить {{ u.login }}" aria-label="Изменить {{ u.login }}"><i data-lucide="pencil"></i></a></td></tr>
-{% else %}<tr><td colspan="8" class="empty">Пользователи не найдены.</td></tr>{% endfor %}
+<td class="select-cell"><input type="checkbox" name="user_ids" value="{{ u.id }}" aria-label="{{ _('Выбрать') }} {{ u.login }}" {{ 'disabled' if u.id==g.user.id or (u.role=='teacher' and not u.dismissed_on) }}></td>
+<td><a href="{{ url_for('admin.user_edit',user_id=u.id) }}">{{ u.login }}</a></td><td>{{ u.full_name or _('Не заполнено') }}</td><td>{{ roles[u.role] }}</td><td>{{ u.group.name if u.group else u.department.name if u.department else '—' }}</td><td>{{ u.current_course if u.role=='student' else '—' }}</td>
+<td>{% if u.graduation_due %}<strong class="danger-text">{{ _('К удалению · выпуск') }}</strong>{% elif u.dismissed_on %}{{ _('Уволен') }}{% elif not u.active %}{{ _('Отключён') }}{% elif gate and gate.permanent %}<span class="danger-text">{{ _('Заблокирован') }}</span>{% elif gate and gate.locked_until and gate.locked_until>now %}{{ _('Пауза 5 минут') }}{% else %}{{ _('Активен') }}{% endif %}</td>
+<td><a class="icon-link" href="{{ url_for('admin.user_edit',user_id=u.id) }}" title="{{ _('Изменить') }} {{ u.login }}" aria-label="{{ _('Изменить') }} {{ u.login }}"><i data-lucide="pencil"></i></a></td></tr>
+{% else %}<tr><td colspan="8" class="empty">{{ _('Пользователи не найдены.') }}</td></tr>{% endfor %}
 </tbody></table></div></form>{{ pagination(page) }}
 {% endblock %}

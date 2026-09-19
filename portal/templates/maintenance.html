@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% from 'macros.html' import language_switch,csrf with context %}
+{% set maintenance_page = true %}
+{% block title %}{{ _('Техническое обслуживание') }}{% endblock %}
+{% block content %}
+<header class="guest-header"><span>{{ _('НФ НИТУ МИСИС') }}</span><div class="actions">{{ language_switch() }}<form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button class="logout">{{ _('Выйти из аккаунта') }}</button></form></div></header>
+<section class="maintenance-page" data-service-status="{{ url_for('main.service_status') }}"><img class="login-logo" src="{{ url_for('static',filename='misis-logo.png') }}" alt="{{ _('НФ МИСИС') }}"><h1>{{ _('Техническое обслуживание') }}</h1><p>{{ _('Сейчас сервис находится на техническом обслуживании. Приносим своим извинения за принесенные неудобства!') }}</p><a class="button secondary" href="{{ url_for('main.home') }}"><i data-lucide="refresh-cw"></i>{{ _('Проверить доступность') }}</a></section>
+{% endblock %}

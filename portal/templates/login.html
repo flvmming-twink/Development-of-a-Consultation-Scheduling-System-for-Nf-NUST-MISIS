@@ -1,13 +1,14 @@
 {% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
-{% block title %}Вход{% endblock %}
+{% block title %}{{ _('Вход') }}{% endblock %}
 {% block content %}
-<header class="guest-header"><span>НОВОТРОИЦКИЙ ФИЛИАЛ</span><a href="https://nf.misis.ru">Сайт университета <i data-lucide="arrow-up-right"></i></a></header>
+<header class="guest-header"><span>{{ _('НОВОТРОИЦКИЙ ФИЛИАЛ') }}</span><a href="https://nf.misis.ru">{{ _('Сайт университета') }} <i data-lucide="arrow-up-right"></i></a></header>
 <section class="login-form">
-<img class="login-logo" src="{{ url_for('static',filename='misis-logo.png') }}" alt="Новотроицкий филиал Университета МИСИС">
-<h1>Личный кабинет</h1><p class="muted">Запись на очные консультации</p>
-<form method="post">{{ csrf() }}<label>Логин<input name="login" maxlength="120" value="{{ entered }}" autocomplete="username" placeholder="Номер студенческого или рабочий логин" required autofocus></label>
-<label>Пароль<div class="password-field"><input id="password" type="password" name="password" maxlength="128" autocomplete="current-password" required><button type="button" class="reveal" data-reveal="password" aria-label="Показать пароль" title="Показать пароль"><i data-lucide="eye"></i></button></div></label>
-<button class="button full" type="submit">Войти <i data-lucide="arrow-right"></i></button></form>
-<div class="help-box"><strong>Не получается войти?</strong><p>Для восстановления доступа обратитесь к администратору.</p></div>
-</section><footer class="guest-footer">НФ НИТУ МИСИС<span>Консультации студентов и преподавателей</span></footer>
+<img class="login-logo" src="{{ url_for('static',filename='misis-logo.png') }}" alt="{{ _('Новотроицкий филиал Университета МИСИС') }}">
+<h1>{{ _('Личный кабинет') }}</h1><p class="muted">{{ _('Запись на очные консультации') }}</p>
+<form method="post">{{ csrf() }}<label>{{ _('Логин') }}<input name="login" maxlength="120" value="{{ entered }}" autocomplete="username" placeholder="{{ _('Номер студенческого или рабочий логин') }}" required autofocus></label>
+<label>{{ _('Пароль') }}<div class="password-field"><input id="password" type="password" name="password" maxlength="128" autocomplete="current-password" required><button type="button" class="reveal" data-reveal="password" aria-label="{{ _('Показать пароль') }}" title="{{ _('Показать пароль') }}"><i data-lucide="eye"></i></button></div></label>
+<button class="button full" type="submit">{{ _('Войти') }} <i data-lucide="arrow-right"></i></button></form>
+<form class="login-language" method="post" action="{{ url_for('language.change') }}">{{ csrf() }}<input type="hidden" name="next" value="{{ url_for('auth.login') }}"><input type="hidden" name="language" value="{{ 'en' if language=='ru' else 'ru' }}"><button class="text-link" type="submit">{{ 'Continue English' if language=='ru' else 'Продолжить на русском' }}</button></form>
+<div class="help-box"><strong>{{ _('Не получается войти?') }}</strong><p>{{ _('Для восстановления доступа обратитесь к администратору.') }}</p></div>
+</section><footer class="guest-footer">{{ _('НФ НИТУ МИСИС') }}<span>{{ _('Консультации студентов и преподавателей') }}</span></footer>
 {% endblock %}
