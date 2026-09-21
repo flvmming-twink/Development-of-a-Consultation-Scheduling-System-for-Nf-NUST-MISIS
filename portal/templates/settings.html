@@ -1,4 +1,63 @@
-{% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
-{% block title %}{{ _('Настройки') }}{% endblock %}{% block content %}<div class="page-heading"><div><h1>{{ _('Ваш профиль') }}</h1><p>{{ _('Личные данные, оформление и безопасность входа.') }}</p></div><span class="badge">{{ roles[g.user.role] }}</span></div><div class="two-columns"><section class="panel"><h2>{{ _('Учётная запись') }}</h2><dl><dt>{{ _('Фамилия') }}</dt><dd>{{ g.user.last_name or _('Ещё не заполнено') }}</dd><dt>{{ _('Имя') }}</dt><dd>{{ g.user.first_name or _('Ещё не заполнено') }}</dd><dt>{{ _('Отчество') }}</dt><dd>{{ g.user.middle_name or '—' }}</dd><dt>{{ _('Логин') }}</dt><dd>{{ g.user.login }}</dd>{% if g.user.role=='student' %}<dt>{{ _('Группа') }}</dt><dd>{{ g.user.group.name }}</dd><dt>{{ _('Курс') }}</dt><dd>{{ g.user.current_course }} · {{ _('Заочная') if g.user.study_mode=='part_time' else _('Очная') }} {{ _('форма') }}</dd>{% elif g.user.role=='teacher' %}<dt>{{ _('Кафедра') }}</dt><dd>{{ g.user.department.name if g.user.department else _('Не назначена') }}</dd>{% endif %}</dl>
-{% if g.user.role=='student' and not g.user.name_locked %}<form method="post">{{ csrf() }}<input type="hidden" name="action" value="name"><label>{{ _('Фамилия') }}<input name="last_name" maxlength="80" autocomplete="family-name" required></label><label>{{ _('Имя') }}<input name="first_name" maxlength="80" autocomplete="given-name" required></label><label>{{ _('Отчество (при наличии)') }}<input name="middle_name" maxlength="80" autocomplete="additional-name"></label><label class="check"><input type="checkbox" name="confirm_name" value="yes" required> {{ _('Я проверил ФИО и подтверждаю правильность написания') }}</label><p class="muted">{{ _('ФИО сохраняется один раз. Исправить ошибку сможет администратор после личного обращения.') }}</p><button class="button" type="submit">{{ _('Сохранить ФИО') }}</button></form>{% else %}<p class="muted">{{ _('Для исправления ФИО или учебных данных обратитесь к администратору.') }}</p>{% endif %}
-</section><section class="panel"><h2>{{ _('Оформление') }}</h2><p class="muted">{{ _('Тема сохраняется в вашей учётной записи.') }}</p><form method="post">{{ csrf() }}<input type="hidden" name="action" value="theme"><div class="theme-choice"><label><input type="radio" name="theme" value="light" {{ 'checked' if g.user.theme=='light' }}> {{ _('Светлая') }}</label><label><input type="radio" name="theme" value="dark" {{ 'checked' if g.user.theme=='dark' }}> {{ _('Тёмная') }}</label></div><button class="button secondary" type="submit">{{ _('Применить тему') }}</button></form><h2 class="spaced">{{ _('Язык') }}</h2><form method="post">{{ csrf() }}<input type="hidden" name="action" value="language"><label>{{ _('Язык интерфейса') }}<select name="language"><option value="ru" {{ 'selected' if language=='ru' }}>Русский</option><option value="en" {{ 'selected' if language=='en' }}>English</option></select></label><button class="button secondary" type="submit">{{ _('Сохранить язык') }}</button></form><h2 class="spaced">{{ _('Смена пароля') }}</h2><form method="post">{{ csrf() }}<input type="hidden" name="action" value="password"><label>{{ _('Текущий пароль') }}<input type="password" name="current_password" autocomplete="current-password" required maxlength="128"></label><label>{{ _('Новый пароль') }}<input type="password" name="new_password" autocomplete="new-password" required minlength="8" maxlength="128"></label><label>{{ _('Повтор нового пароля') }}<input type="password" name="repeat_password" autocomplete="new-password" required minlength="8" maxlength="128"></label><p class="muted">{{ _('От 8 символов. После смены пароля остальные сеансы этого аккаунта завершатся.') }}</p><button class="button" type="submit">{{ _('Изменить пароль') }}</button></form></section></div>{% endblock %}
+{% extends 'base.html' %}
+{% from 'macros.html' import csrf, avatar with context %}
+{% block title %}{{ _('Настройки') }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>{{ _('Ваш профиль') }}</h1><p>{{ _('Личные данные, оформление и безопасность входа.') }}</p></div><span class="badge">{{ roles[g.user.role] }}</span></div>
+<div class="two-columns">
+  <section class="panel">
+    <h2>{{ _('Фотография профиля') }}</h2>
+    <div class="avatar-editor">
+      {{ avatar(g.user, true) }}
+      <div class="avatar-controls">
+        <form method="post" enctype="multipart/form-data" action="{{ url_for('avatars.settings') }}">
+          {{ csrf() }}<input type="hidden" name="action" value="upload">
+          <label>{{ _('Фотография (необязательно)') }}<input type="file" name="avatar" accept="image/jpeg,image/png" required aria-describedby="avatar-limit"></label>
+          <p class="muted" id="avatar-limit">{{ _('JPEG или PNG, до 5 МБ. Квадратная фотография профиля.') }}</p>
+          <button class="button secondary" type="submit"><i data-lucide="upload"></i>{{ _('Сохранить фотографию') }}</button>
+        </form>
+        {% if g.user.avatar %}<form method="post" action="{{ url_for('avatars.settings') }}" class="spaced-small">{{ csrf() }}<input type="hidden" name="action" value="remove"><button class="button secondary" type="submit"><i data-lucide="trash-2"></i>{{ _('Удалить фотографию') }}</button></form>{% endif %}
+      </div>
+    </div>
+    <h2 class="spaced">{{ _('Учётная запись') }}</h2>
+    <dl>
+      <dt>{{ _('Фамилия') }}</dt><dd>{{ g.user.last_name or _('Ещё не заполнено') }}</dd>
+      <dt>{{ _('Имя') }}</dt><dd>{{ g.user.first_name or _('Ещё не заполнено') }}</dd>
+      <dt>{{ _('Отчество') }}</dt><dd>{{ g.user.middle_name or '—' }}</dd>
+      <dt>{{ _('Логин') }}</dt><dd>{{ g.user.login }}</dd>
+      {% if g.user.role=='student' %}<dt>{{ _('Группа') }}</dt><dd>{{ g.user.group.name }}</dd><dt>{{ _('Курс') }}</dt><dd>{{ g.user.current_course }} · {{ _('Заочная') if g.user.study_mode=='part_time' else _('Очная') }} {{ _('форма') }}</dd>
+      {% elif g.user.role=='teacher' %}<dt>{{ _('Кафедра') }}</dt><dd>{{ g.user.department.name if g.user.department else _('Не назначена') }}</dd>{% endif %}
+    </dl>
+    {% if g.user.role=='student' and not g.user.name_locked %}
+    <form method="post">{{ csrf() }}<input type="hidden" name="action" value="name">
+      <label>{{ _('Фамилия') }}<input name="last_name" maxlength="80" autocomplete="family-name" required></label>
+      <label>{{ _('Имя') }}<input name="first_name" maxlength="80" autocomplete="given-name" required></label>
+      <label>{{ _('Отчество (при наличии)') }}<input name="middle_name" maxlength="80" autocomplete="additional-name"></label>
+      <label class="check"><input type="checkbox" name="confirm_name" value="yes" required> {{ _('Я проверил ФИО и подтверждаю правильность написания') }}</label>
+      <p class="muted">{{ _('ФИО сохраняется один раз. Исправить ошибку сможет администратор после личного обращения.') }}</p>
+      <button class="button" type="submit">{{ _('Сохранить ФИО') }}</button>
+    </form>
+    {% else %}<p class="muted">{{ _('Для исправления ФИО или учебных данных обратитесь к администратору.') }}</p>{% endif %}
+  </section>
+  <section class="panel">
+    <h2>{{ _('Оформление') }}</h2><p class="muted">{{ _('Тема сохраняется в вашей учётной записи.') }}</p>
+    <form method="post">{{ csrf() }}<input type="hidden" name="action" value="theme"><div class="theme-choice"><label><input type="radio" name="theme" value="light" {{ 'checked' if g.user.theme=='light' }}> {{ _('Светлая') }}</label><label><input type="radio" name="theme" value="dark" {{ 'checked' if g.user.theme=='dark' }}> {{ _('Тёмная') }}</label></div><button class="button secondary" type="submit">{{ _('Применить тему') }}</button></form>
+    <h2 class="spaced">{{ _('Язык') }}</h2>
+    <form method="post">{{ csrf() }}<input type="hidden" name="action" value="language"><label>{{ _('Язык интерфейса') }}<select name="language"><option value="ru" {{ 'selected' if language=='ru' }}>Русский</option><option value="en" {{ 'selected' if language=='en' }}>English</option></select></label><button class="button secondary" type="submit">{{ _('Сохранить язык') }}</button></form>
+    <h2 class="spaced">{{ _('Смена пароля') }}</h2>
+    <form method="post">{{ csrf() }}<input type="hidden" name="action" value="password">
+      <label>{{ _('Текущий пароль') }}<input type="password" name="current_password" autocomplete="current-password" required maxlength="128"></label>
+      <label>{{ _('Новый пароль') }}<input type="password" name="new_password" autocomplete="new-password" required minlength="8" maxlength="128"></label>
+      <label>{{ _('Повтор нового пароля') }}<input type="password" name="repeat_password" autocomplete="new-password" required minlength="8" maxlength="128"></label>
+      {% if g.user.role=='student' %}<p class="password-warning">{{ _('Предупреждение! Не ставить личные пароли') }}</p>{% endif %}
+      <p class="muted">{{ _('От 8 символов. После смены пароля остальные сеансы этого аккаунта завершатся.') }}</p>
+      <button class="button" type="submit">{{ _('Изменить пароль') }}</button>
+    </form>
+  </section>
+</div>
+<section class="admin-contact">
+  <h2>{{ _('Контакт администратора') }}</h2>
+  <p><strong>Куренков Егор Евгеньевич</strong> <span class="muted">lxrdx</span></p>
+  <a href="mailto:kurenkov.ee@yandex.ru">kurenkov.ee@yandex.ru</a>
+  <p>{{ _('Время работы: с 06.00 до 15.00 по Мск') }}<br>{{ _('129 кабинет, НФ НИТУ МИСИС') }}</p>
+</section>
+{% endblock %}

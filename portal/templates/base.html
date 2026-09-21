@@ -1,4 +1,4 @@
-{% from 'macros.html' import language_switch with context %}<!doctype html>
+{% from 'macros.html' import language_switch, avatar with context %}<!doctype html>
 <html lang="{{ language }}" data-theme="{{ g.user.theme if g.user and not maintenance_page else 'light' }}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,14 +24,14 @@
     <a class="{{ 'selected' if ep=='main.event_form' }}" href="{{ url_for('main.event_form') }}">{{ _('Создать занятие') }} <span>+</span></a>
     <a class="{{ 'selected' if ep=='main.journal' }}" href="{{ url_for('main.journal') }}">{{ _('Журнал студентов') }}</a>
   {% else %}
-    {% for endpoint, label in [('admin.dashboard',_('Главная')),('admin.users',_('Пользователи')),('admin.catalogs',_('Справочники')),('admin.trash',_('Корзина')),('admin.events',_('Все занятия')),('main.journal',_('Журнал записей')),('admin.import_students',_('Импорт студентов')),('admin.logs',_('История действий'))] %}
-    <a class="{{ 'selected' if ep==endpoint }}" href="{{ url_for(endpoint) }}">{{ label }}</a>
+    {% for endpoint, label in [('admin.dashboard',_('Главная')),('admin.users',_('Пользователи')),('admin.catalogs',_('Справочники')),('admin.trash',_('Корзина')),('admin.events',_('Все занятия')),('main.journal',_('Журнал записей')),('admin.import_students',_('Импорт студентов')),('admin.logs',_('История действий')),('database_admin.index',_('База данных'))] %}
+    <a class="{{ 'selected' if ep==endpoint or (endpoint=='database_admin.index' and request.blueprint=='database_admin') }}" href="{{ url_for(endpoint) }}">{{ label }}</a>
     {% endfor %}
   {% endif %}
     <a class="{{ 'selected' if ep=='notifications.inbox' }}" href="{{ url_for('notifications.inbox') }}">{{ _('Уведомления') }} <span data-notification-count>{{ unread_notifications or '' }}</span></a>
     <a class="{{ 'selected' if ep=='auth.settings' }}" href="{{ url_for('auth.settings') }}">{{ _('Настройки') }}</a>
   </nav>
-  <div class="sidebar-bottom"><span class="avatar">{{ (g.user.full_name or g.user.login)[0] }}</span><div><strong>{{ g.user.full_name or _('Заполните ФИО') }}</strong><small>{{ g.user.login }}</small></div></div>
+  <div class="sidebar-bottom">{{ avatar(g.user) }}<div><strong>{{ g.user.full_name or _('Заполните ФИО') }}</strong><small>{{ g.user.login }}</small></div></div>
   <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">{{ _('Выйти из аккаунта') }}</button></form>
 </aside>
 {% endif %}

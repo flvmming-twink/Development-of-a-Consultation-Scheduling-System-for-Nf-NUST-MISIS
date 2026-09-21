@@ -63,6 +63,7 @@ class User(db.Model):
     group = db.relationship(Group)
     department = db.relationship(Department)
     subjects = db.relationship('Subject', secondary=teacher_subject, back_populates='teachers')
+    avatar = db.relationship('UserAvatar', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     __table_args__ = (
         UniqueConstraint('login', 'role', name='uq_user_login_role'),
         CheckConstraint("role IN ('student','teacher','admin')", name='ck_user_role'),
@@ -203,3 +204,10 @@ class SiteSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     maintenance = db.Column(db.Boolean, nullable=False, default=False)
     __table_args__ = (CheckConstraint('id = 1', name='ck_site_settings_singleton'),)
+
+class UserAvatar(db.Model):
+    __tablename__ = 'user_avatars'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    image = db.deferred(db.Column(db.LargeBinary, nullable=False))
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+    __table_args__ = (CheckConstraint('octet_length(image) <= 262144', name='ck_avatar_size'),)

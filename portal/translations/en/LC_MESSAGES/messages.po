@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.17.0\n"
+"Generated-By: Babel 2.18.0\n"
 
 #: portal/templates/teacher.html:4
 msgid " · архив"
@@ -89,9 +89,17 @@ msgstr ". Administrator:"
 msgid "10 неудачных попыток. Вход заблокирован на 5 минут."
 msgstr "10 failed attempts. Sign-in is locked for 5 minutes."
 
+#: portal/templates/settings.html:61
+msgid "129 кабинет, НФ НИТУ МИСИС"
+msgstr "Room 129, MISIS University, Novotroitsk Branch"
+
 #: portal/templates/admin_import.html:1
 msgid "CSV-файл"
 msgstr "CSV file"
+
+#: portal/templates/settings.html:15
+msgid "JPEG или PNG, до 5 МБ. Квадратная фотография профиля."
+msgstr "JPEG or PNG, up to 5 MB. Square profile photo."
 
 #: portal/templates/admin_import.html:1
 msgid ""
@@ -149,6 +157,10 @@ msgstr "Active"
 msgid "Активных блокировок нет."
 msgstr "No active locks."
 
+#: portal/avatars.py:29
+msgid "Анимированные изображения не поддерживаются."
+msgstr "Animated images are not supported."
+
 #: portal/templates/events.html:10 portal/templates/macros.html:12
 #: portal/templates/student_event.html:4
 msgid "Аудитория"
@@ -161,6 +173,25 @@ msgstr "Room 201"
 #: portal/templates/event_form.html:8
 msgid "Аудитория или место"
 msgstr "Room or location"
+
+#: portal/templates/admin_database.html:3
+#: portal/templates/admin_database.html:5 portal/templates/base.html:27
+msgid "База данных"
+msgstr "Database"
+
+#: portal/database_admin.py:194
+msgid ""
+"База данных занята другой операцией. Сформируйте предварительный просмотр"
+" и повторите позже."
+msgstr "The database is busy. Generate a new preview and try again later."
+
+#: portal/templates/admin_database.html:18
+msgid "Безвозвратная очистка"
+msgstr "Permanent cleanup"
+
+#: portal/__init__.py:152
+msgid "Безвозвратная очистка БД"
+msgstr "Database permanently cleared"
 
 #: portal/lifecycle.py:70
 #, python-format
@@ -180,6 +211,10 @@ msgstr "Locked for 5 minutes"
 #: portal/templates/admin_dashboard.html:9
 msgid "Блокировки входа"
 msgstr "Sign-in locks"
+
+#: portal/templates/admin_database.html:36
+msgid "Будет удалено"
+msgstr "Data to be deleted"
 
 #: portal/admin.py:369
 msgid "В группе есть действующие студенты. Сначала переведите или отключите их."
@@ -213,6 +248,16 @@ msgstr "Your upcoming sessions and consultation history."
 #: portal/templates/teacher.html:4
 msgid "Ваши дисциплины"
 msgstr "Your subjects"
+
+#: portal/database_admin.py:33
+msgid "Введите текущий пароль администратора."
+msgstr "Enter your current administrator password."
+
+#: portal/database_admin.py:167
+msgid "Введите точную фразу подтверждения и подтвердите наличие резервной копии."
+msgstr ""
+"Enter the exact confirmation phrase and confirm that you have saved a "
+"backup."
 
 #: portal/auth.py:54
 msgid "Введите фамилию, имя и отчество при наличии, без цифр."
@@ -281,6 +326,10 @@ msgstr ""
 msgid "Восстановлено: %(value0)s."
 msgstr "Restored: %(value0)s."
 
+#: portal/templates/settings.html:61
+msgid "Время работы: с 06.00 до 15.00 по Мск"
+msgstr "Office hours: 06:00 to 15:00 Moscow time"
+
 #: portal/templates/admin_users.html:10 portal/templates/notifications.html:4
 msgid "Все"
 msgstr "All"
@@ -332,6 +381,10 @@ msgstr "All statuses"
 #: portal/templates/notifications.html:5
 msgid "Все уведомления прочитаны."
 msgstr "All notifications have been read."
+
+#: portal/templates/admin_database.html:25
+msgid "Вся БД (кроме текущего администратора и истории)"
+msgstr "Entire database (except current administrator and history)"
 
 #: portal/templates/admin_dashboard.html:10
 msgid "Вся история"
@@ -406,9 +459,21 @@ msgstr "Select a subject"
 msgid "Выберите кафедру"
 msgstr "Select a department"
 
+#: portal/templates/admin_database.html:24
+msgid "Выберите область"
+msgstr "Choose a scope"
+
+#: portal/database_admin.py:61
+msgid "Выберите область очистки и значение фильтра."
+msgstr "Choose a cleanup scope and filter value."
+
 #: portal/admin.py:380
 msgid "Выберите преподавателя и дисциплину."
 msgstr "Select a teacher and subject."
+
+#: portal/templates/admin_database.html:30
+msgid "Выберите роль"
+msgstr "Choose a role"
 
 #: portal/auth.py:153
 msgid "Выберите светлую или тёмную тему."
@@ -417,6 +482,14 @@ msgstr "Select the light or dark theme."
 #: portal/lifecycle.py:16 portal/lifecycle.py:46
 msgid "Выберите существующих пользователей."
 msgstr "Select existing users."
+
+#: portal/database_admin.py:57
+msgid "Выберите существующую группу или кафедру."
+msgstr "Choose an existing group or department."
+
+#: portal/avatars.py:17
+msgid "Выберите фотографию."
+msgstr "Choose a photo."
 
 #: portal/templates/base.html:12
 msgid "Выбрано:"
@@ -440,6 +513,10 @@ msgstr "Find a session +"
 
 msgid "Выгружен журнал"
 msgstr "Register exported"
+
+#: portal/__init__.py:152
+msgid "Выгружена резервная копия БД"
+msgstr "Database backup exported"
 
 #: portal/templates/base.html:35 portal/templates/maintenance.html:5
 msgid "Выйти из аккаунта"
@@ -494,6 +571,12 @@ msgstr "Groups, departments and subjects"
 #: portal/templates/macros.html:9
 msgid "Далее →"
 msgstr "Next →"
+
+#: portal/database_admin.py:174
+msgid ""
+"Данные изменились после предварительного просмотра. Проверьте состав "
+"очистки заново."
+msgstr "Data changed after the preview. Review the cleanup scope again."
 
 #: portal/admin.py:252
 msgid "Данные пользователя сохранены."
@@ -722,6 +805,11 @@ msgstr "No sessions yet."
 msgid "Занятий пока нет. Создайте первое занятие."
 msgstr "No sessions yet. Create your first session."
 
+#: portal/templates/admin_database.html:7
+#: portal/templates/admin_database.html:37
+msgid "Занятия"
+msgstr "Sessions"
+
 #: portal/templates/settings.html:2
 msgid "Заочная"
 msgstr "Part-time"
@@ -745,6 +833,11 @@ msgstr "Book session"
 #: portal/templates/admin_audit.html:1
 msgid "Записей пока нет."
 msgstr "No records yet."
+
+#: portal/templates/admin_database.html:7
+#: portal/templates/admin_database.html:37
+msgid "Записи"
+msgstr "Bookings"
 
 #: portal/services.py:42
 #, python-format
@@ -808,6 +901,10 @@ msgstr ""
 #: portal/templates/admin_catalogs.html:9
 msgid "Из названия, например БПИ-26"
 msgstr "From the group name, e.g. BPI-26"
+
+#: portal/__init__.py:152
+msgid "Изменена фотография профиля"
+msgstr "Profile photo changed"
 
 #: portal/__init__.py:150
 msgid ""
@@ -960,6 +1057,10 @@ msgstr "Consultation published"
 #: portal/services.py:96
 msgid "Консультация отменена"
 msgstr "Consultation cancelled"
+
+#: portal/templates/settings.html:58
+msgid "Контакт администратора"
+msgstr "Administrator contact"
 
 #: portal/templates/admin_dashboard.html:7 portal/templates/admin_trash.html:2
 #: portal/templates/admin_trash.html:3 portal/templates/admin_users.html:4
@@ -1132,6 +1233,18 @@ msgstr "Not recorded"
 msgid "Не получается войти?"
 msgstr "Having trouble signing in?"
 
+#: portal/database_admin.py:213
+msgid ""
+"Не удалось подготовить резервную копию. Проверьте версию pg_dump, "
+"подключение к БД и размер выгрузки (до 200 МБ)."
+msgstr ""
+"Could not prepare the backup. Check the pg_dump version, database "
+"connection and export size (up to 200 MB)."
+
+#: portal/avatars.py:39
+msgid "Не удалось прочитать фотографию. Используйте исправный файл JPEG или PNG."
+msgstr "Could not read the photo. Use a valid JPEG or PNG file."
+
 #: portal/__init__.py:115
 msgid "Не явился"
 msgstr "Absent"
@@ -1163,6 +1276,10 @@ msgstr "No subjects"
 #: portal/templates/admin_catalogs.html:8
 msgid "Нет записей."
 msgstr "No records."
+
+#: portal/__init__.py:152
+msgid "Неудачное подтверждение пароля администратора"
+msgstr "Administrator password confirmation failed"
 
 #: portal/admin.py:235
 msgid ""
@@ -1224,6 +1341,10 @@ msgstr "IN-PERSON SESSION #"
 #: portal/templates/error.html:1
 msgid "ОШИБКА"
 msgstr "ERROR"
+
+#: portal/templates/admin_database.html:23
+msgid "Область очистки"
+msgstr "Cleanup scope"
 
 msgid "Обновлён справочник"
 msgstr "Catalog updated"
@@ -1349,6 +1470,22 @@ msgstr "Patronymic (if applicable)"
 msgid "Оформление"
 msgstr "Appearance"
 
+#: portal/database_admin.py:179
+msgid "Очистка выполнена. Текущий администратор и история действий сохранены."
+msgstr ""
+"Cleanup completed. The current administrator and activity history have "
+"been retained."
+
+#: portal/templates/admin_database.html:19
+msgid ""
+"Очистка минует корзину. Удаляются выбранные пользователи, их записи и "
+"связанные занятия, включая данные действующих преподавателей. "
+"Восстановление возможно только из резервной копии."
+msgstr ""
+"Cleanup bypasses Trash. Selected users, their bookings and related "
+"sessions are deleted, including active teachers' data. Recovery requires "
+"a backup."
+
 #: portal/templates/settings.html:2
 msgid "Очная"
 msgstr "Full-time"
@@ -1364,6 +1501,19 @@ msgstr "Error"
 #: portal/templates/login.html:9
 msgid "Пароль"
 msgstr "Password"
+
+#: portal/templates/admin_database.html:13
+#: portal/templates/admin_database.html:43
+msgid "Пароль администратора"
+msgstr "Administrator password"
+
+#: portal/database_admin.py:43
+msgid ""
+"Пароль администратора указан неверно. Попытка учитывается в блокировке "
+"входа."
+msgstr ""
+"Incorrect administrator password. This attempt counts toward the sign-in "
+"lock."
 
 #: portal/auth.py:177
 msgid "Пароль должен содержать 8–128 символов. Повтор пароля должен совпадать."
@@ -1421,9 +1571,21 @@ msgstr "Grid"
 msgid "По выбранным условиям записей нет."
 msgstr "No bookings match these filters."
 
+#: portal/templates/admin_database.html:26
+msgid "По группе"
+msgstr "By group"
+
 #: portal/admin.py:371
 msgid "По дисциплине есть будущие занятия. Сначала отмените их."
 msgstr "This subject has upcoming sessions. Cancel them first."
+
+#: portal/templates/admin_database.html:26
+msgid "По кафедре"
+msgstr "By department"
+
+#: portal/templates/admin_database.html:26
+msgid "По роли"
+msgstr "By role"
 
 #: portal/templates/events.html:11
 msgid "По этим условиям занятий пока нет. Измените фильтры или зайдите позже."
@@ -1445,6 +1607,10 @@ msgstr "Details"
 msgid "Подтвердите правильность ФИО."
 msgstr "Confirm that your name is correct."
 
+#: portal/database_admin.py:165 portal/database_admin.py:183
+msgid "Подтверждение устарело. Сформируйте предварительный просмотр заново."
+msgstr "Confirmation expired. Generate a new preview."
+
 #: portal/templates/admin_users.html:6
 msgid "Поиск"
 msgstr "Search"
@@ -1453,6 +1619,12 @@ msgstr "Search"
 msgid "Пока нет действий."
 msgstr "No activity yet."
 
+#: portal/templates/admin_database.html:38
+msgid ""
+"Показаны первые 100 пользователей. Итоговые количества включают всех "
+"выбранных."
+msgstr "The first 100 users are shown. Totals include all selected users."
+
 #: portal/templates/event_detail.html:2 portal/templates/teacher.html:5
 msgid "Показать"
 msgstr "Show"
@@ -1460,6 +1632,15 @@ msgstr "Show"
 #: portal/templates/base.html:12 portal/templates/login.html:9
 msgid "Показать пароль"
 msgstr "Show password"
+
+#: portal/templates/admin_database.html:11
+msgid ""
+"Полная БД в формате .dump: пользователи, хеши паролей, фотографии, "
+"расписание и история. Храните файл в защищённом месте. Восстановление — "
+"через pg_restore или pgAdmin."
+msgstr ""
+"Full .dump backup: users, password hashes, photos, schedule and history. "
+"Keep this file secure. Restore using pg_restore or pgAdmin."
 
 #: portal/templates/admin_users.html:2 portal/templates/admin_users.html:4
 #: portal/templates/base.html:27
@@ -1513,9 +1694,17 @@ msgstr "Only an administrator can cancel a booking after the session starts."
 msgid "Последние действия"
 msgstr "Recent activity"
 
+#: portal/templates/admin_database.html:31
+msgid "Предварительный просмотр"
+msgstr "Preview"
+
 #: portal/templates/admin_dashboard.html:6
 msgid "Предстоящие занятия"
 msgstr "Upcoming sessions"
+
+#: portal/templates/settings.html:51
+msgid "Предупреждение! Не ставить личные пароли"
+msgstr "Warning! Do not reuse your personal passwords"
 
 #: portal/templates/admin_dashboard.html:6
 msgid "Преподаватели"
@@ -1601,6 +1790,16 @@ msgstr "Maintenance mode is on."
 msgid "Режим обслуживания выключен."
 msgstr "Maintenance mode is off."
 
+#: portal/templates/admin_database.html:10
+msgid "Резервная копия PostgreSQL"
+msgstr "PostgreSQL backup"
+
+#: portal/templates/admin_database.html:41
+msgid ""
+"Резервная копия сохранена. Подтверждаю безвозвратное удаление "
+"перечисленных данных."
+msgstr "I have saved a backup and confirm permanent deletion of the listed data."
+
 #: portal/templates/admin_trash.html:6 portal/templates/admin_user_form.html:6
 #: portal/templates/admin_users.html:7 portal/templates/admin_users.html:16
 msgid "Роль"
@@ -1654,6 +1853,14 @@ msgstr ""
 "The service is currently undergoing maintenance. We apologize for the "
 "inconvenience!"
 
+#: portal/database_admin.py:218
+msgid ""
+"Сервер не смог завершить выгрузку БД. Повторите позже или обратитесь к "
+"администратору сервера."
+msgstr ""
+"The server could not finish the database export. Try again later or "
+"contact the server administrator."
+
 #: portal/templates/admin_dashboard.html:5
 msgid "Сервис доступен студентам и преподавателям."
 msgstr "The service is available to students and teachers."
@@ -1666,9 +1873,21 @@ msgstr "System"
 msgid "Скачать Excel ↓"
 msgstr "Download Excel ↓"
 
+#: portal/templates/admin_database.html:14
+msgid "Скачать резервную копию"
+msgstr "Download backup"
+
 #: portal/templates/base.html:12
 msgid "Скрыть пароль"
 msgstr "Hide password"
+
+#: portal/avatars.py:27
+msgid ""
+"Слишком большое разрешение фотографии: максимум 16 мегапикселей и 8192 "
+"пикселя по стороне."
+msgstr ""
+"Photo resolution is too large: at most 16 megapixels and 8192 pixels per "
+"side."
 
 #: portal/auth.py:86
 msgid "Слишком длинный логин или пароль."
@@ -1735,6 +1954,10 @@ msgstr "Save name"
 #: portal/templates/event_form.html:10
 msgid "Сохранить занятие"
 msgstr "Save session"
+
+#: portal/templates/settings.html:16
+msgid "Сохранить фотографию"
+msgstr "Save photo"
 
 #: portal/templates/settings.html:4
 msgid "Сохранить язык"
@@ -1838,6 +2061,16 @@ msgstr "Role view:"
 msgid "Такая учётная запись уже существует."
 msgstr "This account already exists."
 
+#: portal/templates/admin_database.html:20
+msgid ""
+"Текущий администратор и история действий сохраняются. При полной очистке "
+"удаляются также справочники. При очистке по фильтру справочники остаются;"
+" для группы удаляются также занятия этой группы."
+msgstr ""
+"The current administrator and activity history are retained. Full cleanup"
+" also deletes catalogs. Filtered cleanup keeps catalogs; group cleanup "
+"also deletes that group's sessions."
+
 #: portal/templates/settings.html:4
 msgid "Текущий пароль"
 msgstr "Current password"
@@ -1888,6 +2121,10 @@ msgstr "Enter a dismissal date to enable deletion."
 msgid "Удаление навсегда"
 msgstr "Permanent deletion"
 
+#: portal/templates/admin_database.html:44
+msgid "Удалить безвозвратно"
+msgstr "Delete permanently"
+
 #: portal/templates/admin_catalogs.html:8
 msgid "Удалить кафедру"
 msgstr "Delete department"
@@ -1899,6 +2136,10 @@ msgid ""
 msgstr ""
 "Delete this department? It can only be deleted when no users are assigned"
 " to it."
+
+#: portal/templates/settings.html:18
+msgid "Удалить фотографию"
+msgstr "Remove photo"
 
 #: portal/templates/admin_trash.html:6
 msgid "Удалён"
@@ -1959,6 +2200,12 @@ msgstr "Successful sign-in"
 msgid "Установите собственный пароль, чтобы продолжить."
 msgstr "Set your own password to continue."
 
+#: portal/database_admin.py:201
+msgid ""
+"Утилита pg_dump не установлена на сервере. Обратитесь к администратору "
+"сервера."
+msgstr "pg_dump is not installed on the server. Contact the server administrator."
+
 #: portal/templates/settings.html:2
 msgid "Учётная запись"
 msgstr "Account"
@@ -2010,6 +2257,35 @@ msgstr "Study mode"
 #: portal/__init__.py:145
 msgid "Форма устарела. Обновите страницу и повторите действие."
 msgstr "This form has expired. Refresh the page and try again."
+
+#: portal/templates/admin_database.html:7
+#: portal/templates/admin_database.html:37
+msgid "Фотографии"
+msgstr "Photos"
+
+#: portal/templates/settings.html:14
+msgid "Фотография (необязательно)"
+msgstr "Photo (optional)"
+
+#: portal/__init__.py:166 portal/avatars.py:20
+msgid "Фотография должна быть не больше 5 МБ."
+msgstr "The photo must not exceed 5 MB."
+
+#: portal/templates/macros.html:2 portal/templates/settings.html:8
+msgid "Фотография профиля"
+msgstr "Profile photo"
+
+#: portal/avatars.py:72
+msgid "Фотография сохранена."
+msgstr "Photo saved."
+
+#: portal/avatars.py:72
+msgid "Фотография удалена."
+msgstr "Photo removed."
+
+#: portal/templates/admin_database.html:42
+msgid "Фраза подтверждения:"
+msgstr "Confirmation phrase:"
 
 #: portal/services.py:120
 msgid "Число мест"

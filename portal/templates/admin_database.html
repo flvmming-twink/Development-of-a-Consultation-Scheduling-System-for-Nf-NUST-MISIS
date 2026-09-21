@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import csrf with context %}
+{% block title %}{{ _('База данных') }}{% endblock %}
+{% block content %}
+{% set chosen = plan.selection if plan else {} %}
+<div class="page-heading"><h1>{{ _('База данных') }}</h1></div>
+<div class="stats four">
+  {% for key, label in [('users',_('Пользователи')),('events',_('Занятия')),('bookings',_('Записи')),('avatars',_('Фотографии'))] %}<div><span>{{ label }}</span><strong>{{ counts[key] }}</strong></div>{% endfor %}
+</div>
+<section class="database-section">
+  <h2>{{ _('Резервная копия PostgreSQL') }}</h2>
+  <p class="muted">{{ _('Полная БД в формате .dump: пользователи, хеши паролей, фотографии, расписание и история. Храните файл в защищённом месте. Восстановление — через pg_restore или pgAdmin.') }}</p>
+  <form method="post" action="{{ url_for('database_admin.export') }}" class="database-form">
+    {{ csrf() }}<label>{{ _('Пароль администратора') }}<input type="password" name="password" required maxlength="128" autocomplete="current-password"></label>
+    <button type="submit" class="button"><i data-lucide="download"></i>{{ _('Скачать резервную копию') }}</button>
+  </form>
+</section>
+<section class="database-section">
+  <h2>{{ _('Безвозвратная очистка') }}</h2>
+  <p class="danger-text">{{ _('Очистка минует корзину. Удаляются выбранные пользователи, их записи и связанные занятия, включая данные действующих преподавателей. Восстановление возможно только из резервной копии.') }}</p>
+  <p class="muted">{{ _('Текущий администратор и история действий сохраняются. При полной очистке удаляются также справочники. При очистке по фильтру справочники остаются; для группы удаляются также занятия этой группы.') }}</p>
+  <form method="post" action="{{ url_for('database_admin.preview') }}#cleanup-preview" class="filters" data-database-filter>
+    {{ csrf() }}
+    <label>{{ _('Область очистки') }}<select name="scope" required data-cleanup-scope>
+      <option value="">{{ _('Выберите область') }}</option>
+      <option value="all" {{ 'selected' if chosen.scope=='all' }}>{{ _('Вся БД (кроме текущего администратора и истории)') }}</option>
+      <option value="group" {{ 'selected' if chosen.scope=='group' }}>{{ _('По группе') }}</option><option value="department" {{ 'selected' if chosen.scope=='department' }}>{{ _('По кафедре') }}</option><option value="role" {{ 'selected' if chosen.scope=='role' }}>{{ _('По роли') }}</option>
+    </select></label>
+    <label data-cleanup-value="group">{{ _('Группа') }}<select name="group_id"><option value="">{{ _('Выберите группу') }}</option>{% for item in groups %}<option value="{{ item.id }}" {{ 'selected' if chosen.group_id==item.id }}>{{ item.name }}</option>{% endfor %}</select></label>
+    <label data-cleanup-value="department">{{ _('Кафедра') }}<select name="department_id"><option value="">{{ _('Выберите кафедру') }}</option>{% for item in departments %}<option value="{{ item.id }}" {{ 'selected' if chosen.department_id==item.id }}>{{ item.name }}</option>{% endfor %}</select></label>
+    <label data-cleanup-value="role">{{ _('Роль') }}<select name="role"><option value="">{{ _('Выберите роль') }}</option>{% for value,label in roles.items() %}<option value="{{ value }}" {{ 'selected' if chosen.role==value }}>{{ label }}</option>{% endfor %}</select></label>
+    <button class="button secondary" type="submit"><i data-lucide="list-filter"></i>{{ _('Предварительный просмотр') }}</button>
+  </form>
+</section>
+{% if plan %}
+<section class="database-section" id="cleanup-preview">
+  <h2>{{ _('Будет удалено') }}</h2>
+  <dl>{% for key,label in [('users',_('Пользователи')),('events',_('Занятия')),('bookings',_('Записи')),('notifications',_('Уведомления')),('avatars',_('Фотографии')),('groups',_('Группы')),('departments',_('Кафедры')),('subjects',_('Дисциплины'))] %}<dt>{{ label }}</dt><dd>{{ plan[key]|length }}</dd>{% endfor %}</dl>
+  {% if plan.users %}<div class="table-wrap"><table><thead><tr><th>{{ _('Логин') }}</th><th>{{ _('ФИО') }}</th><th>{{ _('Роль') }}</th></tr></thead><tbody>{% for user in plan.users[:100] %}<tr><td>{{ user.login }}</td><td>{{ user.full_name or '—' }}</td><td>{{ roles[user.role] }}</td></tr>{% endfor %}</tbody></table></div>{% if plan.users|length > 100 %}<p class="muted">{{ _('Показаны первые 100 пользователей. Итоговые количества включают всех выбранных.') }}</p>{% endif %}{% endif %}
+  <form method="post" action="{{ url_for('database_admin.clear') }}" class="database-form spaced">
+    {{ csrf() }}<input type="hidden" name="token" value="{{ token }}">
+    <label class="check"><input type="checkbox" name="backup_saved" value="yes" required>{{ _('Резервная копия сохранена. Подтверждаю безвозвратное удаление перечисленных данных.') }}</label>
+    <label>{{ _('Фраза подтверждения:') }} <code>{{ confirmation }}</code><input name="confirmation" required autocomplete="off" maxlength="40"></label>
+    <label>{{ _('Пароль администратора') }}<input type="password" name="password" required maxlength="128" autocomplete="current-password"></label>
+    <button class="button danger" type="submit"><i data-lucide="trash-2"></i>{{ _('Удалить безвозвратно') }}</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

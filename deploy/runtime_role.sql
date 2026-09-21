@@ -10,5 +10,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON departments, notifications TO consult_ru
 GRANT SELECT, INSERT, DELETE ON teacher_subject TO consult_runtime;
 GRANT SELECT, INSERT, UPDATE ON audit_log TO consult_runtime;
 GRANT SELECT, UPDATE ON site_settings TO consult_runtime;
+GRANT SELECT ON alembic_version TO consult_runtime;
+GRANT SELECT, INSERT, UPDATE, DELETE ON user_avatars TO consult_runtime;
+GRANT DELETE ON events, bookings, subjects, groups TO consult_runtime;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO consult_runtime;
 -- Run Alembic using the owner role; start Waitress using consult_runtime.

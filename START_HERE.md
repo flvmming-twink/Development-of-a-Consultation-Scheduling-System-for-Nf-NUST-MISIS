@@ -70,13 +70,17 @@ database `consultations`, Username `consult_app`, Password — `POSTGRES_PASSWOR
 Таблицы находятся в Databases → consultations → Schemas → public → Tables.
 Установка pgAdmin без работающего сервера PostgreSQL не создаёт базу данных.
 
-Для компьютера с Python 3.9 также приложена инструкция `docs/PYTHON39_WINDOWS.md`.
+Для компьютера со старым Python 3.9 приложена инструкция перехода
+на поддерживаемую версию: `docs/PYTHON39_WINDOWS.md`.
 
 ## Запуск с установленным PostgreSQL без Docker
 
-Рекомендуемая среда: Python 3.11, PostgreSQL 16, pgAdmin 4. Исходники не требуют
-синтаксиса новее Python 3.9; конкретный старый Python и его библиотеки необходимо
-проверить на вашем компьютере. Самый воспроизводимый вариант использует Python 3.11.
+Рекомендуемая среда: Python 3.11 или 3.12, PostgreSQL 16, pgAdmin 4.
+Обработчик фотографий Pillow 12.3 требует Python 3.10 или новее;
+Python 3.9 больше не поддерживается текущим набором зависимостей.
+Для выгрузки БД нужен `pg_dump` версии не ниже сервера PostgreSQL.
+На Windows можно указать полный путь через переменную `PG_DUMP_PATH`.
+В Docker эта утилита уже устанавливается при сборке.
 
 1. В pgAdmin создайте роль `consult_app` с правом входа и собственным паролем.
 2. Создайте базу `consultations`, назначив владельцем `consult_app`.
@@ -154,6 +158,8 @@ docker compose exec web flask --app wsgi recover-admin --login lxrdx
 | `portal/auth.py` | Вход, блокировки, пароли, настройки |
 | `portal/services.py` | Запись, пересечения, отмена и создание занятий |
 | `portal/admin.py` | Управление пользователями, справочники, импорт |
+| `portal/avatars.py` | Проверка фотографий и хранение в PostgreSQL |
+| `portal/database_admin.py` | Администраторская выгрузка и подтверждаемая очистка БД |
 | `portal/views.py` | Кабинеты, списки, журнал и Excel |
 | `portal/templates`, `portal/static` | Интерфейс, светлая и тёмная темы |
 | `migrations` | Alembic и зафиксированная первая схема SQL |

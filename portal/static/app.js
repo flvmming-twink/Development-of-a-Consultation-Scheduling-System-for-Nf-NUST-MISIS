@@ -79,6 +79,17 @@ if (notificationLink) {
   }, 30000);
 }
 const serviceStatus = document.querySelector('[data-service-status]');
+document.querySelectorAll('[data-database-filter]').forEach(form => {
+  const scope = form.querySelector('[data-cleanup-scope]');
+  const sync = () => form.querySelectorAll('[data-cleanup-value]').forEach(label => {
+    const active = label.dataset.cleanupValue === scope.value;
+    label.hidden = !active;
+    label.querySelector('select').disabled = !active;
+    label.querySelector('select').required = active;
+  });
+  scope.addEventListener('change', sync);
+  sync();
+});
 if (serviceStatus) {
   setInterval(async () => {
     if (document.hidden) return;

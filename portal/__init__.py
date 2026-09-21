@@ -34,6 +34,7 @@ def create_app(test_config=None):
         PERMANENT_SESSION_LIFETIME=timedelta(hours=8),
         MAX_CONTENT_LENGTH=1024 * 1024,
         MAX_FORM_MEMORY_SIZE=256 * 1024,
+        AVATAR_MAX_BYTES=5 * 1024 * 1024,
     )
     if test_config:
         app.config.update(test_config)
@@ -42,6 +43,11 @@ def create_app(test_config=None):
     if not str(app.config['SQLALCHEMY_DATABASE_URI']).startswith('postgresql'):
         raise RuntimeError('DATABASE_URL должен указывать на PostgreSQL.')
     db.init_app(app)
+    @app.before_request
+    def upload_limit():
+        if request.endpoint == 'avatars.settings':
+            request.max_content_length = app.config['AVATAR_MAX_BYTES'] + 64 * 1024
+
     csrf.init_app(app)
     from .i18n import babel, bp as language_bp, current_language
     babel.init_app(app, default_locale='ru', locale_selector=current_language)
@@ -53,6 +59,10 @@ def create_app(test_config=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(views_bp)
     app.register_blueprint(admin_bp)
+    from .avatars import bp as avatars_bp
+    from .database_admin import bp as database_bp
+    app.register_blueprint(avatars_bp)
+    app.register_blueprint(database_bp)
     from .notifications import bp as notifications_bp
     app.register_blueprint(notifications_bp)
     from .cli import register_commands
@@ -90,7 +100,7 @@ def create_app(test_config=None):
             if request.endpoint == 'notifications.count':
                 return {'maintenance': True}, 503, {'Retry-After': '60'}
             return render_template('maintenance.html'), 503, {'Retry-After': '60'}
-        if g.user and g.user.must_change_password and request.endpoint not in ('auth.settings','auth.logout','static','language.change','main.service_status','admin.stop_impersonation'):
+        if g.user and g.user.must_change_password and request.endpoint not in ('auth.settings','auth.logout','static','language.change','main.service_status','admin.stop_impersonation','avatars.image'):
             flash(_('Установите собственный пароль, чтобы продолжить.'), 'info')
             return redirect(url_for('auth.settings'))
 
@@ -139,6 +149,7 @@ def create_app(test_config=None):
             'maintenance_enabled':'Включено техническое обслуживание',
             'maintenance_disabled':'Выключено техническое обслуживание'
         }
+        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'))
         return _(labels.get(value, value))
 
     @app.errorhandler(CSRFError)
@@ -150,6 +161,11 @@ def create_app(test_config=None):
         db.session.rollback()
         return render_template('error.html', code=409, message=_('Изменение конфликтует с существующими данными. Проверьте время, логин или название и повторите действие.')), 409
 
-    for code, msg in [(403,'Для этой страницы нужны другие права доступа.'),(404,'Страница или запись не найдена.'),(413,'Файл слишком большой. Максимум 1 МБ.')]:
+    @app.errorhandler(413)
+    def upload_too_large(error):
+        message = _('Фотография должна быть не больше 5 МБ.') if request.endpoint == 'avatars.settings' else _('Файл слишком большой. Максимум 1 МБ.')
+        return render_template('error.html', code=413, message=message), 413
+
+    for code, msg in [(403,'Для этой страницы нужны другие права доступа.'),(404,'Страница или запись не найдена.')]:
         app.register_error_handler(code, lambda error, c=code, m=msg: (render_template('error.html',code=c,message=_(m)),c))
     return app
