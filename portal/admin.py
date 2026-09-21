@@ -24,7 +24,9 @@ def audit_line(entry):
 
     actor = f'{field(entry.actor.login)} ({field(entry.actor.full_name)})' if entry.actor else 'Система'
     stamp = entry.created_at.astimezone(MOSCOW).strftime('%d.%m.%Y %H:%M:%S')
-    return f'#{entry.id} [{stamp} МСК] {actor} | {field(entry.action)} | {field(entry.entity)} | {field(entry.details)}'
+    label = current_app.jinja_env.filters['action_label'](entry.action)
+    action = f'{field(label)} [{entry.action}]' if label != entry.action else entry.action
+    return f'#{entry.id} [{stamp} МСК] {actor} | {action} | {field(entry.entity)} | {field(entry.details)}'
 
 
 def audit_dates(data):

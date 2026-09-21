@@ -26,6 +26,7 @@ def test_audit_page_is_text_and_admin_only(app, client):
     assert b'<table' not in page.data
     assert b'data-audit-export-open' in page.data
     assert b'name="from_date"' in page.data and b'name="to_date"' in page.data
+    assert 'Успешный вход [login_success]' in page.text
     assert b'login_success' in client.get('/admin/audit?action=login_success').data
     assert b'login_success' not in client.get('/admin/audit?action=event_created').data
 
