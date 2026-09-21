@@ -1,1 +1,37 @@
-{% extends 'base.html' %}{% from 'macros.html' import pagination with context %}{% block title %}{{ _('История действий') }}{% endblock %}{% block content %}<div class="page-heading"><div><h1>{{ _('История действий') }}</h1><p>{{ _('Изменения данных, сбросы паролей, блокировки и выгрузки журнала.') }}</p></div></div><div class="table-wrap"><table><thead><tr><th>{{ _('Дата') }}</th><th>{{ _('Кто') }}</th><th>{{ _('Действие') }}</th><th>{{ _('Объект') }}</th><th>{{ _('Подробности') }}</th></tr></thead><tbody>{% for l in page.items %}<tr><td>{{ l.created_at|localtime }}</td><td>{{ l.actor.full_name if l.actor else _('Система') }}</td><td>{{ l.action|action_label }}</td><td>{{ l.entity }}</td><td>{{ l.details or '—' }}</td></tr>{% else %}<tr><td colspan="5" class="empty">{{ _('Записей пока нет.') }}</td></tr>{% endfor %}</tbody></table></div>{{ pagination(page) }}{% endblock %}
+{% extends 'base.html' %}
+{% from 'macros.html' import csrf, pagination with context %}
+{% block title %}{{ _('История действий') }}{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><h1>{{ _('История действий') }}</h1><p>{{ _('События системы по московскому времени.') }}</p></div>
+  <button type="button" class="button" data-audit-export-open><i data-lucide="download"></i>{{ _('Выгрузить TXT') }}</button>
+</div>
+{% if lines %}<pre class="audit-log">{{ lines|join('\n') }}</pre>{% else %}<p class="muted">{{ _('Записей пока нет.') }}</p>{% endif %}
+{{ pagination(page) }}
+<dialog class="audit-dialog" data-audit-export aria-labelledby="audit-dialog-title" data-range-error="{{ _('Выберите период не более семи дней, без будущих дат.') }}">
+  <form method="post" action="{{ url_for('admin.export_logs') }}" data-audit-export-form>
+    {{ csrf() }}
+    <div data-audit-step="dates">
+      <h2 id="audit-dialog-title">{{ _('Период выгрузки') }}</h2>
+      <p class="muted">{{ _('Выберите даты включительно, не более семи дней. Время — московское.') }}</p>
+      <div class="form-grid">
+        <label>{{ _('С какого числа') }}<input type="date" name="from_date" value="{{ week_start.isoformat() }}" max="{{ today.isoformat() }}" required></label>
+        <label>{{ _('По какое число') }}<input type="date" name="to_date" value="{{ today.isoformat() }}" max="{{ today.isoformat() }}" required></label>
+      </div>
+      <div class="audit-dialog-actions">
+        <button type="button" class="button secondary" data-audit-close>{{ _('Отмена') }}</button>
+        <button type="button" class="button" data-audit-next>{{ _('Далее') }}</button>
+      </div>
+    </div>
+    <div data-audit-step="password" hidden>
+      <h2>{{ _('Подтверждение выгрузки') }}</h2>
+      <p class="muted" data-audit-period></p>
+      <label>{{ _('Текущий пароль администратора') }}<input type="password" name="password" maxlength="128" autocomplete="current-password" required disabled></label>
+      <div class="audit-dialog-actions">
+        <button type="button" class="button secondary" data-audit-back>{{ _('Назад') }}</button>
+        <button type="submit" class="button"><i data-lucide="download"></i>{{ _('Скачать TXT') }}</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

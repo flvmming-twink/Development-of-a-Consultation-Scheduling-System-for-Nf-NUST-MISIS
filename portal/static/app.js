@@ -90,6 +90,44 @@ document.querySelectorAll('[data-database-filter]').forEach(form => {
   scope.addEventListener('change', sync);
   sync();
 });
+const auditDialog = document.querySelector('[data-audit-export]');
+if (auditDialog) {
+  const form = auditDialog.querySelector('[data-audit-export-form]');
+  const dates = auditDialog.querySelector('[data-audit-step=dates]');
+  const confirmation = auditDialog.querySelector('[data-audit-step=password]');
+  const from = form.elements.from_date;
+  const to = form.elements.to_date;
+  const password = form.elements.password;
+  const showDates = () => {
+    dates.hidden = false;
+    confirmation.hidden = true;
+    password.value = '';
+    password.disabled = true;
+  };
+  document.querySelector('[data-audit-export-open]').addEventListener('click', () => {
+    showDates();
+    auditDialog.showModal();
+  });
+  auditDialog.querySelector('[data-audit-close]').addEventListener('click', () => auditDialog.close());
+  auditDialog.querySelector('[data-audit-back]').addEventListener('click', showDates);
+  auditDialog.addEventListener('close', showDates);
+  [from, to].forEach(input => input.addEventListener('input', () => to.setCustomValidity('')));
+  auditDialog.querySelector('[data-audit-next]').addEventListener('click', () => {
+    to.setCustomValidity('');
+    if (!from.reportValidity() || !to.reportValidity()) return;
+    const days = (Date.parse(to.value) - Date.parse(from.value)) / 86400000;
+    if (!Number.isInteger(days) || days < 0 || days > 6 || to.value > to.max) {
+      to.setCustomValidity(auditDialog.dataset.rangeError);
+      to.reportValidity();
+      return;
+    }
+    auditDialog.querySelector('[data-audit-period]').textContent = from.value + ' — ' + to.value;
+    dates.hidden = true;
+    confirmation.hidden = false;
+    password.disabled = false;
+    password.focus();
+  });
+}
 if (serviceStatus) {
   setInterval(async () => {
     if (document.hidden) return;

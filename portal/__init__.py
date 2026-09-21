@@ -149,7 +149,7 @@ def create_app(test_config=None):
             'maintenance_enabled':'Включено техническое обслуживание',
             'maintenance_disabled':'Выключено техническое обслуживание'
         }
-        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'))
+        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'))
         return _(labels.get(value, value))
 
     @app.errorhandler(CSRFError)

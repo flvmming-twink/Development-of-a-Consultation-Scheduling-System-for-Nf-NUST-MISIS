@@ -2362,3 +2362,48 @@ msgstr "means full-time study;"
 #: portal/templates/macros.html:7
 msgid "← Назад"
 msgstr "← Previous"
+
+msgid "События системы по московскому времени."
+msgstr "System events in Moscow time."
+
+msgid "Выгрузить TXT"
+msgstr "Export TXT"
+
+msgid "Период выгрузки"
+msgstr "Export period"
+
+msgid "Выберите даты включительно, не более семи дней. Время — московское."
+msgstr "Choose inclusive dates, up to seven days. Times use Moscow time."
+
+msgid "С какого числа"
+msgstr "From"
+
+msgid "По какое число"
+msgstr "To"
+
+msgid "Отмена"
+msgstr "Cancel"
+
+msgid "Далее"
+msgstr "Next"
+
+msgid "Подтверждение выгрузки"
+msgstr "Confirm export"
+
+msgid "Текущий пароль администратора"
+msgstr "Current administrator password"
+
+msgid "Назад"
+msgstr "Back"
+
+msgid "Скачать TXT"
+msgstr "Download TXT"
+
+msgid "Укажите корректные даты начала и окончания."
+msgstr "Enter valid start and end dates."
+
+msgid "Выберите период не более семи дней, без будущих дат."
+msgstr "Choose up to seven days, excluding future dates."
+
+msgid "Выгружена история действий"
+msgstr "Action history exported"

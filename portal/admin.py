@@ -2,9 +2,10 @@ from flask_babel import gettext as _, lazy_gettext as _l
 import csv
 import io
 import re
-from datetime import date
+import tempfile
+from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
-from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, send_file, session, url_for
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
 from .models import db, User, Group, Department, Subject, Event, Booking, LoginGate, AuditLog, SiteSettings, utcnow
@@ -14,6 +15,29 @@ from .lifecycle import trash_users, restore_users
 from .notifications import notify
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
+MOSCOW = ZoneInfo('Europe/Moscow')
+
+
+def audit_line(entry):
+    def field(value):
+        return ' '.join(str(value or '').split()) or '—'
+
+    actor = f'{field(entry.actor.login)} ({field(entry.actor.full_name)})' if entry.actor else 'Система'
+    stamp = entry.created_at.astimezone(MOSCOW).strftime('%d.%m.%Y %H:%M:%S')
+    return f'#{entry.id} [{stamp} МСК] {actor} | {field(entry.action)} | {field(entry.entity)} | {field(entry.details)}'
+
+
+def audit_dates(data):
+    try:
+        start = date.fromisoformat(data.get('from_date', ''))
+        end = date.fromisoformat(data.get('to_date', ''))
+    except (TypeError, ValueError):
+        raise ValueError(_('Укажите корректные даты начала и окончания.')) from None
+    if end < start or (end - start).days >= 7 or end > datetime.now(MOSCOW).date():
+        raise ValueError(_('Выберите период не более семи дней, без будущих дат.'))
+    begin = datetime.combine(start, time.min, MOSCOW).astimezone(timezone.utc)
+    until = datetime.combine(end + timedelta(days=1), time.min, MOSCOW).astimezone(timezone.utc)
+    return start, end, begin, until
 
 def group_from_form(data, current_id=None):
     name = data.get('new_group', '').strip()
@@ -444,8 +468,49 @@ def events():
 @bp.get('/audit')
 @roles_required('admin')
 def logs():
-    query = select(AuditLog).order_by(AuditLog.id.desc())
+    query = select(AuditLog).options(selectinload(AuditLog.actor)).order_by(AuditLog.id.desc())
     if request.args.get('action'):
         query = query.where(AuditLog.action == request.args['action'][:60])
     page = db.paginate(query,per_page=30,max_per_page=30,error_out=False)
-    return render_template('admin_audit.html',page=page)
+    today = datetime.now(MOSCOW).date()
+    return render_template('admin_audit.html', page=page,
+        lines=[audit_line(entry) for entry in page.items], today=today,
+        week_start=today - timedelta(days=6))
+
+
+@bp.post('/audit/export')
+@roles_required('admin')
+def export_logs():
+    from .database_admin import confirm_password
+
+    try:
+        start, end, begin, until = audit_dates(request.form)
+        confirm_password()
+        output = tempfile.SpooledTemporaryFile(max_size=1024 * 1024, mode='w+b')
+        try:
+            exported_at = datetime.now(MOSCOW)
+            output.write(('\ufeffИстория действий · НФ НИТУ МИСИС\n'
+                f'Период: {start:%d.%m.%Y} — {end:%d.%m.%Y} (МСК)\n'
+                f'Выгружено: {exported_at:%d.%m.%Y %H:%M:%S} (МСК)\n\n').encode('utf-8'))
+            query = select(AuditLog).options(selectinload(AuditLog.actor)).where(
+                AuditLog.created_at >= begin, AuditLog.created_at < until).order_by(AuditLog.created_at, AuditLog.id)
+            count = 0
+            for entry in db.session.scalars(query).yield_per(500):
+                output.write((audit_line(entry) + '\n').encode('utf-8'))
+                count += 1
+            if not count:
+                output.write('Записей за выбранный период нет.\n'.encode('utf-8'))
+            output.seek(0)
+            audit('audit_log_exported', 'audit_log', f'{start.isoformat()}..{end.isoformat()}; rows={count}')
+            db.session.commit()
+            response = send_file(output, mimetype='text/plain; charset=utf-8', as_attachment=True,
+                download_name=f'logs-{exported_at:%d-%m-%Y-%H-%M-%S}.txt', max_age=0)
+            response.call_on_close(output.close)
+            return response
+        except Exception:
+            output.close()
+            raise
+    except ValueError as exc:
+        db.session.rollback()
+        flash(str(exc), 'error')
+        return logs(), 400
