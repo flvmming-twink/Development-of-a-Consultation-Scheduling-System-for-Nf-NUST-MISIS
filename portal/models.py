@@ -70,7 +70,7 @@ class User(db.Model):
         CheckConstraint("theme IN ('light','dark')", name='ck_theme'),
         CheckConstraint("language IN ('ru','en')", name='ck_user_language'),
         CheckConstraint("event_view IN ('grid','list')", name='ck_user_event_view'),
-        CheckConstraint("role != 'student' OR (group_id IS NOT NULL AND course IS NOT NULL AND course BETWEEN 1 AND 5 AND study_mode IS NOT NULL AND study_mode IN ('full_time','part_time') AND (course < 5 OR study_mode = 'part_time'))", name='ck_student_profile'),)
+        CheckConstraint("role != 'student' OR ((group_id IS NULL AND course IS NULL AND study_mode IS NULL) OR (group_id IS NOT NULL AND course IS NOT NULL AND course BETWEEN 1 AND 5 AND study_mode IS NOT NULL AND study_mode IN ('full_time','part_time') AND (course < 5 OR study_mode = 'part_time')))", name='ck_student_profile'),)
 
     @validates('full_name')
     def split_legacy_name(self, key, value):

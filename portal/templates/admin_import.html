@@ -1,1 +1,18 @@
-{% extends 'base.html' %}{% from 'macros.html' import csrf with context %}{% block title %}{{ _('Импорт студентов') }}{% endblock %}{% block content %}<div class="page-heading"><div><h1>{{ _('Импорт студентов') }}</h1><p>{{ _('Добавление списка из CSV за один раз.') }}</p></div></div><div class="panel form-panel"><p>{{ _('Сначала создайте группы в справочниках. Файл должен быть в UTF-8, поля разделяются точкой с запятой. ФИО в файле не требуется.') }}</p><pre>{{ _('login;group;course;study_mode\n2300432;БПИ-23;4;full_time') }}</pre><p><code>full_time</code> {{ _('— очная форма,') }} <code>part_time</code> {{ _('— заочная. Не более 500 студентов и 1 МБ за один импорт.') }}</p><p>{{ _('Если обнаружится ошибка или повторный логин, импорт будет отменён целиком.') }}</p><form method="post" enctype="multipart/form-data">{{ csrf() }}<label>{{ _('CSV-файл') }}<input type="file" name="file" accept=".csv,text/csv" required></label><button class="button">{{ _('Импортировать') }}</button></form></div>{% endblock %}
+{% extends 'base.html' %}
+{% from 'macros.html' import csrf with context %}
+{% block title %}{{ _('Импорт студентов') }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>{{ _('Импорт студентов') }}</h1><p>{{ _('Массовое создание учётных записей из Excel.') }}</p></div></div>
+<div class="panel form-panel">
+  <p>{{ _('Загрузите файл .xlsx с одним листом. В каждой строке столбца A должен находиться только номер студенческого билета; заголовок не нужен.') }}</p>
+  <div class="table-wrap import-example"><table><thead><tr><th>A</th></tr></thead><tbody><tr><td>1234567</td></tr><tr><td>2300431</td></tr><tr><td>2600184</td></tr></tbody></table></div>
+  <p>{{ _('Не более 1500 строк и 1 МБ за один импорт. Уже существующие номера и повторы в файле будут пропущены.') }}</p>
+  <p>{{ _('Начальный пароль создаётся автоматически: Student и первые две цифры номера. Например, для 1234567 пароль — Student12.') }}</p>
+  <p>{{ _('После первого входа студент должен один раз указать ФИО и группу в настройках. До этого записаться на консультацию нельзя.') }}</p>
+  <form method="post" enctype="multipart/form-data">
+    {{ csrf() }}
+    <label>{{ _('Файл Excel') }}<input type="file" name="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required></label>
+    <button class="button" type="submit"><i data-lucide="upload"></i>{{ _('Импортировать') }}</button>
+  </form>
+</div>
+{% endblock %}

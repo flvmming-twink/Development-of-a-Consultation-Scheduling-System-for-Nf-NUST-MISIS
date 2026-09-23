@@ -7,12 +7,24 @@ import os
 import pytest
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
 from portal.models import db,User,Group,Event,Booking,LoginGate,AuditLog,utcnow
 from portal.admin import create_user,transliterate_surname
 from portal.auth import hash_password
 from portal.services import book_event,booking_problem
 from conftest import sign_in
+
+
+def student_xlsx(rows):
+    book = Workbook()
+    sheet = book.active
+    for row in rows:
+        sheet.append(row if isinstance(row, (tuple, list)) else [row])
+    payload = io.BytesIO()
+    book.save(payload)
+    book.close()
+    payload.seek(0)
+    return payload
 
 @pytest.mark.parametrize('role',['student','teacher','admin'])
 def test_role_dispatch(app,client,role):
@@ -259,16 +271,51 @@ def test_csrf_and_session_revocation(app,client):
         u=db.session.get(User,app.config['IDS']['student']);u.session_version+=1;db.session.commit()
     assert client.get('/bookings').status_code==302
 
-def test_admin_creation_no_public_signup_and_import_atomic(app,client):
+def test_admin_creation_no_public_signup_and_excel_import(app,client):
     assert client.get('/register').status_code==404
+    with app.app_context():
+        existing_hash = db.session.get(User, app.config['IDS']['student']).password_hash
     sign_in(client,'admin')
     response=client.post('/admin/users/new',data={'role':'student','login':'2300450','group_id':app.config['IDS']['group'],'course':5,'study_mode':'full_time'})
     assert 'только при заочной' in response.text
-    payload='login;group;course;study_mode\n2300450;БПИ-23;4;full_time\n2300431;БПИ-23;4;full_time\n'
-    response=client.post('/admin/import',data={'file':(io.BytesIO(payload.encode()),'students.csv')},content_type='multipart/form-data')
-    assert 'уже существует' in response.text
+    payload = student_xlsx([1234567, '2300431', '1234567', 3400002])
+    response=client.post('/admin/import',data={'file':(payload,'students.xlsx')},content_type='multipart/form-data',follow_redirects=True)
+    assert 'Добавлено студентов: 2. Пропущено повторов: 2.' in response.text
     with app.app_context():
-        assert db.session.scalar(select(User.id).where(User.login=='2300450')) is None
+        first = db.session.scalar(select(User).where(User.login=='1234567'))
+        second = db.session.scalar(select(User).where(User.login=='3400002'))
+        assert first and second
+        assert (first.group_id, first.course, first.study_mode, first.full_name, first.name_locked) == (None, None, None, None, False)
+        existing = db.session.scalar(select(User).where(User.login=='2300431', User.role=='student'))
+        assert existing.id == app.config['IDS']['student'] and existing.password_hash == existing_hash
+    client.post('/logout')
+    assert client.post('/login',data={'login':'1234567','password':'Student12'}).status_code==302
+    blocked = client.post(f'/events/{app.config["IDS"]["first"]}/book',follow_redirects=True)
+    assert 'Сначала укажите ФИО и группу' in blocked.text
+    profile = dict(action='profile', last_name='Петров', first_name='Пётр', middle_name='Петрович',
+        group_id=app.config['IDS']['group'], confirm_name='yes')
+    assert client.post('/settings',data=profile).status_code==302
+    with app.app_context():
+        first = db.session.scalar(select(User).where(User.login=='1234567'))
+        assert first.full_name == 'Петров Пётр Петрович'
+        assert first.group_id == app.config['IDS']['group'] and first.current_course == 4 and first.name_locked
+    assert client.post('/settings',data=profile).status_code==403
+    assert 'Вы записаны на занятие' in client.post(f'/events/{app.config["IDS"]["first"]}/book',follow_redirects=True).text
+
+
+def test_excel_import_rejects_extra_columns_and_more_than_1500_rows(app, client):
+    sign_in(client, 'admin')
+    response = client.post('/admin/import', data={'file':(io.BytesIO(b'not an Excel workbook'), 'students.xlsx')},
+        content_type='multipart/form-data', follow_redirects=True)
+    assert 'Не удалось прочитать файл Excel' in response.text
+    response = client.post('/admin/import', data={'file':(student_xlsx([(1234567, 'лишнее')]), 'students.xlsx')},
+        content_type='multipart/form-data', follow_redirects=True)
+    assert 'только в столбце A' in response.text
+    response = client.post('/admin/import', data={'file':(student_xlsx(range(5000000, 5001501)), 'students.xlsx')},
+        content_type='multipart/form-data', follow_redirects=True)
+    assert 'не более 1500 строк' in response.text
+    with app.app_context():
+        assert db.session.scalar(select(User.id).where(User.login.in_(['1234567','5000000']))) is None
 
 def test_theme_password_and_transliteration(app,client):
     assert transliterate_surname('Бой')=='Boj'

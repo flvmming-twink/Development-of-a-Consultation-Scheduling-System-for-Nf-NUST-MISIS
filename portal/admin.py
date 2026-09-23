@@ -1,13 +1,17 @@
 from flask_babel import gettext as _, lazy_gettext as _l
-import csv
-import io
+from io import BytesIO
 import re
 import tempfile
+from xml.etree.ElementTree import ParseError
+from zipfile import BadZipFile, ZipFile
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, send_file, session, url_for
 from sqlalchemy import select, func, or_
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
+from openpyxl import load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
 from .models import db, User, Group, Department, Subject, Event, Booking, LoginGate, AuditLog, SiteSettings, utcnow
 from .auth import roles_required, normalize_login, hash_password, name_parts, check_password_distinct, lock_gate, clear_gate, audit
 from .services import integer, cancel_event, cancel_booking
@@ -16,6 +20,12 @@ from .notifications import notify
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 MOSCOW = ZoneInfo('Europe/Moscow')
+MAX_STUDENT_IMPORT = 1500
+MAX_XLSX_UNCOMPRESSED = 20 * 1024 * 1024
+
+
+class StudentImportError(ValueError):
+    pass
 
 
 def audit_line(entry):
@@ -79,6 +89,54 @@ def department_from_form(data, current_id=None):
 def form_catalogs():
     return dict(groups=db.session.scalars(select(Group).order_by(Group.name)).all(),
         departments=db.session.scalars(select(Department).order_by(Department.name)).all())
+
+
+def student_logins_from_excel(upload):
+    filename = (upload.filename or '').lower()
+    if not filename.endswith('.xlsx'):
+        raise StudentImportError(_('Выберите файл Excel в формате .xlsx.'))
+    data = upload.read()
+    if not data:
+        raise StudentImportError(_('Файл Excel пуст.'))
+    book = None
+    try:
+        with ZipFile(BytesIO(data)) as archive:
+            if len(archive.infolist()) > 1000 or sum(item.file_size for item in archive.infolist()) > MAX_XLSX_UNCOMPRESSED:
+                raise StudentImportError(_('Файл Excel слишком сложный или повреждён.'))
+        book = load_workbook(BytesIO(data), read_only=True, data_only=False, keep_links=False)
+        if len(book.worksheets) != 1:
+            raise StudentImportError(_('В файле должен быть ровно один лист.'))
+        sheet = book.active
+        if sheet.max_row > MAX_STUDENT_IMPORT:
+            raise StudentImportError(_('За один импорт допускается не более 1500 строк.'))
+        if sheet.max_column > 1:
+            raise StudentImportError(_('Номера студенческих должны находиться только в столбце A.'))
+        logins = []
+        for row_number, (value,) in enumerate(sheet.iter_rows(min_col=1, max_col=1, values_only=True), 1):
+            if value is None or isinstance(value, str) and not value.strip():
+                continue
+            if isinstance(value, bool):
+                login = ''
+            elif isinstance(value, int):
+                login = str(value)
+            elif isinstance(value, float) and value.is_integer() and abs(value) < 10**15:
+                login = str(int(value))
+            else:
+                login = str(value).strip()
+            if not re.fullmatch(r'\d{2,120}', login):
+                raise StudentImportError(_('Строка %(value0)s: номер студенческого должен содержать не менее двух цифр.', value0=row_number))
+            logins.append(login)
+        if not logins:
+            raise StudentImportError(_('В столбце A нет номеров студенческих.'))
+        return logins
+    except StudentImportError:
+        raise
+    except (BadZipFile, InvalidFileException, KeyError, EOFError, OSError, ParseError,
+            SyntaxError, UnicodeError, ValueError, TypeError, IndexError, OverflowError):
+        raise StudentImportError(_('Не удалось прочитать файл Excel. Проверьте формат .xlsx.')) from None
+    finally:
+        if book is not None:
+            book.close()
 
 def live_user(user_id):
     user = db.get_or_404(User, user_id)
@@ -430,32 +488,30 @@ def import_students():
         try:
             file = request.files.get('file')
             if not file:
-                raise ValueError(_('Выберите CSV-файл.'))
-            text = file.read().decode('utf-8-sig')
-            reader = csv.DictReader(io.StringIO(text), delimiter=';')
-            if reader.fieldnames != ['login','group','course','study_mode']:
-                raise ValueError(_('Ожидаются заголовки login;group;course;study_mode в указанном порядке.'))
-            count = 0
-            for line, row in enumerate(reader,2):
-                if count >= 500:
-                    raise ValueError(_('За один импорт допускается не более 500 студентов.'))
-                if None in row or any(v is None for v in row.values()):
-                    raise ValueError(_('Строка %(value0)s: неверное число полей.', value0=line))
-                group = db.session.scalar(select(Group).where(Group.name == row['group'].strip(),Group.active))
-                if not group:
-                    raise ValueError(_('Строка %(value0)s: сначала создайте группу %(value1)s.', value0=line, value1=row["group"]))
-                try:
-                    create_user(dict(role='student',login=row['login'],group_id=group.id,course=row['course'],study_mode=row['study_mode']))
-                except ValueError as exc:
-                    raise ValueError(_('Строка %(value0)s: %(value1)s', value0=line, value1=exc))
-                count += 1
-            if not count:
-                raise ValueError(_('В файле нет студентов.'))
-            audit('students_imported','csv',f'rows={count}')
+                raise ValueError(_('Выберите файл Excel.'))
+            logins = student_logins_from_excel(file)
+            unique_logins = list(dict.fromkeys(logins))
+            existing = set(db.session.scalars(select(User.login).where(User.login.in_(unique_logins))).all())
+            new_logins = [login for login in unique_logins if login not in existing]
+            password_hashes = {prefix:hash_password('Student' + prefix) for prefix in {login[:2] for login in new_logins}}
+            users = []
+            for login in new_logins:
+                password_hash = password_hashes[login[:2]]
+                users.append(User(login=login, role='student', active=True, name_locked=False,
+                    password_hash=password_hash, initial_password_hash=password_hash,
+                    must_change_password=current_app.config['FORCE_INITIAL_PASSWORD_CHANGE']))
+            if users:
+                db.session.add_all(users)
+                db.session.flush()
+                db.session.execute(insert(LoginGate).values([
+                    dict(login=user.login, failures=0, permanent=False, updated_at=utcnow()) for user in users
+                ]).on_conflict_do_nothing())
+            skipped = len(logins) - len(users)
+            audit('students_imported','xlsx',f'rows={len(logins)}; created={len(users)}; skipped={skipped}')
             db.session.commit()
-            flash(_('Добавлено студентов: %(value0)s. Начальный пароль — Student.', value0=count), 'success')
+            flash(_('Добавлено студентов: %(value0)s. Пропущено повторов: %(value1)s.', value0=len(users), value1=skipped), 'success')
             return redirect(url_for('admin.users'))
-        except (ValueError, UnicodeError, csv.Error) as exc:
+        except ValueError as exc:
             db.session.rollback()
             flash(str(exc), 'error')
     return render_template('admin_import.html')

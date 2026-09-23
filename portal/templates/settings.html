@@ -24,17 +24,19 @@
       <dt>{{ _('Имя') }}</dt><dd>{{ g.user.first_name or _('Ещё не заполнено') }}</dd>
       <dt>{{ _('Отчество') }}</dt><dd>{{ g.user.middle_name or '—' }}</dd>
       <dt>{{ _('Логин') }}</dt><dd>{{ g.user.login }}</dd>
-      {% if g.user.role=='student' %}<dt>{{ _('Группа') }}</dt><dd>{{ g.user.group.name }}</dd><dt>{{ _('Курс') }}</dt><dd>{{ g.user.current_course }} · {{ _('Заочная') if g.user.study_mode=='part_time' else _('Очная') }} {{ _('форма') }}</dd>
+      {% if g.user.role=='student' %}<dt>{{ _('Группа') }}</dt><dd>{{ g.user.group.name if g.user.group else _('Ещё не заполнено') }}</dd><dt>{{ _('Курс') }}</dt><dd>{% if g.user.group %}{{ g.user.current_course }} · {{ _('Заочная') if g.user.study_mode=='part_time' else _('Очная') }} {{ _('форма') }}{% else %}{{ _('Ещё не заполнено') }}{% endif %}</dd>
       {% elif g.user.role=='teacher' %}<dt>{{ _('Кафедра') }}</dt><dd>{{ g.user.department.name if g.user.department else _('Не назначена') }}</dd>{% endif %}
     </dl>
     {% if g.user.role=='student' and not g.user.name_locked %}
-    <form method="post">{{ csrf() }}<input type="hidden" name="action" value="name">
+    <form method="post">{{ csrf() }}<input type="hidden" name="action" value="profile">
       <label>{{ _('Фамилия') }}<input name="last_name" maxlength="80" autocomplete="family-name" required></label>
       <label>{{ _('Имя') }}<input name="first_name" maxlength="80" autocomplete="given-name" required></label>
       <label>{{ _('Отчество (при наличии)') }}<input name="middle_name" maxlength="80" autocomplete="additional-name"></label>
-      <label class="check"><input type="checkbox" name="confirm_name" value="yes" required> {{ _('Я проверил ФИО и подтверждаю правильность написания') }}</label>
-      <p class="muted">{{ _('ФИО сохраняется один раз. Исправить ошибку сможет администратор после личного обращения.') }}</p>
-      <button class="button" type="submit">{{ _('Сохранить ФИО') }}</button>
+      {% if g.user.group %}<label>{{ _('Группа') }}<input value="{{ g.user.group.name }}" readonly></label>
+      {% else %}<label>{{ _('Группа') }}<select name="group_id" required><option value="">{{ _('Выберите группу') }}</option>{% for group in groups %}<option value="{{ group.id }}">{{ group.name }}</option>{% endfor %}</select></label>{% endif %}
+      <label class="check"><input type="checkbox" name="confirm_name" value="yes" required> {{ _('Я проверил ФИО и группу и подтверждаю правильность данных') }}</label>
+      <p class="muted">{{ _('ФИО и группа сохраняются один раз. После сохранения изменить их самостоятельно нельзя.') }}</p>
+      <button class="button" type="submit">{{ _('Сохранить профиль') }}</button>
     </form>
     {% else %}<p class="muted">{{ _('Для исправления ФИО или учебных данных обратитесь к администратору.') }}</p>{% endif %}
   </section>

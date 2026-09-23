@@ -2423,3 +2423,80 @@ msgstr "Choose up to seven days, excluding future dates."
 
 msgid "Выгружена история действий"
 msgstr "Action history exported"
+
+msgid "Сначала укажите ФИО и группу в настройках."
+msgstr "First enter your full name and group in Settings."
+
+msgid "Подтвердите правильность ФИО и группы."
+msgstr "Confirm that your full name and group are correct."
+
+msgid "Выберите действующую группу с указанным годом поступления."
+msgstr "Select an active group with an admission year."
+
+msgid "Выбранная группа не относится к 1–4 курсу очного обучения. Обратитесь к администратору."
+msgstr "The selected group is not in years 1–4 of full-time study. Contact the administrator."
+
+msgid "Выберите файл Excel в формате .xlsx."
+msgstr "Select an Excel file in .xlsx format."
+
+msgid "Файл Excel пуст."
+msgstr "The Excel file is empty."
+
+msgid "Файл Excel слишком сложный или повреждён."
+msgstr "The Excel file is too complex or damaged."
+
+msgid "Не удалось прочитать файл Excel. Проверьте формат .xlsx."
+msgstr "The Excel file could not be read. Check that it is a valid .xlsx file."
+
+msgid "В файле должен быть ровно один лист."
+msgstr "The file must contain exactly one worksheet."
+
+msgid "За один импорт допускается не более 1500 строк."
+msgstr "A single import can contain no more than 1,500 rows."
+
+msgid "Номера студенческих должны находиться только в столбце A."
+msgstr "Student ID numbers must appear only in column A."
+
+#, python-format
+msgid "Строка %(value0)s: номер студенческого должен содержать не менее двух цифр."
+msgstr "Row %(value0)s: the student ID number must contain at least two digits."
+
+msgid "В столбце A нет номеров студенческих."
+msgstr "Column A contains no student ID numbers."
+
+msgid "Выберите файл Excel."
+msgstr "Select an Excel file."
+
+#, python-format
+msgid "Добавлено студентов: %(value0)s. Пропущено повторов: %(value1)s."
+msgstr "Students added: %(value0)s. Existing or duplicate entries skipped: %(value1)s."
+
+msgid "Я проверил ФИО и группу и подтверждаю правильность данных"
+msgstr "I have checked my full name and group and confirm that the information is correct"
+
+msgid "ФИО и группа сохраняются один раз. После сохранения изменить их самостоятельно нельзя."
+msgstr "Your full name and group can be saved once and cannot then be changed by you."
+
+msgid "Сохранить профиль"
+msgstr "Save profile"
+
+msgid "Чтобы записаться, один раз укажите ФИО и группу в настройках."
+msgstr "To book a consultation, enter your full name and group once in Settings."
+
+msgid "Массовое создание учётных записей из Excel."
+msgstr "Create student accounts in bulk from Excel."
+
+msgid "Загрузите файл .xlsx с одним листом. В каждой строке столбца A должен находиться только номер студенческого билета; заголовок не нужен."
+msgstr "Upload a single-worksheet .xlsx file. Each row in column A must contain only a student ID number; do not add a header."
+
+msgid "Не более 1500 строк и 1 МБ за один импорт. Уже существующие номера и повторы в файле будут пропущены."
+msgstr "Up to 1,500 rows and 1 MB per import. Existing numbers and duplicate rows will be skipped."
+
+msgid "Начальный пароль создаётся автоматически: Student и первые две цифры номера. Например, для 1234567 пароль — Student12."
+msgstr "The initial password is generated automatically: Student followed by the first two digits. For example, 1234567 receives Student12."
+
+msgid "После первого входа студент должен один раз указать ФИО и группу в настройках. До этого записаться на консультацию нельзя."
+msgstr "After signing in for the first time, the student must enter their full name and group once in Settings. Consultation booking remains unavailable until then."
+
+msgid "Файл Excel"
+msgstr "Excel file"

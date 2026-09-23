@@ -29,13 +29,13 @@ def booking_problem(event, student, now=None):
     now = now or utcnow()
     if event.status != 'active' or not event.teacher or not event.teacher.active or event.teacher.deleted_at or not event.subject.active:
         return _('Запись на занятие закрыта.')
+    if not student.name_locked or not student.full_name or not student.group_id or not student.study_mode:
+        return _('Сначала укажите ФИО и группу в настройках.')
     course, graduated = student.academic_status(now)
     if graduated:
         return _('Обучение завершено. Обратитесь к администратору.')
     if event.registration_opens_at and now < event.registration_opens_at:
         return _('Запись на консультацию ещё не открыта.')
-    if not student.full_name:
-        return _('Сначала укажите ФИО в настройках.')
     if event.allowed_course != course or (event.group_id and event.group_id != student.group_id):
         return _('Занятие предназначено для другого курса или группы.')
     if event.starts_at < now + timedelta(hours=current_app.config['BOOKING_LEAD_HOURS']):

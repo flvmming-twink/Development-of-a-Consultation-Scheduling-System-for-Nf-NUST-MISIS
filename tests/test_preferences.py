@@ -88,13 +88,17 @@ def test_split_names_once_and_admin_correction(app, client):
         user = db.session.get(User, uid)
         user.full_name = None
         user.name_locked = False
+        user.study_mode = 'part_time'
         db.session.commit()
     sign_in(client)
-    data = dict(action='name', last_name='Петров', first_name='Иван', middle_name='', confirm_name='yes')
+    data = dict(action='profile', last_name='Петров', first_name='Иван', middle_name='',
+        group_id=app.config['IDS']['other_group'], confirm_name='yes')
     assert client.post('/settings', data=data).status_code == 302
     with app.app_context():
         user = db.session.get(User, uid)
         assert (user.full_name, user.last_name, user.first_name, user.middle_name) == ('Петров Иван', 'Петров', 'Иван', None)
+        assert user.group_id == app.config['IDS']['group']
+        assert user.study_mode == 'part_time'
     assert 'Привет, Иван!' in client.get('/events').text
     assert client.post('/settings', data={**data, 'first_name': 'Пётр'}).status_code == 403
     client.post('/logout')

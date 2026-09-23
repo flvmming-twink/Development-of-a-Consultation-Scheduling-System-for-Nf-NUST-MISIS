@@ -2,11 +2,12 @@ from flask_babel import gettext as _, lazy_gettext as _l
 import re
 from datetime import timedelta
 from functools import wraps
+from zoneinfo import ZoneInfo
 from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, session, url_for
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from werkzeug.security import generate_password_hash, check_password_hash
-from .models import db, User, LoginGate, AuditLog, utcnow
+from .models import db, User, Group, LoginGate, AuditLog, utcnow
 
 bp = Blueprint('auth', __name__)
 _dummy = generate_password_hash('not-an-account-password')
@@ -152,14 +153,28 @@ def settings():
                 if theme not in ('light','dark'):
                     raise ValueError(_('Выберите светлую или тёмную тему.'))
                 user.theme = theme
-            elif action == 'name':
+            elif action in ('name', 'profile'):
                 if user.role != 'student' or user.name_locked:
                     abort(403)
                 if request.form.get('confirm_name') != 'yes':
-                    raise ValueError(_('Подтвердите правильность ФИО.'))
+                    raise ValueError(_('Подтвердите правильность ФИО и группы.'))
+                group_id = request.form.get('group_id')
+                group = user.group
+                if not group:
+                    group = db.session.get(Group, int(group_id)) if group_id and group_id.isdigit() else None
+                    if not group or not group.active or not group.entry_year:
+                        raise ValueError(_('Выберите действующую группу с указанным годом поступления.'))
+                    today = utcnow().astimezone(ZoneInfo(current_app.config['APP_TIMEZONE'])).date()
+                    academic_year = today.year - (today.month < 9)
+                    course = academic_year - group.entry_year + 1
+                    if not 1 <= course <= 4:
+                        raise ValueError(_('Выбранная группа не относится к 1–4 курсу очного обучения. Обратитесь к администратору.'))
+                    user.group = group
+                    user.course = course
+                    user.study_mode = 'full_time'
                 user.set_name_parts(*name_parts(request.form))
                 user.name_locked = True
-                audit('student_name_set', user.id, user.full_name)
+                audit('student_name_set', user.id, f'{user.full_name}; group={group.name}')
             elif action == 'language':
                 language = request.form.get('language')
                 if language not in ('ru', 'en'):
@@ -192,4 +207,5 @@ def settings():
             db.session.rollback()
             flash(str(exc), 'error')
         return redirect(url_for('auth.settings'))
-    return render_template('settings.html')
+    groups = db.session.scalars(select(Group).where(Group.active).order_by(Group.name)).all() if g.user.role == 'student' else []
+    return render_template('settings.html', groups=groups)

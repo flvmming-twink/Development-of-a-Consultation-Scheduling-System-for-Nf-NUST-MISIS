@@ -59,3 +59,4 @@ label{display:block;font-size:12px;font-weight:600;margin-bottom:16px}input:not(
 .support-email{display:inline-block;font-size:16px;font-weight:600;overflow-wrap:anywhere}
 .dialog-confirm{justify-content:center;margin-top:26px}
 @media(max-width:600px){.login-page .main{padding:18px}.login-panel{padding:28px 22px 24px}.login-brand{width:min(100%,250px)}.login-heading h1{font-size:23px}.forgot-password-dialog{padding:32px 22px 24px}.login-page .alert{top:10px;width:calc(100% - 32px)}}
+.import-example{width:240px;margin:18px 0 20px}.import-example table{min-width:0}.import-example th,.import-example td{padding:7px 12px}
