@@ -51,10 +51,15 @@ def test_maintenance_cannot_be_changed_by_student_and_admin_preview_bypasses(app
 
 
 def test_language_before_login_persists_and_errors_are_translated(app, client):
-    assert 'Continue English' in client.get('/login').text
+    russian_page = client.get('/login').text
+    assert 'Continue English' in russian_page
+    assert 'Забыли пароль?' in russian_page
+    assert 'kurenkov.ee@yandex.ru' in russian_page
+    assert 'cookie' not in russian_page.lower()
     response = client.post('/language', data={'language': 'en', 'next': '/login'}, follow_redirects=True)
     assert '<html lang="en"' in response.text
     assert 'Log In' in response.text and 'Продолжить на русском' in response.text
+    assert 'Forgot your password?' in response.text
     bad = client.post('/login', data={'login': '2300431', 'password': 'wrong'})
     assert 'Incorrect username or password.' in bad.text
     sign_in(client)

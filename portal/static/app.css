@@ -20,3 +20,42 @@ label{display:block;font-size:12px;font-weight:600;margin-bottom:16px}input:not(
 .audit-dialog{width:min(100% - 32px,540px);max-height:calc(100vh - 32px);overflow:auto;border:1px solid var(--line);border-radius:6px;padding:24px;background:var(--panel);color:var(--text);box-shadow:0 16px 48px #0004}
 .audit-dialog::backdrop{background:#0009}.audit-dialog h2{margin-bottom:10px}.audit-dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:12px}
 @media(max-width:480px){.audit-dialog{padding:18px}.audit-dialog .form-grid{grid-template-columns:1fr}}
+
+/* Login photo: https://nf.misis.ru/images/university/nfmisis_1.jpg */
+.login-page{border-top:0;background:#26313c}
+.login-page .main{position:relative;isolation:isolate;min-height:100svh;padding:32px;display:grid;place-items:center;background:url('nfmisis-building.jpg') center/cover no-repeat}
+.login-page .main::before{content:"";position:absolute;z-index:-1;inset:0;background:rgba(10,20,34,.42)}
+.login-page .guest-header,.login-page .guest-footer{display:none}
+.login-page .alert{position:fixed;z-index:4;top:20px;left:50%;transform:translateX(-50%);margin:0;background:rgba(255,255,255,.96);box-shadow:0 8px 28px rgba(0,0,0,.2)}
+.login-shell{width:min(100%,470px);margin:auto}
+.login-panel{width:100%;padding:34px 40px 30px;border:1px solid rgba(255,255,255,.7);border-radius:8px;background:rgba(255,255,255,.88);box-shadow:0 20px 60px rgba(7,18,33,.28);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.login-brand{display:block;width:min(100%,286px);margin:0 auto 18px}
+.login-brand:hover{text-decoration:none}
+.login-logo{display:block;width:100%;height:auto;margin:0;object-fit:contain}
+.login-heading{text-align:center;margin-bottom:24px}
+.login-heading h1{font-size:25px;margin-bottom:5px;color:#252a35}
+.login-heading p{margin:0;color:#5e6572;font-size:14px}
+.login-form{width:100%;max-width:none;margin:0;padding:0;background:transparent}
+.login-form label{color:#363c48;margin-bottom:13px}
+.login-form input:not([type=radio]):not([type=checkbox]){min-height:46px;margin-top:5px;border-color:#9ca5b5;border-radius:6px;background:rgba(255,255,255,.9);color:#20242d;font-size:15px;padding:11px 13px}
+.login-form input::placeholder{color:#777f8e}
+.login-form input:focus{border-color:#0646e8;box-shadow:0 0 0 3px rgba(6,70,232,.14)}
+.login-form .password-field input{padding-right:48px!important}
+.login-form .reveal{top:6px;right:5px;width:34px;height:34px;color:#596171}
+.login-submit{min-height:46px;justify-content:center;margin-top:6px;border-radius:6px;font-size:15px}
+.forgot-password-link{display:block;margin:13px 0 0;padding:2px 0;border:0;background:transparent;color:#334b75;font-size:13px;text-decoration:underline;text-underline-offset:3px}
+.forgot-password-link:hover{color:#0646e8}
+.login-language{margin-top:22px;padding-top:18px;border-top:1px solid rgba(87,96,112,.25)}
+.login-language .text-link{color:#334b75;font-size:13px}
+.forgot-password-dialog{width:min(calc(100% - 32px),470px);padding:34px 38px 30px;border:1px solid rgba(255,255,255,.7);border-radius:8px;background:rgba(255,255,255,.96);color:#252a35;box-shadow:0 20px 65px rgba(0,0,0,.32);text-align:center}
+.forgot-password-dialog::backdrop{background:rgba(8,16,28,.64);backdrop-filter:blur(3px)}
+.forgot-password-dialog .dialog-close-form{position:absolute;top:10px;right:10px}
+.dialog-close{width:36px;height:36px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:transparent;color:#5e6572}
+.dialog-close:hover{background:#eef1f5;color:#20242d}
+.forgot-password-icon{width:48px;height:48px;display:grid;place-items:center;margin:0 auto 18px;border-radius:50%;background:#eaf0ff;color:#0646e8}
+.forgot-password-icon .lucide{width:23px;height:23px}
+.forgot-password-dialog h2{font-size:22px;margin-bottom:13px}
+.forgot-password-dialog p{margin:0 auto 12px;line-height:1.65;color:#4f5664}
+.support-email{display:inline-block;font-size:16px;font-weight:600;overflow-wrap:anywhere}
+.dialog-confirm{justify-content:center;margin-top:26px}
+@media(max-width:600px){.login-page .main{padding:18px}.login-panel{padding:28px 22px 24px}.login-brand{width:min(100%,250px)}.login-heading h1{font-size:23px}.forgot-password-dialog{padding:32px 22px 24px}.login-page .alert{top:10px;width:calc(100% - 32px)}}

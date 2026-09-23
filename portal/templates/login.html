@@ -1,14 +1,48 @@
 {% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
 {% block title %}{{ _('Вход') }}{% endblock %}
 {% block content %}
-<header class="guest-header"><span>{{ _('НОВОТРОИЦКИЙ ФИЛИАЛ') }}</span><a href="https://nf.misis.ru">{{ _('Сайт университета') }} <i data-lucide="arrow-up-right"></i></a></header>
-<section class="login-form">
-<img class="login-logo" src="{{ url_for('static',filename='misis-logo.png') }}" alt="{{ _('Новотроицкий филиал Университета МИСИС') }}">
-<h1>{{ _('Личный кабинет') }}</h1><p class="muted">{{ _('Запись на очные консультации') }}</p>
-<form method="post">{{ csrf() }}<label>{{ _('Логин') }}<input name="login" maxlength="120" value="{{ entered }}" autocomplete="username" placeholder="{{ _('Номер студенческого или рабочий логин') }}" required autofocus></label>
-<label>{{ _('Пароль') }}<div class="password-field"><input id="password" type="password" name="password" maxlength="128" autocomplete="current-password" required><button type="button" class="reveal" data-reveal="password" aria-label="{{ _('Показать пароль') }}" title="{{ _('Показать пароль') }}"><i data-lucide="eye"></i></button></div></label>
-<button class="button full" type="submit">{{ _('Войти') }} <i data-lucide="arrow-right"></i></button></form>
-<form class="login-language" method="post" action="{{ url_for('language.change') }}">{{ csrf() }}<input type="hidden" name="next" value="{{ url_for('auth.login') }}"><input type="hidden" name="language" value="{{ 'en' if language=='ru' else 'ru' }}"><button class="text-link" type="submit">{{ 'Continue English' if language=='ru' else 'Продолжить на русском' }}</button></form>
-<div class="help-box"><strong>{{ _('Не получается войти?') }}</strong><p>{{ _('Для восстановления доступа обратитесь к администратору.') }}</p></div>
-</section><footer class="guest-footer">{{ _('НФ НИТУ МИСИС') }}<span>{{ _('Консультации студентов и преподавателей') }}</span></footer>
+<section class="login-shell" aria-labelledby="login-title">
+  <div class="login-panel">
+    <a class="login-brand" href="https://nf.misis.ru" aria-label="{{ _('Сайт университета') }}">
+      <img class="login-logo" src="{{ url_for('static',filename='misis-logo.png') }}" alt="{{ _('Новотроицкий филиал Университета МИСИС') }}">
+    </a>
+    <div class="login-heading">
+      <h1 id="login-title">{{ _('Личный кабинет') }}</h1>
+      <p>{{ _('Запись на очные консультации') }}</p>
+    </div>
+    <form class="login-form" method="post">
+      {{ csrf() }}
+      <label>
+        <span>{{ _('Логин') }}</span>
+        <input name="login" maxlength="120" value="{{ entered }}" autocomplete="username" placeholder="{{ _('Номер студенческого или рабочий логин') }}" required autofocus>
+      </label>
+      <label>
+        <span>{{ _('Пароль') }}</span>
+        <div class="password-field">
+          <input id="password" type="password" name="password" maxlength="128" autocomplete="current-password" placeholder="{{ _('Пароль') }}" required>
+          <button type="button" class="reveal" data-reveal="password" aria-label="{{ _('Показать пароль') }}" title="{{ _('Показать пароль') }}"><i data-lucide="eye"></i></button>
+        </div>
+      </label>
+      <button class="button full login-submit" type="submit">{{ _('Войти') }}</button>
+    </form>
+    <button class="forgot-password-link" type="button" data-forgot-password-open>{{ _('Забыли пароль?') }}</button>
+    <form class="login-language" method="post" action="{{ url_for('language.change') }}">
+      {{ csrf() }}
+      <input type="hidden" name="next" value="{{ url_for('auth.login') }}">
+      <input type="hidden" name="language" value="{{ 'en' if language=='ru' else 'ru' }}">
+      <button class="text-link" type="submit">{{ 'Continue English' if language=='ru' else 'Продолжить на русском' }}</button>
+    </form>
+  </div>
+</section>
+
+<dialog class="forgot-password-dialog" data-forgot-password-dialog aria-labelledby="forgot-password-title">
+  <form method="dialog" class="dialog-close-form">
+    <button class="dialog-close" value="cancel" aria-label="{{ _('Закрыть') }}" title="{{ _('Закрыть') }}"><i data-lucide="x"></i></button>
+  </form>
+  <div class="forgot-password-icon"><i data-lucide="key-round"></i></div>
+  <h2 id="forgot-password-title">{{ _('Восстановление доступа') }}</h2>
+  <p>{{ _('Пожалуйста, обратитесь в 129 кабинет НФ НИТУ МИСИС к Егору Евгеньевичу Куренкову, или напишите на почту:') }}</p>
+  <a class="support-email" href="mailto:kurenkov.ee@yandex.ru">kurenkov.ee@yandex.ru</a>
+  <form method="dialog"><button class="button full dialog-confirm" value="close">{{ _('Закрыть') }}</button></form>
+</dialog>
 {% endblock %}

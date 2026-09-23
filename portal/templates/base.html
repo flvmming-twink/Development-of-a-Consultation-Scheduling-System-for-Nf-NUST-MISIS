@@ -9,7 +9,7 @@
   <script defer src="{{ url_for('static',filename='lucide.min.js') }}"></script>
   <script defer src="{{ url_for('static',filename='app.js') }}"></script>
 </head>
-<body class="{{ 'authenticated' if g.user and not maintenance_page else 'guest' }}" data-language="{{ language }}" data-selected-label="{{ _('Выбрано:') }}" data-show-password="{{ _('Показать пароль') }}" data-hide-password="{{ _('Скрыть пароль') }}">
+<body class="{{ 'authenticated' if g.user and not maintenance_page else 'guest' }}{{ ' login-page' if request.endpoint == 'auth.login' else '' }}" data-language="{{ language }}" data-selected-label="{{ _('Выбрано:') }}" data-show-password="{{ _('Показать пароль') }}" data-hide-password="{{ _('Скрыть пароль') }}">
 {% if g.user and not maintenance_page %}
 <aside class="sidebar">
   <a class="brand" href="{{ url_for('main.home') }}"><img class="logo-light" src="{{ url_for('static',filename='misis-logo.png') }}" alt="{{ _('НФ МИСИС') }}"><img class="logo-dark" src="{{ url_for('static',filename='misis-logo-white.png') }}" alt="{{ _('НФ МИСИС') }}"></a>

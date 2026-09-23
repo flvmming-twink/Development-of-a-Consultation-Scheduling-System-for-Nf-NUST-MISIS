@@ -1881,6 +1881,22 @@ msgstr "Download backup"
 msgid "Скрыть пароль"
 msgstr "Hide password"
 
+#: portal/templates/login.html
+msgid "Забыли пароль?"
+msgstr "Forgot your password?"
+
+#: portal/templates/login.html
+msgid "Закрыть"
+msgstr "Close"
+
+#: portal/templates/login.html
+msgid "Восстановление доступа"
+msgstr "Account access recovery"
+
+#: portal/templates/login.html
+msgid "Пожалуйста, обратитесь в 129 кабинет НФ НИТУ МИСИС к Егору Евгеньевичу Куренкову, или напишите на почту:"
+msgstr "Please visit Egor Evgenievich Kurenkov in room 129 at the NUST MISIS Novotroitsk branch, or email:"
+
 #: portal/avatars.py:27
 msgid ""
 "Слишком большое разрешение фотографии: максимум 16 мегапикселей и 8192 "

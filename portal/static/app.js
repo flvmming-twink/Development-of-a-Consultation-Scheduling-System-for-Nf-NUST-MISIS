@@ -137,3 +137,10 @@ if (serviceStatus) {
     } catch (_) { /* Keep the maintenance page during network interruptions. */ }
   }, 30000);
 }
+const forgotPasswordDialog = document.querySelector('[data-forgot-password-dialog]');
+if (forgotPasswordDialog) {
+  document.querySelector('[data-forgot-password-open]').addEventListener('click', () => forgotPasswordDialog.showModal());
+  forgotPasswordDialog.addEventListener('click', event => {
+    if (event.target === forgotPasswordDialog) forgotPasswordDialog.close();
+  });
+}
