@@ -1,0 +1,25 @@
+<dialog class="tutorial-dialog" data-tutorial-dialog aria-labelledby="tutorial-title"
+  data-auto-open="{{ '1' if show_tutorial else '0' }}"
+  data-status-url="{{ url_for('tutorials.status') if tutorial_video else '' }}"
+  data-unavailable="{{ _('Видео временно недоступно, попробуйте просмотреть его через настройки') }}">
+  <form id="tutorial-dismiss-form" method="post" action="{{ url_for('tutorials.dismiss') }}" data-tutorial-dismiss>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ request.full_path if request.method == 'GET' else request.path }}">
+  </form>
+  <button class="dialog-close tutorial-close" type="submit" form="tutorial-dismiss-form" title="{{ _('Закрыть') }}" aria-label="{{ _('Закрыть') }}"><i data-lucide="x"></i></button>
+  <div class="tutorial-heading">
+    <span class="eyebrow">{{ roles[g.user.role] }}</span>
+    <h2 id="tutorial-title">{{ _('Обучающее видео') }}</h2>
+  </div>
+  <div class="tutorial-player" data-tutorial-player>
+    <div class="tutorial-loading" data-tutorial-loading {% if not tutorial_video %}hidden{% endif %}>{{ _('Проверяем доступность видео…') }}</div>
+    <iframe hidden data-tutorial-frame title="{{ _('Видеоинструкция для роли %(value0)s', value0=roles[g.user.role]) }}" allow="clipboard-write; autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    <div class="tutorial-unavailable" data-tutorial-unavailable {% if tutorial_video %}hidden{% endif %}>
+      <i data-lucide="video-off"></i>
+      <p>{{ _('Видео временно недоступно, попробуйте просмотреть его через настройки') }}</p>
+    </div>
+  </div>
+  <div class="tutorial-actions">
+    <button class="button" type="submit" form="tutorial-dismiss-form">{{ _('Продолжить работу') }}</button>
+  </div>
+</dialog>

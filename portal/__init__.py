@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from flask import Flask, g, render_template, request, session, redirect, url_for, flash
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from sqlalchemy.exc import IntegrityError
-from .models import db, User, LoginGate, Notification, SiteSettings, utcnow
+from .models import db, User, LoginGate, Notification, SiteSettings, TutorialVideo, utcnow
 from flask_babel import gettext as _
 from sqlalchemy import select, func
 
@@ -63,6 +63,8 @@ def create_app(test_config=None):
     from .database_admin import bp as database_bp
     app.register_blueprint(avatars_bp)
     app.register_blueprint(database_bp)
+    from .tutorials import bp as tutorials_bp
+    app.register_blueprint(tutorials_bp)
     from .notifications import bp as notifications_bp
     app.register_blueprint(notifications_bp)
     from .cli import register_commands
@@ -100,7 +102,7 @@ def create_app(test_config=None):
             if request.endpoint == 'notifications.count':
                 return {'maintenance': True}, 503, {'Retry-After': '60'}
             return render_template('maintenance.html'), 503, {'Retry-After': '60'}
-        if g.user and g.user.must_change_password and request.endpoint not in ('auth.settings','auth.logout','static','language.change','main.service_status','admin.stop_impersonation','avatars.image'):
+        if g.user and g.user.must_change_password and request.endpoint not in ('auth.settings','auth.logout','static','language.change','main.service_status','admin.stop_impersonation','avatars.image','tutorials.status','tutorials.dismiss'):
             flash(_('Установите собственный пароль, чтобы продолжить.'), 'info')
             return redirect(url_for('auth.settings'))
 
@@ -109,7 +111,7 @@ def create_app(test_config=None):
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['Referrer-Policy'] = 'same-origin'
-        response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; font-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; font-src 'self'; frame-src https://rutube.ru; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
         if request.endpoint != 'static':
             response.headers['Cache-Control'] = 'no-store'
         return response
@@ -121,9 +123,12 @@ def create_app(test_config=None):
     @app.context_processor
     def common():
         unread = db.session.scalar(select(func.count(Notification.id)).where(Notification.user_id == g.user.id, Notification.read_at.is_(None))) if getattr(g, 'user', None) else 0
+        tutorial_video = db.session.get(TutorialVideo, g.user.role) if getattr(g, 'user', None) else None
         return {'now': utcnow(), 'language': current_language(), 'unread_notifications': unread, 'roles': {'student':_('Студент'), 'teacher':_('Преподаватель'), 'admin':_('Администратор')},
                 'statuses': {'active':_('Активна'),'cancelled':_('Отменена'),'pending':_('Не отмечено'),'present':_('Присутствовал'),'absent':_('Не явился')},
-                'lead_hours': app.config['BOOKING_LEAD_HOURS'], 'timezone_name': app.config['APP_TIMEZONE']}
+                'lead_hours': app.config['BOOKING_LEAD_HOURS'], 'timezone_name': app.config['APP_TIMEZONE'],
+                'tutorial_video': tutorial_video,
+                'show_tutorial': bool(getattr(g, 'user', None) and g.user.tutorial_seen_at is None)}
 
     @app.template_filter('action_label')
     def action_label(value):
@@ -149,7 +154,7 @@ def create_app(test_config=None):
             'maintenance_enabled':'Включено техническое обслуживание',
             'maintenance_disabled':'Выключено техническое обслуживание'
         }
-        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'))
+        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'), users_exported=_('Выгружены пользователи'), tutorial_updated=_('Обновлено обучающее видео'), tutorial_deleted=_('Удалено обучающее видео'), tutorial_dismissed=_('Закрыто обучающее видео'))
         return _(labels.get(value, value))
 
     @app.errorhandler(CSRFError)

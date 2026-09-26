@@ -144,3 +144,57 @@ if (forgotPasswordDialog) {
     if (event.target === forgotPasswordDialog) forgotPasswordDialog.close();
   });
 }
+const tutorialDialog = document.querySelector('[data-tutorial-dialog]');
+if (tutorialDialog) {
+  const form = tutorialDialog.querySelector('[data-tutorial-dismiss]');
+  const frame = tutorialDialog.querySelector('[data-tutorial-frame]');
+  const loading = tutorialDialog.querySelector('[data-tutorial-loading]');
+  const unavailable = tutorialDialog.querySelector('[data-tutorial-unavailable]');
+  let checked = false;
+  const showUnavailable = () => {
+    loading.hidden = true;
+    frame.hidden = true;
+    frame.removeAttribute('src');
+    unavailable.hidden = false;
+  };
+  const loadTutorial = async () => {
+    if (checked) return;
+    checked = true;
+    const statusUrl = tutorialDialog.dataset.statusUrl;
+    if (!statusUrl) { showUnavailable(); return; }
+    loading.hidden = false;
+    unavailable.hidden = true;
+    try {
+      const response = await fetch(statusUrl, {credentials: 'same-origin'});
+      const data = response.headers.get('content-type')?.includes('application/json') ? await response.json() : {};
+      if (!response.ok || !data.available || !data.embed_url) { showUnavailable(); return; }
+      frame.addEventListener('error', () => {
+        showUnavailable();
+      }, {once: true});
+      loading.hidden = true;
+      frame.hidden = false;
+      frame.src = data.embed_url;
+    } catch (_) { showUnavailable(); }
+  };
+  const openTutorial = () => {
+    if (!tutorialDialog.open) tutorialDialog.showModal();
+    loadTutorial();
+  };
+  const dismissTutorial = async () => {
+    try {
+      await fetch(form.action, {method: 'POST', body: new FormData(form), credentials: 'same-origin'});
+    } finally {
+      if (tutorialDialog.open) tutorialDialog.close();
+      tutorialDialog.dataset.autoOpen = '0';
+    }
+  };
+  form.addEventListener('submit', event => { event.preventDefault(); dismissTutorial(); });
+  tutorialDialog.addEventListener('cancel', event => { event.preventDefault(); dismissTutorial(); });
+  tutorialDialog.addEventListener('click', event => {
+    if (event.target !== tutorialDialog) return;
+    const box = tutorialDialog.getBoundingClientRect();
+    if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) dismissTutorial();
+  });
+  document.querySelectorAll('[data-tutorial-open]').forEach(button => button.addEventListener('click', openTutorial));
+  if (tutorialDialog.dataset.autoOpen === '1') openTutorial();
+}

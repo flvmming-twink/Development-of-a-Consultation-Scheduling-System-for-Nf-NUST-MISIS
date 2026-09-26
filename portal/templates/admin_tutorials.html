@@ -1,0 +1,25 @@
+{% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
+{% block title %}{{ _('Обучающие видео') }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>{{ _('Обучающие видео') }}</h1><p>{{ _('RUTUBE-инструкции для первого входа и раздела настроек.') }}</p></div></div>
+<div class="tutorial-admin-list">
+{% for role in ('student','teacher','admin') %}{% set video=videos.get(role) %}
+  <section class="tutorial-admin-row">
+    <div class="tutorial-role">
+      <h2>{{ roles[role] }}</h2>
+      {% if video %}<a href="{{ video.source_url }}" target="_blank" rel="noopener noreferrer">{{ video.source_url }}</a><small>{{ _('Обновлено:') }} {{ video.updated_at|localtime }}</small>
+      {% else %}<p class="muted">{{ _('Видео не настроено. Пользователь увидит сообщение о временной недоступности.') }}</p>{% endif %}
+    </div>
+    <form method="post" class="tutorial-url-form">
+      {{ csrf() }}<input type="hidden" name="role" value="{{ role }}"><input type="hidden" name="action" value="save">
+      <label>{{ _('Ссылка RUTUBE') }}<input type="url" name="source_url" value="{{ video.source_url if video else '' }}" maxlength="500" placeholder="https://rutube.ru/video/.../" required></label>
+      <button class="button" type="submit"><i data-lucide="save"></i>{{ _('Сохранить') }}</button>
+    </form>
+    {% if video %}<form method="post" data-confirm="{{ _('Удалить видео для роли «%(value0)s»?', value0=roles[role]) }}">
+      {{ csrf() }}<input type="hidden" name="role" value="{{ role }}"><input type="hidden" name="action" value="delete">
+      <button class="button secondary danger" type="submit"><i data-lucide="trash-2"></i>{{ _('Удалить') }}</button>
+    </form>{% endif %}
+  </section>
+{% endfor %}
+</div>
+{% endblock %}

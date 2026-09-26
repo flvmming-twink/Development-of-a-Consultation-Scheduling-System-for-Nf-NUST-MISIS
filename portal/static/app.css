@@ -59,4 +59,15 @@ label{display:block;font-size:12px;font-weight:600;margin-bottom:16px}input:not(
 .support-email{display:inline-block;font-size:16px;font-weight:600;overflow-wrap:anywhere}
 .dialog-confirm{justify-content:center;margin-top:26px}
 @media(max-width:600px){.login-page .main{padding:18px}.login-panel{padding:28px 22px 24px}.login-brand{width:min(100%,250px)}.login-heading h1{font-size:23px}.forgot-password-dialog{padding:32px 22px 24px}.login-page .alert{top:10px;width:calc(100% - 32px)}}
+.user-export-form{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:16px 0;margin-bottom:10px;border-block:1px solid var(--line)}
+.user-export-form label{margin:0}.user-export-form label:first-of-type{min-width:210px}.user-export-form .check{align-items:center;min-height:38px}.user-export-form small{width:100%}
+.tutorial-dialog{width:min(calc(100% - 32px),860px);max-height:calc(100vh - 32px);overflow:auto;border:1px solid var(--line);border-radius:6px;padding:24px;background:var(--panel);color:var(--text);box-shadow:0 18px 60px #0006}
+.tutorial-dialog::backdrop{background:#000b}.tutorial-dialog .tutorial-close{position:absolute;top:12px;right:12px;color:var(--muted)}
+.tutorial-heading{padding-right:46px}.tutorial-heading .eyebrow{margin-bottom:5px}.tutorial-heading h2{font-size:22px;margin-bottom:18px}
+.tutorial-player{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:#111;border:1px solid var(--line)}
+.tutorial-player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}.tutorial-loading,.tutorial-unavailable{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:24px;color:#fff;background:#17181c}
+.tutorial-unavailable .lucide{width:34px;height:34px;margin:0 auto 14px}.tutorial-unavailable p{margin:0;max-width:520px}.tutorial-actions{display:flex;justify-content:flex-end;margin-top:18px}
+.tutorial-admin-list{border-top:1px solid var(--line)}.tutorial-admin-row{display:grid;grid-template-columns:minmax(210px,.8fr) minmax(300px,1.5fr) auto;gap:22px;align-items:end;padding:22px 0;border-bottom:1px solid var(--line)}
+.tutorial-role h2{margin-bottom:7px}.tutorial-role a{display:block;overflow-wrap:anywhere;font-size:12px}.tutorial-role small{margin-top:7px}.tutorial-role p{margin:0}.tutorial-url-form{display:flex;align-items:flex-end;gap:10px}.tutorial-url-form label{flex:1;margin:0}.tutorial-admin-row>form:last-child{align-self:end}
+@media(max-width:850px){.tutorial-admin-row{grid-template-columns:1fr}.tutorial-url-form{align-items:stretch;flex-direction:column}.tutorial-url-form .button,.tutorial-admin-row>form:last-child .button{width:100%}.tutorial-dialog{padding:18px}}
 .import-example{width:240px;margin:18px 0 20px}.import-example table{min-width:0}.import-example th,.import-example td{padding:7px 12px}

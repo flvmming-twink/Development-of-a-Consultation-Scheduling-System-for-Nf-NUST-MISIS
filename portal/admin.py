@@ -10,13 +10,16 @@ from flask import Blueprint, abort, current_app, flash, g, redirect, render_temp
 from sqlalchemy import select, func, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.utils import get_column_letter
 from openpyxl.utils.exceptions import InvalidFileException
-from .models import db, User, Group, Department, Subject, Event, Booking, LoginGate, AuditLog, SiteSettings, utcnow
+from .models import db, User, Group, Department, Subject, Event, Booking, LoginGate, AuditLog, SiteSettings, TutorialVideo, utcnow
 from .auth import roles_required, normalize_login, hash_password, name_parts, check_password_distinct, lock_gate, clear_gate, audit
 from .services import integer, cancel_event, cancel_booking
 from .lifecycle import trash_users, restore_users
 from .notifications import notify
+from .tutorials import clear_rutube_availability_cache, normalize_rutube_url
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 MOSCOW = ZoneInfo('Europe/Moscow')
@@ -89,6 +92,73 @@ def department_from_form(data, current_id=None):
 def form_catalogs():
     return dict(groups=db.session.scalars(select(Group).order_by(Group.name)).all(),
         departments=db.session.scalars(select(Department).order_by(Department.name)).all())
+
+
+def excel_text(value):
+    value = str(value or '')
+    return "'" + value if value.startswith(('=', '+', '-', '@')) else value
+
+
+def user_status(user, gate):
+    if user.deleted_at:
+        return _('В корзине')
+    if user.dismissed_on:
+        return _('Уволен')
+    if not user.active:
+        return _('Отключён')
+    if gate and gate.permanent:
+        return _('Заблокирован')
+    if gate and gate.locked_until and gate.locked_until > utcnow():
+        return _('Временная блокировка')
+    return _('Активен')
+
+
+def local_stamp(value, date_only=False):
+    if not value:
+        return ''
+    if isinstance(value, date) and not isinstance(value, datetime):
+        return value.strftime('%d.%m.%Y')
+    fmt = '%d.%m.%Y' if date_only else '%d.%m.%Y %H:%M'
+    return value.astimezone(MOSCOW).strftime(fmt)
+
+
+def add_user_sheet(book, role, users, gates):
+    titles = {'student': _('Студенты'), 'teacher': _('Преподаватели'), 'admin': _('Администраторы')}
+    sheet = book.create_sheet(str(titles[role])[:31])
+    if role == 'student':
+        headers = [_('ID'), _('Номер студенческого'), _('Фамилия'), _('Имя'), _('Отчество'), _('Группа'),
+            _('Курс'), _('Форма обучения'), _('Профиль заполнен'), _('Статус'), _('Создан'), _('Удалён')]
+        rows = [[u.id, excel_text(u.login), excel_text(u.last_name), excel_text(u.first_name), excel_text(u.middle_name),
+            excel_text(u.group.name if u.group else ''), u.current_course if u.group else '',
+            _('Заочная') if u.study_mode == 'part_time' else _('Очная') if u.study_mode == 'full_time' else '',
+            _('Да') if u.name_locked and u.full_name and u.group else _('Нет'), user_status(u, gates.get(u.login)),
+            local_stamp(u.created_at), local_stamp(u.deleted_at)] for u in users]
+    elif role == 'teacher':
+        headers = [_('ID'), _('Логин'), _('Фамилия'), _('Имя'), _('Отчество'), _('Кафедра'), _('Дисциплины'),
+            _('Дата увольнения'), _('Статус'), _('Создан'), _('Удалён')]
+        rows = [[u.id, excel_text(u.login), excel_text(u.last_name), excel_text(u.first_name), excel_text(u.middle_name),
+            excel_text(u.department.name if u.department else ''), excel_text(', '.join(sorted(s.name for s in u.subjects))),
+            local_stamp(u.dismissed_on, True), user_status(u, gates.get(u.login)), local_stamp(u.created_at),
+            local_stamp(u.deleted_at)] for u in users]
+    else:
+        headers = [_('ID'), _('Логин'), _('Фамилия'), _('Имя'), _('Отчество'), _('Статус'), _('Создан'), _('Удалён')]
+        rows = [[u.id, excel_text(u.login), excel_text(u.last_name), excel_text(u.first_name), excel_text(u.middle_name),
+            user_status(u, gates.get(u.login)), local_stamp(u.created_at), local_stamp(u.deleted_at)] for u in users]
+    sheet.append(headers)
+    for row in rows:
+        sheet.append(row)
+    fill = PatternFill('solid', fgColor='0646E8')
+    for cell in sheet[1]:
+        cell.fill = fill
+        cell.font = Font(color='FFFFFF', bold=True)
+        cell.alignment = Alignment(vertical='center')
+    sheet.freeze_panes = 'A2'
+    sheet.auto_filter.ref = sheet.dimensions
+    sheet.row_dimensions[1].height = 24
+    for index, column in enumerate(sheet.columns, 1):
+        width = max(len(str(cell.value or '')) for cell in column)
+        sheet.column_dimensions[get_column_letter(index)].width = min(max(width + 2, 11), 42)
+    return len(rows)
 
 
 def student_logins_from_excel(upload):
@@ -267,6 +337,83 @@ def users():
     page = db.paginate(query, per_page=50, max_per_page=50, error_out=False)
     gates = {u.login:db.session.get(LoginGate,u.login) for u in page.items}
     return render_template('admin_users.html', page=page, gates=gates, **form_catalogs())
+
+
+@bp.post('/users/export')
+@roles_required('admin')
+def export_users():
+    scope = request.form.get('scope')
+    if scope not in ('student', 'teacher', 'all'):
+        abort(400)
+    include_deleted = request.form.get('include_deleted') == 'yes'
+    query = select(User).options(selectinload(User.group), selectinload(User.department), selectinload(User.subjects))
+    if scope != 'all':
+        query = query.where(User.role == scope)
+    if not include_deleted:
+        query = query.where(User.deleted_at.is_(None))
+    exported = db.session.scalars(query.order_by(User.role, User.login, User.id)).all()
+    gates = {gate.login: gate for gate in db.session.scalars(select(LoginGate).where(
+        LoginGate.login.in_({user.login for user in exported}))).all()} if exported else {}
+    book = Workbook()
+    book.remove(book.active)
+    roles_to_export = ('student', 'teacher', 'admin') if scope == 'all' else (scope,)
+    counts = {}
+    for role in roles_to_export:
+        counts[role] = add_user_sheet(book, role, [user for user in exported if user.role == role], gates)
+    book.properties.title = str(_('Выгрузка пользователей'))
+    book.properties.creator = 'НФ НИТУ МИСИС'
+    output = BytesIO()
+    book.save(output)
+    output.seek(0)
+    audit('users_exported', scope, f'include_deleted={include_deleted}; counts={counts}')
+    db.session.commit()
+    exported_at = datetime.now(MOSCOW)
+    return send_file(output, as_attachment=True,
+        download_name=f'users-{scope}-{exported_at:%d-%m-%Y-%H-%M-%S}.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', max_age=0)
+
+
+@bp.route('/tutorials', methods=['GET', 'POST'])
+@roles_required('admin')
+def tutorials():
+    if request.method == 'POST':
+        role = request.form.get('role')
+        if role not in ('student', 'teacher', 'admin'):
+            abort(400)
+        action = request.form.get('action')
+        try:
+            video = db.session.get(TutorialVideo, role)
+            if action == 'delete':
+                if video:
+                    db.session.delete(video)
+                    clear_rutube_availability_cache()
+                    audit('tutorial_deleted', role)
+                db.session.commit()
+                flash(_('Обучающее видео удалено. Пользователям будет показана заглушка.'), 'success')
+            elif action == 'save':
+                source_url = request.form.get('source_url', '').strip()
+                embed_url = normalize_rutube_url(source_url)
+                if not video:
+                    video = TutorialVideo(role=role)
+                    db.session.add(video)
+                video.source_url = source_url
+                video.embed_url = embed_url
+                video.updated_at = utcnow()
+                clear_rutube_availability_cache()
+                audit('tutorial_updated', role)
+                db.session.commit()
+                flash(_('Ссылка на обучающее видео сохранена.'), 'success')
+            else:
+                abort(400)
+            return redirect(url_for('admin.tutorials'))
+        except ValueError as exc:
+            db.session.rollback()
+            flash(str(exc), 'error')
+            return render_template('admin_tutorials.html', videos={
+                item.role: item for item in db.session.scalars(select(TutorialVideo)).all()
+            }), 400
+    videos = {item.role: item for item in db.session.scalars(select(TutorialVideo)).all()}
+    return render_template('admin_tutorials.html', videos=videos)
 
 @bp.route('/users/new', methods=['GET','POST'])
 @roles_required('admin')

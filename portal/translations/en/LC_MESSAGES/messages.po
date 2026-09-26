@@ -2500,3 +2500,123 @@ msgstr "After signing in for the first time, the student must enter their full n
 
 msgid "Файл Excel"
 msgstr "Excel file"
+
+msgid "Выгружены пользователи"
+msgstr "Users exported"
+
+msgid "Обновлено обучающее видео"
+msgstr "Tutorial video updated"
+
+msgid "Удалено обучающее видео"
+msgstr "Tutorial video removed"
+
+msgid "Закрыто обучающее видео"
+msgstr "Tutorial video dismissed"
+
+msgid "В корзине"
+msgstr "In Trash"
+
+msgid "Временная блокировка"
+msgstr "Temporarily locked"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Номер студенческого"
+msgstr "Student ID"
+
+msgid "Профиль заполнен"
+msgstr "Profile completed"
+
+msgid "Создан"
+msgstr "Created"
+
+msgid "Да"
+msgstr "Yes"
+
+msgid "Нет"
+msgstr "No"
+
+msgid "Выгрузка пользователей"
+msgstr "User export"
+
+msgid "Обучающее видео удалено. Пользователям будет показана заглушка."
+msgstr "Tutorial video removed. Users will see the unavailable-video message."
+
+msgid "Ссылка на обучающее видео сохранена."
+msgstr "Tutorial video link saved."
+
+msgid "Укажите ссылку на видео RUTUBE."
+msgstr "Enter a RUTUBE video link."
+
+msgid "Ссылка на видео слишком длинная."
+msgstr "The video link is too long."
+
+msgid "Используйте ссылку на видео с сайта rutube.ru по протоколу HTTPS."
+msgstr "Use an HTTPS video link from rutube.ru."
+
+msgid "Не удалось определить идентификатор видео RUTUBE из ссылки."
+msgstr "The RUTUBE video ID could not be determined from the link."
+
+msgid "Ссылка RUTUBE содержит некорректный ключ доступа."
+msgstr "The RUTUBE link contains an invalid access key."
+
+msgid "Обучающие видео"
+msgstr "Tutorial videos"
+
+msgid "RUTUBE-инструкции для первого входа и раздела настроек."
+msgstr "RUTUBE guides for first sign-in and Settings."
+
+msgid "Обновлено:"
+msgstr "Updated:"
+
+msgid "Видео не настроено. Пользователь увидит сообщение о временной недоступности."
+msgstr "The video is not configured. The user will see an unavailable-video message."
+
+msgid "Ссылка RUTUBE"
+msgstr "RUTUBE link"
+
+#, python-format
+msgid "Удалить видео для роли «%(value0)s»?"
+msgstr "Remove the video for the “%(value0)s” role?"
+
+msgid "Удалить"
+msgstr "Remove"
+
+msgid "Выгрузка Excel"
+msgstr "Excel export"
+
+msgid "Все пользователи"
+msgstr "All users"
+
+msgid "Включить пользователей из корзины"
+msgstr "Include users in Trash"
+
+msgid "Скачать XLSX"
+msgstr "Download XLSX"
+
+msgid "Пароли и их хеши в файл не включаются."
+msgstr "Passwords and password hashes are not included."
+
+msgid "Обучающее видео"
+msgstr "Tutorial video"
+
+#, python-format
+msgid "Инструкция для сценария «%(value0)s»."
+msgstr "Guide for the “%(value0)s” role."
+
+msgid "Открыть видеоинструкцию"
+msgstr "Open video guide"
+
+msgid "Видео временно недоступно, попробуйте просмотреть его через настройки"
+msgstr "The video is temporarily unavailable. Try opening it from Settings."
+
+msgid "Проверяем доступность видео…"
+msgstr "Checking video availability…"
+
+#, python-format
+msgid "Видеоинструкция для роли %(value0)s"
+msgstr "Video guide for the %(value0)s role"
+
+msgid "Продолжить работу"
+msgstr "Continue"

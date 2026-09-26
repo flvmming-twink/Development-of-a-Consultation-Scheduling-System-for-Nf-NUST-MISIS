@@ -58,6 +58,7 @@ class User(db.Model):
     theme = db.Column(db.String(8), nullable=False, default='light')
     language = db.Column(db.String(2), nullable=False, default='ru')
     event_view = db.Column(db.String(8), nullable=False, default='grid')
+    tutorial_seen_at = db.Column(db.DateTime(timezone=True))
     session_version = db.Column(db.Integer, nullable=False, default=1)
     created_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
     group = db.relationship(Group)
@@ -204,6 +205,14 @@ class SiteSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     maintenance = db.Column(db.Boolean, nullable=False, default=False)
     __table_args__ = (CheckConstraint('id = 1', name='ck_site_settings_singleton'),)
+
+class TutorialVideo(db.Model):
+    __tablename__ = 'tutorial_videos'
+    role = db.Column(db.String(12), primary_key=True)
+    source_url = db.Column(db.String(500), nullable=False)
+    embed_url = db.Column(db.String(500), nullable=False)
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+    __table_args__ = (CheckConstraint("role IN ('student','teacher','admin')", name='ck_tutorial_video_role'),)
 
 class UserAvatar(db.Model):
     __tablename__ = 'user_avatars'

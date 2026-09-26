@@ -24,7 +24,7 @@
     <a class="{{ 'selected' if ep=='main.event_form' }}" href="{{ url_for('main.event_form') }}">{{ _('Создать занятие') }} <span>+</span></a>
     <a class="{{ 'selected' if ep=='main.journal' }}" href="{{ url_for('main.journal') }}">{{ _('Журнал студентов') }}</a>
   {% else %}
-    {% for endpoint, label in [('admin.dashboard',_('Главная')),('admin.users',_('Пользователи')),('admin.catalogs',_('Справочники')),('admin.trash',_('Корзина')),('admin.events',_('Все занятия')),('main.journal',_('Журнал записей')),('admin.import_students',_('Импорт студентов')),('admin.logs',_('История действий')),('database_admin.index',_('База данных'))] %}
+    {% for endpoint, label in [('admin.dashboard',_('Главная')),('admin.users',_('Пользователи')),('admin.catalogs',_('Справочники')),('admin.trash',_('Корзина')),('admin.events',_('Все занятия')),('main.journal',_('Журнал записей')),('admin.import_students',_('Импорт студентов')),('admin.tutorials',_('Обучающие видео')),('admin.logs',_('История действий')),('database_admin.index',_('База данных'))] %}
     <a class="{{ 'selected' if ep==endpoint or (endpoint=='database_admin.index' and request.blueprint=='database_admin') }}" href="{{ url_for(endpoint) }}">{{ label }}</a>
     {% endfor %}
   {% endif %}
@@ -42,4 +42,5 @@
 {% block content %}{% endblock %}
 {% if g.user and not maintenance_page %}<footer>{{ _('Консультации · НФ НИТУ МИСИС') }} <span>{{ _('Поддержка учётных записей — администратор системы') }}</span></footer>{% endif %}
 </main>
+{% if g.user and not maintenance_page %}{% include 'tutorial_dialog.html' %}{% endif %}
 </body></html>

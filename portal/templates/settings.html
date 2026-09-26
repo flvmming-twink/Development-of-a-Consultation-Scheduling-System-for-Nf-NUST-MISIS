@@ -45,6 +45,9 @@
     <form method="post">{{ csrf() }}<input type="hidden" name="action" value="theme"><div class="theme-choice"><label><input type="radio" name="theme" value="light" {{ 'checked' if g.user.theme=='light' }}> {{ _('Светлая') }}</label><label><input type="radio" name="theme" value="dark" {{ 'checked' if g.user.theme=='dark' }}> {{ _('Тёмная') }}</label></div><button class="button secondary" type="submit">{{ _('Применить тему') }}</button></form>
     <h2 class="spaced">{{ _('Язык') }}</h2>
     <form method="post">{{ csrf() }}<input type="hidden" name="action" value="language"><label>{{ _('Язык интерфейса') }}<select name="language"><option value="ru" {{ 'selected' if language=='ru' }}>Русский</option><option value="en" {{ 'selected' if language=='en' }}>English</option></select></label><button class="button secondary" type="submit">{{ _('Сохранить язык') }}</button></form>
+    <h2 class="spaced">{{ _('Обучающее видео') }}</h2>
+    <p class="muted">{{ _('Инструкция для сценария «%(value0)s».', value0=roles[g.user.role]) }}</p>
+    <button class="button secondary" type="button" data-tutorial-open><i data-lucide="circle-play"></i>{{ _('Открыть видеоинструкцию') }}</button>
     <h2 class="spaced">{{ _('Смена пароля') }}</h2>
     <form method="post">{{ csrf() }}<input type="hidden" name="action" value="password">
       <label>{{ _('Текущий пароль') }}<input type="password" name="current_password" autocomplete="current-password" required maxlength="128"></label>

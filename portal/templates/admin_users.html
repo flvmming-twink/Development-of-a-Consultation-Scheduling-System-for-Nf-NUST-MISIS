@@ -10,6 +10,13 @@
   <label>{{ _('Статус') }}<select name="status"><option value="">{{ _('Все') }}</option>{% for key,label in [('graduated',_('К удалению')),('dismissed',_('Уволены')),('inactive',_('Отключены'))] %}<option value="{{ key }}" {{ 'selected' if request.args.get('status')==key }}>{{ label }}</option>{% endfor %}</select></label>
   <button class="button icon-button" title="{{ _('Применить фильтры') }}" aria-label="{{ _('Применить фильтры') }}"><i data-lucide="search"></i></button><a class="icon-button button secondary" href="{{ url_for('admin.users') }}" title="{{ _('Сбросить фильтры') }}" aria-label="{{ _('Сбросить фильтры') }}"><i data-lucide="rotate-ccw"></i></a>
 </form>
+<form class="user-export-form" method="post" action="{{ url_for('admin.export_users') }}">
+  {{ csrf() }}
+  <label>{{ _('Выгрузка Excel') }}<select name="scope" required><option value="student">{{ _('Студенты') }}</option><option value="teacher">{{ _('Преподаватели') }}</option><option value="all">{{ _('Все пользователи') }}</option></select></label>
+  <label class="check"><input type="checkbox" name="include_deleted" value="yes"> {{ _('Включить пользователей из корзины') }}</label>
+  <button class="button secondary" type="submit"><i data-lucide="file-spreadsheet"></i>{{ _('Скачать XLSX') }}</button>
+  <small>{{ _('Пароли и их хеши в файл не включаются.') }}</small>
+</form>
 <form method="post" action="{{ url_for('admin.users_bulk') }}" data-selection-form data-confirm="{{ _('Перенести выбранных пользователей в корзину? Вход будет отключён, будущие записи и занятия отменены. Восстановление доступно 10 дней.') }}">
 {{ csrf() }}<input type="hidden" name="action" value="trash">
 <div class="bulk-toolbar"><span data-selection-count>{{ _('Выбрано: 0') }}</span><button class="button secondary danger" data-selection-submit disabled><i data-lucide="trash-2"></i>{{ _('В корзину') }}</button></div>
