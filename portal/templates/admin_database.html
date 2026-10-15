@@ -35,7 +35,7 @@
 {% if plan %}
 <section class="database-section" id="cleanup-preview">
   <h2>{{ _('Будет удалено') }}</h2>
-  <dl>{% for key,label in [('users',_('Пользователи')),('events',_('Занятия')),('bookings',_('Записи')),('notifications',_('Уведомления')),('avatars',_('Фотографии')),('groups',_('Группы')),('departments',_('Кафедры')),('subjects',_('Дисциплины'))] %}<dt>{{ label }}</dt><dd>{{ plan[key]|length }}</dd>{% endfor %}</dl>
+  <dl>{% for key,label in [('users',_('Пользователи')),('events',_('Занятия')),('bookings',_('Записи')),('notifications',_('Уведомления')),('news_posts',_('Новости')),('news_reads',_('Отметки прочтения новостей')),('avatars',_('Фотографии')),('groups',_('Группы')),('departments',_('Кафедры')),('subjects',_('Дисциплины'))] %}<dt>{{ label }}</dt><dd>{{ plan[key]|length }}</dd>{% endfor %}</dl>
   {% if plan.users %}<div class="table-wrap"><table><thead><tr><th>{{ _('Логин') }}</th><th>{{ _('ФИО') }}</th><th>{{ _('Роль') }}</th></tr></thead><tbody>{% for user in plan.users[:100] %}<tr><td>{{ user.login }}</td><td>{{ user.full_name or '—' }}</td><td>{{ roles[user.role] }}</td></tr>{% endfor %}</tbody></table></div>{% if plan.users|length > 100 %}<p class="muted">{{ _('Показаны первые 100 пользователей. Итоговые количества включают всех выбранных.') }}</p>{% endif %}{% endif %}
   <form method="post" action="{{ url_for('database_admin.clear') }}" class="database-form spaced">
     {{ csrf() }}<input type="hidden" name="token" value="{{ token }}">

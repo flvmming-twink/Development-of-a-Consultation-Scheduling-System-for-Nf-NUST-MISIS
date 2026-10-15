@@ -10,12 +10,12 @@ from datetime import timedelta
 from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, send_file, session, url_for
 from flask_babel import gettext as _
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
-from sqlalchemy import delete, func, or_, select, text, update
+from sqlalchemy import delete, func, or_, select, text, tuple_, update
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import check_password_hash
 
 from .auth import audit, clear_gate, lock_gate, roles_required
-from .models import db, AuditLog, Booking, Department, Event, Group, LoginGate, Notification, Subject, User, UserAvatar, teacher_subject, utcnow
+from .models import db, AuditLog, Booking, Department, Event, Group, LoginGate, NewsPost, NewsRead, Notification, Subject, User, UserAvatar, teacher_subject, utcnow
 
 bp = Blueprint('database_admin', __name__, url_prefix='/admin/database')
 
@@ -90,8 +90,14 @@ def cleanup_plan(chosen):
         avatar_query = avatar_query.where(UserAvatar.user_id.in_(user_ids))
     else:
         avatar_query = avatar_query.where(UserAvatar.user_id != g.user.id)
+    news_posts = ids(NewsPost) if scope == 'all' else []
+    news_reads_query = select(NewsRead.user_id, NewsRead.post_id).order_by(NewsRead.user_id, NewsRead.post_id)
+    if scope != 'all':
+        news_reads_query = news_reads_query.where(NewsRead.user_id.in_(user_ids))
+    news_reads = [list(row) for row in db.session.execute(news_reads_query)]
     return dict(selection=chosen, users=users, events=event_ids, bookings=booking_ids,
         notifications=notification_ids, avatars=list(db.session.scalars(avatar_query)),
+        news_posts=news_posts, news_reads=news_reads,
         groups=ids(Group) if scope == 'all' else [], departments=ids(Department) if scope == 'all' else [],
         subjects=ids(Subject) if scope == 'all' else [])
 
@@ -106,7 +112,7 @@ def signer():
 
 def page(**kwargs):
     counts = {key: db.session.scalar(select(func.count()).select_from(model)) for key, model in
-              [('users', User), ('events', Event), ('bookings', Booking), ('avatars', UserAvatar)]}
+              [('users', User), ('events', Event), ('bookings', Booking), ('news', NewsPost), ('avatars', UserAvatar)]}
     return render_template('admin_database.html', counts=counts, language_return=url_for('database_admin.index'),
         groups=db.session.scalars(select(Group).order_by(Group.name)).all(),
         departments=db.session.scalars(select(Department).order_by(Department.name)).all(), **kwargs)
@@ -136,6 +142,10 @@ def preview():
 
 def apply_cleanup(plan):
     user_ids = [u['id'] for u in plan['users']]
+    if plan['news_reads']:
+        db.session.execute(delete(NewsRead).where(tuple_(NewsRead.user_id, NewsRead.post_id).in_(
+            [tuple(item) for item in plan['news_reads']])))
+    db.session.execute(delete(NewsPost).where(NewsPost.id.in_(plan['news_posts'])))
     db.session.execute(delete(Notification).where(Notification.id.in_(plan['notifications'])))
     db.session.execute(delete(Booking).where(Booking.id.in_(plan['bookings'])))
     db.session.execute(delete(Event).where(Event.id.in_(plan['events'])))
@@ -168,7 +178,7 @@ def clear():
         # Freeze membership and linked records through validation and deletion, including workers.
         db.session.execute(text('SET LOCAL lock_timeout = \'5s\''))
         db.session.execute(text('SELECT pg_advisory_xact_lock(824271)'))
-        db.session.execute(text('LOCK TABLE login_gates, users, events, bookings, notifications, user_avatars, teacher_subject, groups, departments, subjects, audit_log, site_settings IN EXCLUSIVE MODE'))
+        db.session.execute(text('LOCK TABLE login_gates, users, events, bookings, notifications, news_posts, news_reads, user_avatars, teacher_subject, groups, departments, subjects, audit_log, site_settings IN EXCLUSIVE MODE'))
         plan = cleanup_plan(selection(proof['selection']))
         if fingerprint(plan) != proof['digest']:
             raise ValueError(_('Данные изменились после предварительного просмотра. Проверьте состав очистки заново.'))

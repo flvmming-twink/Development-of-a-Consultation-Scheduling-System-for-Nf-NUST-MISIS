@@ -19,19 +19,22 @@
   {% if g.user.role == 'student' %}
     <a class="{{ 'selected' if ep=='main.events' }}" href="{{ url_for('main.events') }}">{{ _('Расписание') }} <span>↗</span></a>
     <a class="{{ 'selected' if ep=='main.bookings' }}" href="{{ url_for('main.bookings') }}">{{ _('Мои записи') }}</a>
+    <a class="{{ 'selected' if request.blueprint=='content' and ep.startswith('content.news') }}" href="{{ url_for('content.news') }}">{{ _('Новости') }} <span class="nav-counter">{{ unread_news or '' }}</span></a>
   {% elif g.user.role == 'teacher' %}
     <a class="{{ 'selected' if ep=='main.teacher' }}" href="{{ url_for('main.teacher') }}">{{ _('Мои занятия') }}</a>
     <a class="{{ 'selected' if ep=='main.event_form' }}" href="{{ url_for('main.event_form') }}">{{ _('Создать занятие') }} <span>+</span></a>
+    <a class="{{ 'selected' if request.blueprint=='content' and ep.startswith('content.news') }}" href="{{ url_for('content.news') }}">{{ _('Новости') }} <span class="nav-counter">{{ unread_news or '' }}</span></a>
     <a class="{{ 'selected' if ep=='main.journal' }}" href="{{ url_for('main.journal') }}">{{ _('Журнал студентов') }}</a>
   {% else %}
-    {% for endpoint, label in [('admin.dashboard',_('Главная')),('admin.users',_('Пользователи')),('admin.catalogs',_('Справочники')),('admin.trash',_('Корзина')),('admin.events',_('Все занятия')),('main.journal',_('Журнал записей')),('admin.import_students',_('Импорт студентов')),('admin.tutorials',_('Обучающие видео')),('admin.logs',_('История действий')),('database_admin.index',_('База данных'))] %}
-    <a class="{{ 'selected' if ep==endpoint or (endpoint=='database_admin.index' and request.blueprint=='database_admin') }}" href="{{ url_for(endpoint) }}">{{ label }}</a>
+    {% for endpoint, label in [('admin.dashboard',_('Главная')),('admin.users',_('Пользователи')),('admin.catalogs',_('Справочники')),('admin.trash',_('Корзина')),('admin.events',_('Все занятия')),('content.news',_('Новости')),('main.journal',_('Журнал записей')),('admin.import_students',_('Импорт студентов')),('admin.tutorials',_('Обучающие видео')),('admin.logs',_('История действий')),('database_admin.index',_('База данных'))] %}
+    <a class="{{ 'selected' if ep==endpoint or (endpoint=='content.news' and request.blueprint=='content' and ep.startswith('content.news')) or (endpoint=='database_admin.index' and request.blueprint=='database_admin') }}" href="{{ url_for(endpoint) }}">{{ label }}{% if endpoint=='content.news' %} <span class="nav-counter">{{ unread_news or '' }}</span>{% endif %}</a>
     {% endfor %}
   {% endif %}
     <a class="{{ 'selected' if ep=='notifications.inbox' }}" href="{{ url_for('notifications.inbox') }}">{{ _('Уведомления') }} <span data-notification-count>{{ unread_notifications or '' }}</span></a>
     <a class="{{ 'selected' if ep=='auth.settings' }}" href="{{ url_for('auth.settings') }}">{{ _('Настройки') }}</a>
+    <a class="{{ 'selected' if ep=='content.about' }}" href="{{ url_for('content.about') }}">{{ _('О проекте') }}</a>
   </nav>
-  <div class="sidebar-bottom">{{ avatar(g.user) }}<div><strong>{{ g.user.full_name or _('Заполните ФИО') }}</strong><small>{{ g.user.login }}</small></div></div>
+  <a class="sidebar-bottom" href="{{ url_for('auth.settings') }}" title="{{ _('Открыть настройки аккаунта') }}">{{ avatar(g.user) }}<span><strong>{{ g.user.full_name or _('Заполните ФИО') }}</strong><small>{{ g.user.login }}</small></span></a>
   <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">{{ _('Выйти из аккаунта') }}</button></form>
 </aside>
 {% endif %}

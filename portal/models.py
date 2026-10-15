@@ -200,10 +200,31 @@ class Notification(db.Model):
     read_at = db.Column(db.DateTime(timezone=True))
     __table_args__ = (UniqueConstraint('user_id', 'key', name='uq_notification_user_key'),)
 
+class NewsPost(db.Model):
+    __tablename__ = 'news_posts'
+    id = db.Column(db.Integer, primary_key=True)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), index=True)
+    author_name = db.Column(db.String(160), nullable=False)
+    author_role = db.Column(db.String(12), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    body_html = db.Column(db.Text, nullable=False)
+    published_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, index=True)
+    updated_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow, onupdate=utcnow)
+    author = db.relationship(User)
+    reads = db.relationship('NewsRead', cascade='all, delete-orphan', passive_deletes=True)
+    __table_args__ = (CheckConstraint("author_role IN ('teacher','admin')", name='ck_news_author_role'),)
+
+class NewsRead(db.Model):
+    __tablename__ = 'news_reads'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('news_posts.id', ondelete='CASCADE'), primary_key=True)
+    read_at = db.Column(db.DateTime(timezone=True), nullable=False, default=utcnow)
+
 class SiteSettings(db.Model):
     __tablename__ = 'site_settings'
     id = db.Column(db.Integer, primary_key=True)
     maintenance = db.Column(db.Boolean, nullable=False, default=False)
+    about_html = db.Column(db.Text, nullable=False, default='')
     __table_args__ = (CheckConstraint('id = 1', name='ck_site_settings_singleton'),)
 
 class TutorialVideo(db.Model):

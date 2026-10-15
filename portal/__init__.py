@@ -4,9 +4,9 @@ from zoneinfo import ZoneInfo
 from flask import Flask, g, render_template, request, session, redirect, url_for, flash
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from sqlalchemy.exc import IntegrityError
-from .models import db, User, LoginGate, Notification, SiteSettings, TutorialVideo, utcnow
+from .models import db, User, LoginGate, NewsPost, NewsRead, Notification, SiteSettings, TutorialVideo, utcnow
 from flask_babel import gettext as _
-from sqlalchemy import select, func
+from sqlalchemy import and_, select, func
 
 csrf = CSRFProtect()
 
@@ -67,6 +67,8 @@ def create_app(test_config=None):
     app.register_blueprint(tutorials_bp)
     from .notifications import bp as notifications_bp
     app.register_blueprint(notifications_bp)
+    from .content import bp as content_bp
+    app.register_blueprint(content_bp)
     from .cli import register_commands
     register_commands(app)
 
@@ -123,8 +125,12 @@ def create_app(test_config=None):
     @app.context_processor
     def common():
         unread = db.session.scalar(select(func.count(Notification.id)).where(Notification.user_id == g.user.id, Notification.read_at.is_(None))) if getattr(g, 'user', None) else 0
+        unread_news = db.session.scalar(select(func.count(NewsPost.id)).select_from(NewsPost).outerjoin(
+            NewsRead, and_(NewsRead.post_id == NewsPost.id, NewsRead.user_id == g.user.id)).where(
+                NewsRead.post_id.is_(None))) if getattr(g, 'user', None) else 0
         tutorial_video = db.session.get(TutorialVideo, g.user.role) if getattr(g, 'user', None) else None
-        return {'now': utcnow(), 'language': current_language(), 'unread_notifications': unread, 'roles': {'student':_('Студент'), 'teacher':_('Преподаватель'), 'admin':_('Администратор')},
+        return {'now': utcnow(), 'language': current_language(), 'unread_notifications': unread,
+                'unread_news': unread_news, 'roles': {'student':_('Студент'), 'teacher':_('Преподаватель'), 'admin':_('Администратор')},
                 'statuses': {'active':_('Активна'),'cancelled':_('Отменена'),'pending':_('Не отмечено'),'present':_('Присутствовал'),'absent':_('Не явился')},
                 'lead_hours': app.config['BOOKING_LEAD_HOURS'], 'timezone_name': app.config['APP_TIMEZONE'],
                 'tutorial_video': tutorial_video,
@@ -154,7 +160,7 @@ def create_app(test_config=None):
             'maintenance_enabled':'Включено техническое обслуживание',
             'maintenance_disabled':'Выключено техническое обслуживание'
         }
-        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'), users_exported=_('Выгружены пользователи'), tutorial_updated=_('Обновлено обучающее видео'), tutorial_deleted=_('Удалено обучающее видео'), tutorial_dismissed=_('Закрыто обучающее видео'))
+        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'), users_exported=_('Выгружены пользователи'), tutorial_updated=_('Обновлено обучающее видео'), tutorial_deleted=_('Удалено обучающее видео'), tutorial_dismissed=_('Закрыто обучающее видео'), about_updated=_('Обновлён раздел «О проекте»'), news_created=_('Опубликована новость'), news_updated=_('Изменена новость'), news_deleted=_('Удалена новость'))
         return _(labels.get(value, value))
 
     @app.errorhandler(CSRFError)

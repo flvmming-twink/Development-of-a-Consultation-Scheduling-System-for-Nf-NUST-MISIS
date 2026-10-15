@@ -14,6 +14,34 @@ document.querySelectorAll('[data-reveal]').forEach(button => {
     button.setAttribute('aria-label', button.title);
   });
 });
+document.querySelectorAll('[data-rich-editor]').forEach(editor => {
+  const input = editor.querySelector('[data-rich-input]');
+  const output = editor.querySelector('[data-rich-output]');
+  const sync = () => { output.value = input.innerHTML; };
+  editor.querySelectorAll('[data-rich-command]').forEach(button => button.addEventListener('click', () => {
+    input.focus();
+    document.execCommand(button.dataset.richCommand, false, null);
+    sync();
+  }));
+  const block = editor.querySelector('[data-rich-block]');
+  block.addEventListener('change', () => {
+    input.focus();
+    document.execCommand('formatBlock', false, block.value);
+    block.value = 'p';
+    sync();
+  });
+  editor.querySelector('[data-rich-link]').addEventListener('click', () => {
+    const label = document.documentElement.lang === 'en' ? 'Link address (https://...)' : 'Адрес ссылки (https://...)';
+    const href = window.prompt(label, 'https://');
+    if (!href) return;
+    input.focus();
+    document.execCommand('createLink', false, href);
+    sync();
+  });
+  input.addEventListener('input', sync);
+  input.closest('form').addEventListener('submit', sync);
+  sync();
+});
 const roleSelect = document.getElementById('account-role');
 if (roleSelect) {
   const syncRole = () => { document.querySelectorAll('[data-roles]').forEach(section => {

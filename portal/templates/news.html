@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import pagination with context %}
+{% block title %}{{ _('Новости') }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>{{ _('Новости') }}{% if unread_news %}<span class="total">{{ unread_news }} {{ _('непрочитано') }}</span>{% endif %}</h1><p>{{ _('Объявления администраторов и преподавателей.') }}</p></div>{% if g.user.role in ('teacher','admin') %}<a class="button" href="{{ url_for('content.news_new') }}"><i data-lucide="plus"></i>{{ _('Опубликовать') }}</a>{% endif %}</div>
+<form class="filters news-filters" method="get">
+  <label>{{ _('Преподаватель') }}<select name="teacher"><option value="">{{ _('Все преподаватели') }}</option>{% for teacher in teachers %}<option value="{{ teacher.id }}" {{ 'selected' if teacher_id==teacher.id }}>{{ teacher.full_name or teacher.login }}</option>{% endfor %}</select></label>
+  <label>{{ _('Дата публикации') }}<input type="date" name="date" value="{{ selected_date.isoformat() if selected_date else '' }}"></label>
+  <label>{{ _('Сортировка') }}<select name="sort"><option value="newest" {{ 'selected' if ordering=='newest' }}>{{ _('Сначала новые') }}</option><option value="oldest" {{ 'selected' if ordering=='oldest' }}>{{ _('Сначала старые') }}</option><option value="teacher" {{ 'selected' if ordering=='teacher' }}>{{ _('По преподавателю') }}</option></select></label>
+  <button class="button secondary" type="submit"><i data-lucide="filter"></i>{{ _('Применить') }}</button>
+</form>
+<div class="news-list">
+{% for post in page.items %}
+  <article class="news-card {{ 'admin-news' if post.author_role=='admin' }} {{ 'unread' if post.id not in read_ids }}">
+    <div class="news-meta"><span class="news-author">{{ _('Администратор') if post.author_role=='admin' else post.author_name }}</span><time>{{ post.published_at|localtime }}</time>{% if post.id not in read_ids %}<span class="badge">{{ _('Новое') }}</span>{% endif %}</div>
+    <h2><a href="{{ url_for('content.news_detail',post_id=post.id) }}">{{ post.title }}</a></h2>
+    <a class="news-open" href="{{ url_for('content.news_detail',post_id=post.id) }}">{{ _('Открыть новость') }} <i data-lucide="arrow-right"></i></a>
+  </article>
+{% else %}<p class="empty">{{ _('Новостей по выбранным условиям нет.') }}</p>{% endfor %}
+</div>
+{{ pagination(page) }}
+{% endblock %}

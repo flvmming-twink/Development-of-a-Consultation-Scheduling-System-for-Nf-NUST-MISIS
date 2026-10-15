@@ -2620,3 +2620,147 @@ msgstr "Video guide for the %(value0)s role"
 
 msgid "Продолжить работу"
 msgstr "Continue"
+
+msgid "Обновлён раздел «О проекте»"
+msgstr "About section updated"
+
+msgid "Опубликована новость"
+msgstr "News post published"
+
+msgid "Изменена новость"
+msgstr "News post updated"
+
+msgid "Удалена новость"
+msgstr "News post deleted"
+
+msgid "Форматированный текст слишком большой."
+msgstr "The formatted text is too large."
+
+msgid "Раздел «О проекте» сохранён."
+msgstr "The About section has been saved."
+
+msgid "Заголовок новости должен содержать от 3 до 200 символов."
+msgstr "The news title must contain between 3 and 200 characters."
+
+msgid "Добавьте текст новости."
+msgstr "Add the news text."
+
+msgid "Новость обновлена."
+msgstr "The news post has been updated."
+
+msgid "Новость опубликована."
+msgstr "The news post has been published."
+
+msgid "Новость удалена."
+msgstr "The news post has been deleted."
+
+msgid "О проекте"
+msgstr "About"
+
+msgid "Информация о системе записи на консультации."
+msgstr "Information about the consultation booking system."
+
+msgid "Описание проекта"
+msgstr "Project description"
+
+msgid "Форматированный текст"
+msgstr "Formatted text"
+
+msgid "Описание проекта пока не добавлено."
+msgstr "The project description has not been added yet."
+
+msgid "Новости"
+msgstr "News"
+
+msgid "Отметки прочтения новостей"
+msgstr "News read receipts"
+
+msgid "Открыть настройки аккаунта"
+msgstr "Open account settings"
+
+msgid "Форматирование текста"
+msgstr "Text formatting"
+
+msgid "Стиль абзаца"
+msgstr "Paragraph style"
+
+msgid "Обычный текст"
+msgstr "Normal text"
+
+msgid "Заголовок"
+msgstr "Heading"
+
+msgid "Подзаголовок"
+msgstr "Subheading"
+
+msgid "Полужирный"
+msgstr "Bold"
+
+msgid "Курсив"
+msgstr "Italic"
+
+msgid "Подчёркнутый"
+msgstr "Underline"
+
+msgid "Маркированный список"
+msgstr "Bulleted list"
+
+msgid "Нумерованный список"
+msgstr "Numbered list"
+
+msgid "Добавить ссылку"
+msgstr "Add link"
+
+msgid "Очистить форматирование"
+msgstr "Clear formatting"
+
+msgid "непрочитано"
+msgstr "unread"
+
+msgid "Объявления администраторов и преподавателей."
+msgstr "Announcements from administrators and teachers."
+
+msgid "Опубликовать"
+msgstr "Publish"
+
+msgid "Дата публикации"
+msgstr "Publication date"
+
+msgid "Сортировка"
+msgstr "Sort order"
+
+msgid "Сначала новые"
+msgstr "Newest first"
+
+msgid "Сначала старые"
+msgstr "Oldest first"
+
+msgid "По преподавателю"
+msgstr "By teacher"
+
+msgid "Открыть новость"
+msgstr "Open news post"
+
+msgid "Новостей по выбранным условиям нет."
+msgstr "No news posts match the selected filters."
+
+msgid "Все новости"
+msgstr "All news"
+
+msgid "Удалить эту новость без возможности восстановления?"
+msgstr "Permanently delete this news post?"
+
+msgid "Редактирование новости"
+msgstr "Edit news post"
+
+msgid "Новая новость"
+msgstr "New news post"
+
+msgid "Новость будет доступна всем пользователям системы."
+msgstr "The news post will be available to every system user."
+
+msgid "Текст новости"
+msgstr "News text"
+
+msgid "Сохранить изменения"
+msgstr "Save changes"

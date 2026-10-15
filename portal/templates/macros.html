@@ -1,4 +1,22 @@
 {% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+{% macro rich_editor(value='', label='') %}
+<div class="rich-editor" data-rich-editor>
+  <div class="rich-toolbar" role="toolbar" aria-label="{{ _('Форматирование текста') }}">
+    <label><span class="sr-only">{{ _('Стиль абзаца') }}</span><select data-rich-block title="{{ _('Стиль абзаца') }}">
+      <option value="p">{{ _('Обычный текст') }}</option><option value="h2">{{ _('Заголовок') }}</option><option value="h3">{{ _('Подзаголовок') }}</option>
+    </select></label>
+    <button type="button" data-rich-command="bold" title="{{ _('Полужирный') }}" aria-label="{{ _('Полужирный') }}"><strong>B</strong></button>
+    <button type="button" data-rich-command="italic" title="{{ _('Курсив') }}" aria-label="{{ _('Курсив') }}"><em>I</em></button>
+    <button type="button" data-rich-command="underline" title="{{ _('Подчёркнутый') }}" aria-label="{{ _('Подчёркнутый') }}"><u>U</u></button>
+    <button type="button" data-rich-command="insertUnorderedList" title="{{ _('Маркированный список') }}" aria-label="{{ _('Маркированный список') }}"><i data-lucide="list"></i></button>
+    <button type="button" data-rich-command="insertOrderedList" title="{{ _('Нумерованный список') }}" aria-label="{{ _('Нумерованный список') }}"><i data-lucide="list-ordered"></i></button>
+    <button type="button" data-rich-link title="{{ _('Добавить ссылку') }}" aria-label="{{ _('Добавить ссылку') }}"><i data-lucide="link"></i></button>
+    <button type="button" data-rich-command="removeFormat" title="{{ _('Очистить форматирование') }}" aria-label="{{ _('Очистить форматирование') }}"><i data-lucide="eraser"></i></button>
+  </div>
+  <div class="rich-input" contenteditable="true" role="textbox" aria-multiline="true" aria-label="{{ label or _('Форматированный текст') }}" data-rich-input>{{ value|safe }}</div>
+  <textarea name="body_html" data-rich-output hidden></textarea>
+</div>
+{% endmacro %}
 {% macro avatar(user, large=false) %}<span class="avatar {{ 'avatar-large' if large }}">{% if user.avatar %}<img src="{{ url_for('avatars.image',user_id=user.id) }}" alt="{{ _('Фотография профиля') }}" width="{{ 96 if large else 32 }}" height="{{ 96 if large else 32 }}">{% else %}{{ (user.full_name or user.login)[0] }}{% endif %}</span>{% endmacro %}
 {% macro language_switch() %}<form class="language-switch" method="post" action="{{ url_for('language.change') }}" aria-label="{{ _('Язык') }}">{{ csrf() }}<input type="hidden" name="next" value="{{ language_return|default(request.full_path) }}">{% for code,flag,label in [('ru','ru','Рус.'),('en','us','Eng.')] %}<button type="submit" name="language" value="{{ code }}" class="language-option {{ 'selected' if language==code }}" aria-pressed="{{ 'true' if language==code else 'false' }}" title="{{ 'Русский' if code=='ru' else 'English' }}"><img src="{{ url_for('static',filename='flag-'+flag+'.svg') }}" alt="" width="20" height="15">{{ label }}</button>{% endfor %}</form>{% endmacro %}
 {% macro view_switch() %}<form class="view-switch" method="post" action="{{ url_for('main.event_view') }}" aria-label="{{ _('Вид расписания') }}">{{ csrf() }}<input type="hidden" name="next" value="{{ url_for(request.endpoint, **dict(request.args, page=1)) }}">{% for value,icon,title in [('grid','layout-grid',_('Плитки')),('list','list',_('Список'))] %}<button type="submit" name="view" value="{{ value }}" class="icon-button {{ 'selected' if g.user.event_view==value }}" title="{{ title }}" aria-label="{{ title }}" aria-pressed="{{ 'true' if g.user.event_view==value else 'false' }}"><i data-lucide="{{ icon }}"></i></button>{% endfor %}</form>{% endmacro %}
