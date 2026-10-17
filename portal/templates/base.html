@@ -1,4 +1,4 @@
-{% from 'macros.html' import language_switch, avatar with context %}<!doctype html>
+{% from 'macros.html' import csrf, language_switch, avatar with context %}<!doctype html>
 <html lang="{{ language }}" data-theme="{{ g.user.theme if g.user and not maintenance_page else 'light' }}">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,18 +9,31 @@
   <script defer src="{{ url_for('static',filename='lucide.min.js') }}"></script>
   <script defer src="{{ url_for('static',filename='app.js') }}"></script>
 </head>
-<body class="{{ 'authenticated' if g.user and not maintenance_page else 'guest' }}{{ ' login-page' if request.endpoint == 'auth.login' else '' }}" data-language="{{ language }}" data-selected-label="{{ _('Выбрано:') }}" data-show-password="{{ _('Показать пароль') }}" data-hide-password="{{ _('Скрыть пароль') }}">
+<body class="{{ 'authenticated' if g.user and not maintenance_page else 'guest' }}{{ ' student-shell' if g.user and not maintenance_page and g.user.role == 'student' else '' }}{{ ' login-page' if request.endpoint == 'auth.login' else '' }}" data-language="{{ language }}" data-selected-label="{{ _('Выбрано:') }}" data-show-password="{{ _('Показать пароль') }}" data-hide-password="{{ _('Скрыть пароль') }}">
 {% if g.user and not maintenance_page %}
+{% if g.user.role == 'student' %}
+<header class="student-header">
+  <div class="student-header-inner">
+    <a class="student-brand" href="{{ url_for('main.events') }}">
+      <span class="student-brand-mark"><i data-lucide="graduation-cap"></i></span>
+      <span><strong>{{ _('МИСИС | Консультации') }}</strong><small>{{ _('Кабинет студента') }}</small></span>
+    </a>
+    <div class="student-header-actions">
+      {{ language_switch() }}
+      <a class="student-icon-button" href="{{ url_for('main.events', _anchor='student-news') }}" title="{{ _('Новости') }}" aria-label="{{ _('Новости') }}"><i data-lucide="newspaper"></i><span class="student-action-count">{{ unread_news or '' }}</span></a>
+      <a class="notification-bell student-icon-button" href="{{ url_for('notifications.inbox') }}" title="{{ _('Уведомления') }}" aria-label="{{ _('Уведомления') }}" data-notifications-url="{{ url_for('notifications.count') }}"><i data-lucide="bell"></i><span data-notification-count>{{ unread_notifications or '' }}</span></a>
+      <a class="sidebar-bottom" href="{{ url_for('auth.settings') }}" title="{{ _('Открыть настройки аккаунта') }}">{{ avatar(g.user) }}<span><strong>{{ g.user.full_name or _('Заполните ФИО') }}</strong><small>{{ _('Настройки') }}</small></span></a>
+      <form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button class="student-icon-button" type="submit" title="{{ _('Выйти из аккаунта') }}" aria-label="{{ _('Выйти из аккаунта') }}"><i data-lucide="log-out"></i></button></form>
+    </div>
+  </div>
+</header>
+{% else %}
 <aside class="sidebar">
   <a class="brand" href="{{ url_for('main.home') }}"><img class="logo-light" src="{{ url_for('static',filename='misis-logo.png') }}" alt="{{ _('НФ МИСИС') }}"><img class="logo-dark" src="{{ url_for('static',filename='misis-logo-white.png') }}" alt="{{ _('НФ МИСИС') }}"></a>
   <div class="nav-label">{{ roles[g.user.role] }}</div>
   <nav aria-label="{{ _('Главное меню') }}">
   {% set ep = request.endpoint %}
-  {% if g.user.role == 'student' %}
-    <a class="{{ 'selected' if ep=='main.events' }}" href="{{ url_for('main.events') }}">{{ _('Расписание') }} <span>↗</span></a>
-    <a class="{{ 'selected' if ep=='main.bookings' }}" href="{{ url_for('main.bookings') }}">{{ _('Мои записи') }}</a>
-    <a class="{{ 'selected' if request.blueprint=='content' and ep.startswith('content.news') }}" href="{{ url_for('content.news') }}">{{ _('Новости') }} <span class="nav-counter">{{ unread_news or '' }}</span></a>
-  {% elif g.user.role == 'teacher' %}
+  {% if g.user.role == 'teacher' %}
     <a class="{{ 'selected' if ep=='main.teacher' }}" href="{{ url_for('main.teacher') }}">{{ _('Мои занятия') }}</a>
     <a class="{{ 'selected' if ep=='main.event_form' }}" href="{{ url_for('main.event_form') }}">{{ _('Создать занятие') }} <span>+</span></a>
     <a class="{{ 'selected' if request.blueprint=='content' and ep.startswith('content.news') }}" href="{{ url_for('content.news') }}">{{ _('Новости') }} <span class="nav-counter">{{ unread_news or '' }}</span></a>
@@ -46,8 +59,9 @@
   <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="logout" type="submit">{{ _('Выйти из аккаунта') }}</button></form>
 </aside>
 {% endif %}
+{% endif %}
 <main id="main" class="main">
-{% if g.user and not maintenance_page %}<div class="topline"><span>{{ _('КОНСУЛЬТАЦИИ · НФ МИСИС') }}</span><div class="actions">{{ language_switch() }}<span class="header-date">{{ now|localtime('%d.%m.%Y') }}</span><a class="notification-bell" href="{{ url_for('notifications.inbox') }}" title="{{ _('Уведомления') }}" aria-label="{{ _('Уведомления') }}" data-notifications-url="{{ url_for('notifications.count') }}"><i data-lucide="bell"></i><span data-notification-count>{{ unread_notifications or '' }}</span></a></div></div>{% endif %}
+{% if g.user and not maintenance_page and g.user.role != 'student' %}<div class="topline"><span>{{ _('КОНСУЛЬТАЦИИ · НФ МИСИС') }}</span><div class="actions">{{ language_switch() }}<span class="header-date">{{ now|localtime('%d.%m.%Y') }}</span><a class="notification-bell" href="{{ url_for('notifications.inbox') }}" title="{{ _('Уведомления') }}" aria-label="{{ _('Уведомления') }}" data-notifications-url="{{ url_for('notifications.count') }}"><i data-lucide="bell"></i><span data-notification-count>{{ unread_notifications or '' }}</span></a></div></div>{% endif %}
 {% if g.admin_user %}<div class="impersonation-bar"><div><strong>{{ _('Сценарий:') }} {{ roles[g.user.role] }}</strong><span>{{ _('Вы смотрите сайт как') }} {{ g.user.login }}{{ _('. Администратор:') }} {{ g.admin_user.login }}.</span></div><form method="post" action="{{ url_for('admin.stop_impersonation') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">{{ _('Вернуться в админку') }}</button></form></div>{% endif %}
 {% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div role="status" class="alert {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
 {% block content %}{% endblock %}

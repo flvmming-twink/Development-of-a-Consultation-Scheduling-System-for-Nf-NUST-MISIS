@@ -1,14 +1,127 @@
-{% extends 'base.html' %}{% from 'macros.html' import pagination,view_switch,consultation_grid with context %}
-{% block title %}{{ _('Расписание') }}{% endblock %}
+{% extends 'base.html' %}{% from 'macros.html' import csrf, pagination, view_switch with context %}
+{% block title %}{{ _('Главная') }}{% endblock %}
 {% block content %}
-<div class="page-heading"><div><p class="greeting">{{ _('Привет, %(name)s!', name=g.user.first_name) if g.user.first_name else _('Привет!') }}</p><h1>{{ _('Найдите свою консультацию') }}</h1></div><a class="button secondary" href="{{ url_for('main.bookings') }}">{{ _('Мои записи') }} · {{ mine_count }}</a></div>
-<div class="notice"><strong>{{ _('Планируйте заранее') }}</strong><span>{{ _('Запись открыта до %(hours)s часов перед началом. Все занятия проходят очно.', hours=lead_hours) }}</span></div>
-{% if not g.user.name_locked or not g.user.group_id %}<div class="alert info"><a href="{{ url_for('auth.settings') }}">{{ _('Чтобы записаться, один раз укажите ФИО и группу в настройках.') }}</a></div>{% endif %}
-<form class="filters" method="get"><label>{{ _('Дисциплина') }}<select name="subject"><option value="">{{ _('Все дисциплины') }}</option>{% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if request.args.get('subject',type=int)==s.id }}>{{ s.name }}</option>{% endfor %}</select></label><label>{{ _('Преподаватель') }}<select name="teacher"><option value="">{{ _('Все преподаватели') }}</option>{% for t in teachers %}<option value="{{ t.id }}" {{ 'selected' if request.args.get('teacher',type=int)==t.id }}>{{ t.full_name }}</option>{% endfor %}</select></label><label>{{ _('Начиная с даты') }}<input type="date" name="date" value="{{ request.args.get('date','') }}"></label><label>{{ _('Доступность') }}<select name="mine"><option value="1" {{ 'selected' if request.args.get('mine','1')=='1' }}>{{ _('Мой курс и группа') }}</option><option value="0" {{ 'selected' if request.args.get('mine')=='0' }}>{{ _('Все занятия') }}</option></select></label><button class="button" type="submit">{{ _('Найти') }}</button><a class="reset" href="{{ url_for('main.events') }}">{{ _('Сбросить') }}</a></form>
-<div class="section-title"><h2>{{ _('Ближайшие занятия') }} <span class="total">{{ page.total }}</span></h2>{{ view_switch() }}</div>
-{% if g.user.event_view == 'list' %}
-<div class="table-wrap consultation-list"><table><thead><tr><th>{{ _('Занятие') }}</th><th>{{ _('Дата и время') }}</th><th>{{ _('Аудитория') }}</th><th>{{ _('Свободные места') }}</th><th></th></tr></thead><tbody>
-{% for e in page.items %}<tr><td><a href="{{ url_for('main.event_detail',event_id=e.id) }}"><strong>{{ e.subject.name }}</strong></a><small>{{ e.teacher.full_name if e.teacher else _('Удалённый преподаватель') }}</small></td><td>{{ e.starts_at|localtime }}<small>{{ e.ends_at|localtime('%H:%M') }}</small></td><td>{{ e.room }}</td><td>{{ e.capacity-e.occupied }} / {{ e.capacity }}</td><td><a class="icon-link" href="{{ url_for('main.event_detail',event_id=e.id) }}" title="{{ _('Открыть занятие') }}" aria-label="{{ _('Открыть занятие') }}"><i data-lucide="arrow-up-right"></i></a></td></tr>{% else %}<tr><td colspan="5" class="empty">{{ _('По этим условиям занятий пока нет. Измените фильтры или зайдите позже.') }}</td></tr>{% endfor %}
-</tbody></table></div>
-{% else %}{{ consultation_grid(page.items, problems) }}{% endif %}
-{{ pagination(page) }}{% endblock %}
+<div class="student-dashboard">
+  <section class="student-welcome" aria-labelledby="student-dashboard-title">
+    <div>
+      <p class="eyebrow">{{ _('Главная') }}</p>
+      <h1 id="student-dashboard-title">{{ _('Привет, %(name)s!', name=g.user.first_name) if g.user.first_name else _('Привет!') }}</h1>
+      <p>{{ _('Найдите свою консультацию') }}</p>
+    </div>
+    <a class="button" href="#available-consultations"><i data-lucide="search"></i>{{ _('Найти консультацию') }}</a>
+  </section>
+
+  <nav class="student-stats" aria-label="{{ _('Краткая информация') }}">
+    <a href="#my-bookings"><i data-lucide="calendar-check"></i><span><strong>{{ mine|length }}</strong>{{ _('Активные записи') }}</span></a>
+    <a href="#available-consultations"><i data-lucide="calendar-days"></i><span><strong>{{ page.total }}</strong>{{ _('Доступные занятия') }}</span></a>
+    <a href="{{ url_for('notifications.inbox') }}"><i data-lucide="bell"></i><span><strong>{{ unread_notifications }}</strong>{{ _('Непрочитанные уведомления') }}</span></a>
+  </nav>
+
+  {% if not g.user.name_locked or not g.user.group_id %}
+  <div class="alert info student-profile-alert"><i data-lucide="circle-alert"></i><a href="{{ url_for('auth.settings') }}">{{ _('Чтобы записаться, один раз укажите ФИО и группу в настройках.') }}</a></div>
+  {% endif %}
+
+  <section class="student-section" id="my-bookings" aria-labelledby="my-bookings-title">
+    <div class="student-section-heading">
+      <div><p class="eyebrow">{{ _('Ваше расписание') }}</p><h2 id="my-bookings-title">{{ _('Мои ближайшие записи') }} <span class="total">{{ mine|length }}</span></h2></div>
+      <a class="text-action" href="{{ url_for('main.bookings') }}" title="{{ _('Все записи и история') }}">{{ _('Все записи и история') }}<i data-lucide="arrow-right"></i></a>
+    </div>
+    {% if mine %}
+      {% set nearest = mine[0] %}
+      <article class="next-booking">
+        <div class="next-booking-main">
+          <div class="next-booking-title"><div><span class="eyebrow">{{ _('Ближайшая консультация') }}</span><h3><a href="{{ url_for('main.event_detail', event_id=nearest.event_id) }}">{{ nearest.event.subject.name }}</a></h3></div><span class="badge active">{{ _('Вы записаны') }}</span></div>
+          <div class="booking-facts">
+            <span><i data-lucide="calendar"></i>{{ nearest.starts_at|localtime('%d.%m.%Y') }}</span>
+            <span><i data-lucide="clock-3"></i>{{ nearest.starts_at|localtime('%H:%M') }} — {{ nearest.ends_at|localtime('%H:%M') }}</span>
+            <span><i data-lucide="map-pin"></i>{{ nearest.event.room }}</span>
+            <span><i data-lucide="user-round"></i>{{ nearest.event.teacher.full_name if nearest.event.teacher else _('Удалённый преподаватель') }}</span>
+          </div>
+        </div>
+        <div class="booking-actions">
+          <a class="button secondary" href="{{ url_for('main.event_detail', event_id=nearest.event_id) }}"><i data-lucide="arrow-up-right"></i>{{ _('Подробнее') }}</a>
+          {% if nearest.starts_at > now %}<form method="post" action="{{ url_for('main.cancel', booking_id=nearest.id) }}" data-confirm="{{ _('Отменить вашу запись на это занятие?') }}">{{ csrf() }}<input type="hidden" name="next" value="{{ url_for('main.events') }}#my-bookings"><button class="button danger secondary" type="submit"><i data-lucide="x"></i>{{ _('Отменить') }}</button></form>{% endif %}
+        </div>
+      </article>
+      {% if mine|length > 1 %}
+      <div class="upcoming-bookings" aria-label="{{ _('Следующие записи') }}">
+        {% for booking in mine[1:4] %}
+        <a href="{{ url_for('main.event_detail', event_id=booking.event_id) }}"><span><strong>{{ booking.event.subject.name }}</strong><small>{{ booking.event.teacher.full_name if booking.event.teacher else _('Удалённый преподаватель') }}</small></span><span class="upcoming-time">{{ booking.starts_at|localtime('%d.%m') }}<small>{{ booking.starts_at|localtime('%H:%M') }}</small></span><i data-lucide="chevron-right"></i></a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% else %}
+      <div class="student-empty"><i data-lucide="calendar-plus"></i><div><strong>{{ _('У вас пока нет предстоящих консультаций.') }}</strong><small>{{ _('Выберите подходящее занятие ниже.') }}</small></div><a class="button secondary" href="#available-consultations">{{ _('Найти консультацию') }}</a></div>
+    {% endif %}
+  </section>
+
+  <section class="student-section" id="available-consultations" aria-labelledby="available-title">
+    <div class="student-section-heading">
+      <div><p class="eyebrow">{{ _('Запись') }}</p><h2 id="available-title">{{ _('Доступные консультации') }} <span class="total">{{ page.total }}</span></h2><p>{{ _('Подберите занятие по дисциплине, преподавателю или дате.') }}</p></div>
+      {{ view_switch() }}
+    </div>
+    <form class="filters student-filters" method="get">
+      <label>{{ _('Дисциплина') }}<select name="subject"><option value="">{{ _('Все дисциплины') }}</option>{% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if request.args.get('subject',type=int)==s.id }}>{{ s.name }}</option>{% endfor %}</select></label>
+      <label>{{ _('Преподаватель') }}<select name="teacher"><option value="">{{ _('Все преподаватели') }}</option>{% for t in teachers %}<option value="{{ t.id }}" {{ 'selected' if request.args.get('teacher',type=int)==t.id }}>{{ t.full_name }}</option>{% endfor %}</select></label>
+      <label>{{ _('Начиная с даты') }}<input type="date" name="date" value="{{ request.args.get('date','') }}"></label>
+      <label>{{ _('Доступность') }}<select name="mine"><option value="1" {{ 'selected' if request.args.get('mine','1')=='1' }}>{{ _('Мой курс и группа') }}</option><option value="0" {{ 'selected' if request.args.get('mine')=='0' }}>{{ _('Все занятия') }}</option></select></label>
+      <button class="button" type="submit"><i data-lucide="search"></i>{{ _('Найти') }}</button>
+      <a class="reset" href="{{ url_for('main.events', _anchor='available-consultations') }}">{{ _('Сбросить') }}</a>
+    </form>
+    <div class="student-booking-note"><i data-lucide="info"></i><span>{{ _('Запись открыта до %(hours)s часов перед началом. Все занятия проходят очно.', hours=lead_hours) }}</span></div>
+
+    {% if g.user.event_view == 'list' %}
+    <div class="student-consultation-list">
+      {% for e in page.items %}
+      <article class="student-consultation-row">
+        <div class="consultation-subject"><span class="tag">{{ e.subject.name }}</span><h3><a href="{{ url_for('main.event_detail', event_id=e.id) }}">{{ e.teacher.full_name if e.teacher else _('Удалённый преподаватель') }}</a></h3><small>{{ _('Курс %(course)s', course=e.allowed_course) }} · {{ e.group.name if e.group else _('Все группы') }}</small></div>
+        <div class="consultation-fact"><i data-lucide="calendar-clock"></i><span><strong>{{ e.starts_at|localtime('%d.%m.%Y') }}</strong><small>{{ e.starts_at|localtime('%H:%M') }} — {{ e.ends_at|localtime('%H:%M') }}</small></span></div>
+        <div class="consultation-fact"><i data-lucide="map-pin"></i><span><strong>{{ e.room }}</strong><small>{{ _('Свободных мест: %(free)s из %(total)s', free=e.capacity-e.occupied, total=e.capacity) }}</small></span></div>
+        <div class="consultation-actions">
+          {% if not problems[e.id] %}<form method="post" action="{{ url_for('main.book', event_id=e.id) }}">{{ csrf() }}<button class="button" type="submit"><i data-lucide="calendar-plus"></i>{{ _('Записаться') }}</button></form>
+          {% elif e.id in booked_event_ids %}<span class="badge active">{{ _('Вы записаны') }}</span>
+          {% else %}<small class="booking-problem">{{ problems[e.id] }}</small>{% endif %}
+          <a class="icon-link" href="{{ url_for('main.event_detail', event_id=e.id) }}" title="{{ _('Открыть занятие') }}" aria-label="{{ _('Открыть занятие') }}"><i data-lucide="arrow-up-right"></i></a>
+        </div>
+      </article>
+      {% else %}<div class="student-empty"><i data-lucide="calendar-x"></i><div><strong>{{ _('По этим условиям занятий пока нет.') }}</strong><small>{{ _('Измените фильтры или зайдите позже.') }}</small></div></div>{% endfor %}
+    </div>
+    {% else %}
+    <div class="event-grid student-event-grid">
+      {% for e in page.items %}
+      <article class="event-card">
+        <div class="card-top"><span class="tag">{{ _('Курс %(course)s', course=e.allowed_course) }} · {{ e.group.name if e.group else _('Все группы') }}</span>{% if e.id in booked_event_ids %}<span class="badge active">{{ _('Вы записаны') }}</span>{% else %}<span class="badge">{{ e.capacity-e.occupied }} / {{ e.capacity }}</span>{% endif %}</div>
+        <h3><a href="{{ url_for('main.event_detail', event_id=e.id) }}">{{ e.subject.name }}</a></h3>
+        <p class="teacher-name">{{ e.teacher.full_name if e.teacher else _('Удалённый преподаватель') }}</p>
+        <div class="event-when"><div class="date-square">{{ e.starts_at|localtime('%d') }}<small>{{ e.starts_at|localtime('%m.%Y') }}</small></div><div><strong>{{ e.starts_at|localtime('%H:%M') }} — {{ e.ends_at|localtime('%H:%M') }}</strong><small><i data-lucide="map-pin"></i>{{ e.room }}</small></div></div>
+        {% if e.description %}<p class="description">{{ e.description }}</p>{% endif %}
+        <div class="card-bottom">
+          <span>{{ _('Свободных мест: %(free)s из %(total)s', free=e.capacity-e.occupied, total=e.capacity) }}</span>
+          {% if not problems[e.id] %}<form method="post" action="{{ url_for('main.book', event_id=e.id) }}">{{ csrf() }}<button class="button full" type="submit">{{ _('Записаться') }}<i data-lucide="arrow-right"></i></button></form>
+          {% else %}<a class="button secondary full" href="{{ url_for('main.event_detail', event_id=e.id) }}">{{ _('Подробнее') }}<i data-lucide="arrow-right"></i></a><small>{{ problems[e.id] }}</small>{% endif %}
+        </div>
+      </article>
+      {% else %}<div class="student-empty event-grid-empty"><i data-lucide="calendar-x"></i><div><strong>{{ _('По этим условиям занятий пока нет.') }}</strong><small>{{ _('Измените фильтры или зайдите позже.') }}</small></div></div>{% endfor %}
+    </div>
+    {% endif %}
+    {{ pagination(page) }}
+  </section>
+
+  <section class="student-section" id="student-news" aria-labelledby="student-news-title">
+    <div class="student-section-heading">
+      <div><p class="eyebrow">{{ _('Будьте в курсе') }}</p><h2 id="student-news-title">{{ _('Новости') }}{% if unread_news %}<span class="total"><span>{{ unread_news }}</span> {{ _('непрочитано') }}</span>{% endif %}</h2></div>
+      <a class="text-action" href="{{ url_for('content.news') }}" title="{{ _('Все новости') }}">{{ _('Все новости') }}<i data-lucide="arrow-right"></i></a>
+    </div>
+    <div class="student-news-list">
+      {% for post in news %}
+      <article class="student-news-row {{ 'admin-news' if post.author_role == 'admin' }} {{ 'unread' if post.id not in read_news_ids }}"><div class="news-meta"><span class="news-author">{{ _('Администратор') if post.author_role == 'admin' else post.author_name }}</span><time>{{ post.published_at|localtime }}</time>{% if post.id not in read_news_ids %}<span class="badge">{{ _('Новое') }}</span>{% endif %}</div><h3><a href="{{ url_for('content.news_detail', post_id=post.id) }}">{{ post.title }}</a></h3><a class="icon-link" href="{{ url_for('content.news_detail', post_id=post.id) }}" title="{{ _('Открыть новость') }}" aria-label="{{ _('Открыть новость') }}"><i data-lucide="arrow-up-right"></i></a></article>
+      {% else %}<div class="student-empty"><i data-lucide="newspaper"></i><div><strong>{{ _('Новостей пока нет.') }}</strong></div></div>{% endfor %}
+    </div>
+  </section>
+
+  <section class="student-section student-about" id="student-about" aria-labelledby="student-about-title">
+    <div class="student-section-heading"><div><p class="eyebrow">{{ _('Информация') }}</p><h2 id="student-about-title">{{ _('О проекте') }}</h2></div><a class="text-action" href="{{ url_for('content.about') }}" title="{{ _('Открыть раздел') }}">{{ _('Открыть раздел') }}<i data-lucide="arrow-right"></i></a></div>
+    {% if about_html %}<article class="formatted-content about-content">{{ about_html|safe }}</article>{% else %}<div class="student-empty"><i data-lucide="info"></i><div><strong>{{ _('Описание проекта пока не добавлено.') }}</strong></div></div>{% endif %}
+  </section>
+</div>
+{% endblock %}

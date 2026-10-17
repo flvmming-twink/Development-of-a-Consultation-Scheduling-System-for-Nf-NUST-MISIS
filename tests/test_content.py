@@ -95,6 +95,35 @@ def test_teacher_navigation_order_and_profile_link_without_name(app, client):
     assert 'Заполните ФИО' in html
 
 
+def test_student_dashboard_combines_primary_workflow_news_and_about(app, client):
+    teacher = app.test_client()
+    sign_in(teacher, 'teacher')
+    publish(teacher, 'Изменение расписания')
+
+    admin = app.test_client()
+    sign_in(admin, 'admin')
+    admin.post('/about', data={'body_html': '<p>Сервис очных консультаций.</p>'})
+
+    sign_in(client)
+    event_id = app.config['IDS']['first']
+    page = client.get('/events')
+    assert page.status_code == 200
+    assert 'class="authenticated student-shell"' in page.text
+    assert 'class="student-header"' in page.text
+    assert 'class="sidebar"' not in page.text
+    assert 'Мои ближайшие записи' in page.text
+    assert 'Доступные консультации' in page.text
+    assert 'Изменение расписания' in page.text
+    assert 'Сервис очных консультаций.' in page.text
+    assert f'action="/events/{event_id}/book"' in page.text
+
+    booked = client.post(f'/events/{event_id}/book', follow_redirects=True)
+    assert booked.status_code == 200
+    assert 'Ближайшая консультация' in booked.text
+    assert 'Базы данных' in booked.text
+    assert '/bookings/' in booked.text and '#my-bookings' in booked.text
+
+
 def test_news_delete_removes_read_state(app, client):
     sign_in(client, 'admin')
     post_id = publish(client, 'Временная новость')

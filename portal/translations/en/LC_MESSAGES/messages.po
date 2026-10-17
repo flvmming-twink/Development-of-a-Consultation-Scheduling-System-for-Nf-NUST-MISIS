@@ -3042,3 +3042,99 @@ msgstr "Your account does not have permission to change this user’s access."
 #, python-format
 msgid "%(value0)s прав"
 msgstr "%(value0)s permissions"
+
+#: portal/templates/base.html
+msgid "МИСИС | Консультации"
+msgstr "MISIS | Consultations"
+
+#: portal/templates/base.html
+msgid "Кабинет студента"
+msgstr "Student workspace"
+
+#: portal/templates/events.html
+msgid "Найти консультацию"
+msgstr "Find a consultation"
+
+#: portal/templates/events.html
+msgid "Краткая информация"
+msgstr "At a glance"
+
+#: portal/templates/events.html
+msgid "Активные записи"
+msgstr "Active bookings"
+
+#: portal/templates/events.html
+msgid "Доступные занятия"
+msgstr "Available sessions"
+
+#: portal/templates/events.html
+msgid "Непрочитанные уведомления"
+msgstr "Unread notifications"
+
+#: portal/templates/events.html
+msgid "Мои ближайшие записи"
+msgstr "My upcoming bookings"
+
+#: portal/templates/events.html
+msgid "Все записи и история"
+msgstr "All bookings and history"
+
+#: portal/templates/events.html
+msgid "Ближайшая консультация"
+msgstr "Next consultation"
+
+#: portal/templates/events.html
+msgid "Вы записаны"
+msgstr "Booked"
+
+#: portal/templates/events.html
+msgid "Подробнее"
+msgstr "Details"
+
+#: portal/templates/events.html
+msgid "Следующие записи"
+msgstr "More upcoming bookings"
+
+#: portal/templates/events.html
+msgid "У вас пока нет предстоящих консультаций."
+msgstr "You have no upcoming consultations yet."
+
+#: portal/templates/events.html
+msgid "Выберите подходящее занятие ниже."
+msgstr "Choose a suitable session below."
+
+#: portal/templates/events.html
+msgid "Запись"
+msgstr "Booking"
+
+#: portal/templates/events.html
+msgid "Доступные консультации"
+msgstr "Available consultations"
+
+#: portal/templates/events.html
+msgid "Подберите занятие по дисциплине, преподавателю или дате."
+msgstr "Find a session by subject, teacher, or date."
+
+#: portal/templates/events.html
+msgid "По этим условиям занятий пока нет."
+msgstr "No sessions match these filters yet."
+
+#: portal/templates/events.html
+msgid "Измените фильтры или зайдите позже."
+msgstr "Change the filters or check back later."
+
+#: portal/templates/events.html
+msgid "Будьте в курсе"
+msgstr "Stay informed"
+
+#: portal/templates/events.html
+msgid "Новостей пока нет."
+msgstr "No news yet."
+
+#: portal/templates/events.html
+msgid "Информация"
+msgstr "Information"
+
+#: portal/templates/events.html
+msgid "Открыть раздел"
+msgstr "Open section"
