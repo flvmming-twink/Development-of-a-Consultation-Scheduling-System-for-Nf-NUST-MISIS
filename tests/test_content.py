@@ -95,7 +95,7 @@ def test_teacher_navigation_order_and_profile_link_without_name(app, client):
     assert 'Заполните ФИО' in html
 
 
-def test_student_dashboard_combines_primary_workflow_news_and_about(app, client):
+def test_student_dashboard_focuses_on_consultations_and_links_content(app, client):
     teacher = app.test_client()
     sign_in(teacher, 'teacher')
     publish(teacher, 'Изменение расписания')
@@ -113,8 +113,14 @@ def test_student_dashboard_combines_primary_workflow_news_and_about(app, client)
     assert 'class="sidebar"' not in page.text
     assert 'Мои ближайшие записи' in page.text
     assert 'Доступные консультации' in page.text
-    assert 'Изменение расписания' in page.text
-    assert 'Сервис очных консультаций.' in page.text
+    assert 'href="/news"' in page.text
+    assert 'href="/about"' in page.text
+    assert 'Изменение расписания' not in page.text
+    assert 'Сервис очных консультаций.' not in page.text
+    assert 'misis-logo.png' in page.text and 'misis-logo-white.png' in page.text
+    assert 'misis-favicon.png' in page.text
+    assert 'Изменение расписания' in client.get('/news').text
+    assert 'Сервис очных консультаций.' in client.get('/about').text
     assert f'action="/events/{event_id}/book"' in page.text
 
     booked = client.post(f'/events/{event_id}/book', follow_redirects=True)

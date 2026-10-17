@@ -14,6 +14,13 @@ document.querySelectorAll('[data-reveal]').forEach(button => {
     button.setAttribute('aria-label', button.title);
   });
 });
+const themeForm = document.querySelector('[data-theme-form]');
+if (themeForm) {
+  themeForm.querySelectorAll('input[name=theme]').forEach(input => input.addEventListener('change', () => {
+    document.documentElement.dataset.theme = input.value;
+    themeForm.requestSubmit();
+  }));
+}
 document.querySelectorAll('[data-rich-editor]').forEach(editor => {
   const input = editor.querySelector('[data-rich-input]');
   const output = editor.querySelector('[data-rich-output]');

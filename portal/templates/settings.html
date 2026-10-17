@@ -42,7 +42,7 @@
   </section>
   <section class="panel">
     <h2>{{ _('Оформление') }}</h2><p class="muted">{{ _('Тема сохраняется в вашей учётной записи.') }}</p>
-    <form method="post">{{ csrf() }}<input type="hidden" name="action" value="theme"><div class="theme-choice"><label><input type="radio" name="theme" value="light" {{ 'checked' if g.user.theme=='light' }}> {{ _('Светлая') }}</label><label><input type="radio" name="theme" value="dark" {{ 'checked' if g.user.theme=='dark' }}> {{ _('Тёмная') }}</label></div><button class="button secondary" type="submit">{{ _('Применить тему') }}</button></form>
+    <form method="post" data-theme-form>{{ csrf() }}<input type="hidden" name="action" value="theme"><div class="theme-choice"><label><input type="radio" name="theme" value="light" {{ 'checked' if g.user.theme=='light' }}> {{ _('Светлая') }}</label><label><input type="radio" name="theme" value="dark" {{ 'checked' if g.user.theme=='dark' }}> {{ _('Тёмная') }}</label></div></form>
     <h2 class="spaced">{{ _('Язык') }}</h2>
     <form method="post">{{ csrf() }}<input type="hidden" name="action" value="language"><label>{{ _('Язык интерфейса') }}<select name="language"><option value="ru" {{ 'selected' if language=='ru' }}>Русский</option><option value="en" {{ 'selected' if language=='en' }}>English</option></select></label><button class="button secondary" type="submit">{{ _('Сохранить язык') }}</button></form>
     <h2 class="spaced">{{ _('Обучающее видео') }}</h2>

@@ -107,21 +107,5 @@
     {{ pagination(page) }}
   </section>
 
-  <section class="student-section" id="student-news" aria-labelledby="student-news-title">
-    <div class="student-section-heading">
-      <div><p class="eyebrow">{{ _('Будьте в курсе') }}</p><h2 id="student-news-title">{{ _('Новости') }}{% if unread_news %}<span class="total"><span>{{ unread_news }}</span> {{ _('непрочитано') }}</span>{% endif %}</h2></div>
-      <a class="text-action" href="{{ url_for('content.news') }}" title="{{ _('Все новости') }}">{{ _('Все новости') }}<i data-lucide="arrow-right"></i></a>
-    </div>
-    <div class="student-news-list">
-      {% for post in news %}
-      <article class="student-news-row {{ 'admin-news' if post.author_role == 'admin' }} {{ 'unread' if post.id not in read_news_ids }}"><div class="news-meta"><span class="news-author">{{ _('Администратор') if post.author_role == 'admin' else post.author_name }}</span><time>{{ post.published_at|localtime }}</time>{% if post.id not in read_news_ids %}<span class="badge">{{ _('Новое') }}</span>{% endif %}</div><h3><a href="{{ url_for('content.news_detail', post_id=post.id) }}">{{ post.title }}</a></h3><a class="icon-link" href="{{ url_for('content.news_detail', post_id=post.id) }}" title="{{ _('Открыть новость') }}" aria-label="{{ _('Открыть новость') }}"><i data-lucide="arrow-up-right"></i></a></article>
-      {% else %}<div class="student-empty"><i data-lucide="newspaper"></i><div><strong>{{ _('Новостей пока нет.') }}</strong></div></div>{% endfor %}
-    </div>
-  </section>
-
-  <section class="student-section student-about" id="student-about" aria-labelledby="student-about-title">
-    <div class="student-section-heading"><div><p class="eyebrow">{{ _('Информация') }}</p><h2 id="student-about-title">{{ _('О проекте') }}</h2></div><a class="text-action" href="{{ url_for('content.about') }}" title="{{ _('Открыть раздел') }}">{{ _('Открыть раздел') }}<i data-lucide="arrow-right"></i></a></div>
-    {% if about_html %}<article class="formatted-content about-content">{{ about_html|safe }}</article>{% else %}<div class="student-empty"><i data-lucide="info"></i><div><strong>{{ _('Описание проекта пока не добавлено.') }}</strong></div></div>{% endif %}
-  </section>
 </div>
 {% endblock %}

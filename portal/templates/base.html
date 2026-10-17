@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark"><meta name="description" content="{{ _('Запись на очные консультации преподавателей НФ НИТУ МИСИС') }}">
   <title>{% block title %}{{ _('Консультации') }}{% endblock %} {{ _('· НФ НИТУ МИСИС') }}</title>
-  <link rel="icon" type="image/svg+xml" href="{{ url_for('static',filename='favicon.svg') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static',filename='misis-favicon.png') }}">
   <link rel="stylesheet" href="{{ url_for('static',filename='app.css') }}">
   <script defer src="{{ url_for('static',filename='lucide.min.js') }}"></script>
   <script defer src="{{ url_for('static',filename='app.js') }}"></script>
@@ -20,10 +20,12 @@
     </a>
     <div class="student-header-actions">
       {{ language_switch() }}
-      <a class="student-icon-button" href="{{ url_for('main.events', _anchor='student-news') }}" title="{{ _('Новости') }}" aria-label="{{ _('Новости') }}"><i data-lucide="newspaper"></i><span class="student-action-count">{{ unread_news or '' }}</span></a>
+      <a class="student-icon-button" href="{{ url_for('content.news') }}" title="{{ _('Новости') }}" aria-label="{{ _('Новости') }}"><i data-lucide="newspaper"></i><span class="student-action-count">{{ unread_news or '' }}</span></a>
+      <a class="student-icon-button" href="{{ url_for('content.about') }}" title="{{ _('О проекте') }}" aria-label="{{ _('О проекте') }}"><i data-lucide="info"></i></a>
       <a class="notification-bell student-icon-button" href="{{ url_for('notifications.inbox') }}" title="{{ _('Уведомления') }}" aria-label="{{ _('Уведомления') }}" data-notifications-url="{{ url_for('notifications.count') }}"><i data-lucide="bell"></i><span data-notification-count>{{ unread_notifications or '' }}</span></a>
       <a class="sidebar-bottom" href="{{ url_for('auth.settings') }}" title="{{ _('Открыть настройки аккаунта') }}">{{ avatar(g.user) }}<span><strong>{{ g.user.full_name or _('Заполните ФИО') }}</strong><small>{{ _('Настройки') }}</small></span></a>
       <form method="post" action="{{ url_for('auth.logout') }}">{{ csrf() }}<button class="student-icon-button" type="submit" title="{{ _('Выйти из аккаунта') }}" aria-label="{{ _('Выйти из аккаунта') }}"><i data-lucide="log-out"></i></button></form>
+      <a class="student-header-logo" href="{{ url_for('main.events') }}" title="{{ _('Главная') }}" aria-label="{{ _('Главная') }}"><img class="logo-light" src="{{ url_for('static',filename='misis-logo.png') }}" alt="{{ _('НФ МИСИС') }}"><img class="logo-dark" src="{{ url_for('static',filename='misis-logo-white.png') }}" alt="{{ _('НФ МИСИС') }}"></a>
     </div>
   </div>
 </header>

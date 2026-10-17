@@ -321,6 +321,9 @@ def test_theme_password_and_transliteration(app,client):
     assert transliterate_surname('Бой')=='Boj'
     assert transliterate_surname('Табельская')=='Tabelskaya'
     sign_in(client)
+    settings=client.get('/settings').text
+    assert 'data-theme-form' in settings
+    assert 'Применить тему' not in settings
     html=client.post('/settings',data={'action':'theme','theme':'dark'},follow_redirects=True).text
     assert 'data-theme="dark"' in html
     client.post('/settings',data={'action':'password','current_password':'Student','new_password':'StudentNew!','repeat_password':'StudentNew!'})

@@ -7,7 +7,7 @@ from sqlalchemy import select, or_
 from sqlalchemy.orm import selectinload
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
-from .models import db, User, Group, Subject, Event, Booking, NewsPost, NewsRead, SiteSettings, utcnow
+from .models import db, User, Group, Subject, Event, Booking, utcnow
 from .auth import roles_required, audit
 from .permissions import has_admin_permission
 from .services import book_event, cancel_booking, cancel_event, save_event, booking_problem
@@ -79,20 +79,12 @@ def events():
         if not problem and any(b.starts_at < event.ends_at and b.ends_at > event.starts_at for b in mine):
             problem = _('Пересекается с вашей записью.')
         problems[event.id] = problem
-    news = db.session.scalars(select(NewsPost).order_by(
-        NewsPost.published_at.desc(), NewsPost.id.desc()).limit(4)).all()
-    news_ids = [post.id for post in news]
-    read_news_ids = set(db.session.scalars(select(NewsRead.post_id).where(
-        NewsRead.user_id == g.user.id, NewsRead.post_id.in_(news_ids))).all()) if news_ids else set()
-    settings = db.session.get(SiteSettings, 1)
     return render_template(
         'events.html', page=page, problems=problems, mine=mine,
         booked_event_ids={booking.event_id for booking in mine},
         subjects=db.session.scalars(select(Subject).where(Subject.active).order_by(Subject.name)).all(),
         teachers=db.session.scalars(select(User).where(
             User.role == 'teacher', User.active, User.deleted_at.is_(None)).order_by(User.full_name)).all(),
-        news=news, read_news_ids=read_news_ids,
-        about_html=settings.about_html if settings else '',
     )
 
 @bp.post('/events/<int:event_id>/book')
