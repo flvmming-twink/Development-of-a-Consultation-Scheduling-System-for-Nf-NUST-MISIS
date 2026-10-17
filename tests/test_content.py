@@ -117,6 +117,8 @@ def test_student_dashboard_focuses_on_consultations_and_links_content(app, clien
     assert 'href="/about"' in page.text
     assert 'Изменение расписания' not in page.text
     assert 'Сервис очных консультаций.' not in page.text
+    assert 'student-brand-mark' not in page.text
+    assert page.text.index('class="student-header-logo"') < page.text.index('class="student-header-actions"')
     assert 'misis-logo.png' in page.text and 'misis-logo-white.png' in page.text
     assert 'misis-favicon.png' in page.text
     assert 'Изменение расписания' in client.get('/news').text
