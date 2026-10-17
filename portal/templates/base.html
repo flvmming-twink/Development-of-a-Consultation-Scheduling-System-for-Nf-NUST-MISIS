@@ -26,9 +26,17 @@
     <a class="{{ 'selected' if request.blueprint=='content' and ep.startswith('content.news') }}" href="{{ url_for('content.news') }}">{{ _('Новости') }} <span class="nav-counter">{{ unread_news or '' }}</span></a>
     <a class="{{ 'selected' if ep=='main.journal' }}" href="{{ url_for('main.journal') }}">{{ _('Журнал студентов') }}</a>
   {% else %}
-    {% for endpoint, label in [('admin.dashboard',_('Главная')),('admin.users',_('Пользователи')),('admin.catalogs',_('Справочники')),('admin.trash',_('Корзина')),('admin.events',_('Все занятия')),('content.news',_('Новости')),('main.journal',_('Журнал записей')),('admin.import_students',_('Импорт студентов')),('admin.tutorials',_('Обучающие видео')),('admin.logs',_('История действий')),('database_admin.index',_('База данных'))] %}
-    <a class="{{ 'selected' if ep==endpoint or (endpoint=='content.news' and request.blueprint=='content' and ep.startswith('content.news')) or (endpoint=='database_admin.index' and request.blueprint=='database_admin') }}" href="{{ url_for(endpoint) }}">{{ label }}{% if endpoint=='content.news' %} <span class="nav-counter">{{ unread_news or '' }}</span>{% endif %}</a>
-    {% endfor %}
+    <a class="{{ 'selected' if ep=='admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">{{ _('Главная') }}</a>
+    {% if can_admin('users.manage') or can_admin('admins.manage') %}<a class="{{ 'selected' if ep=='admin.users' }}" href="{{ url_for('admin.users') }}">{{ _('Пользователи') }}</a>{% endif %}
+    {% if can_admin('catalogs.manage') %}<a class="{{ 'selected' if ep=='admin.catalogs' }}" href="{{ url_for('admin.catalogs') }}">{{ _('Справочники') }}</a>{% endif %}
+    {% if can_admin('users.manage') or can_admin('admins.manage') %}<a class="{{ 'selected' if ep=='admin.trash' }}" href="{{ url_for('admin.trash') }}">{{ _('Корзина') }}</a>{% endif %}
+    {% if can_admin('events.manage') %}<a class="{{ 'selected' if ep=='admin.events' }}" href="{{ url_for('admin.events') }}">{{ _('Все занятия') }}</a>{% endif %}
+    <a class="{{ 'selected' if request.blueprint=='content' and ep.startswith('content.news') }}" href="{{ url_for('content.news') }}">{{ _('Новости') }} <span class="nav-counter">{{ unread_news or '' }}</span></a>
+    {% if can_admin('events.manage') %}<a class="{{ 'selected' if ep=='main.journal' }}" href="{{ url_for('main.journal') }}">{{ _('Журнал записей') }}</a>{% endif %}
+    {% if can_admin('users.import') %}<a class="{{ 'selected' if ep=='admin.import_students' }}" href="{{ url_for('admin.import_students') }}">{{ _('Импорт студентов') }}</a>{% endif %}
+    {% if can_admin('tutorials.manage') %}<a class="{{ 'selected' if ep=='admin.tutorials' }}" href="{{ url_for('admin.tutorials') }}">{{ _('Обучающие видео') }}</a>{% endif %}
+    {% if can_admin('audit.view') %}<a class="{{ 'selected' if ep=='admin.logs' }}" href="{{ url_for('admin.logs') }}">{{ _('История действий') }}</a>{% endif %}
+    {% if can_admin('database.export') or can_admin('database.clear') %}<a class="{{ 'selected' if request.blueprint=='database_admin' }}" href="{{ url_for('database_admin.index') }}">{{ _('База данных') }}</a>{% endif %}
   {% endif %}
     <a class="{{ 'selected' if ep=='notifications.inbox' }}" href="{{ url_for('notifications.inbox') }}">{{ _('Уведомления') }} <span data-notification-count>{{ unread_notifications or '' }}</span></a>
     <a class="{{ 'selected' if ep=='auth.settings' }}" href="{{ url_for('auth.settings') }}">{{ _('Настройки') }}</a>

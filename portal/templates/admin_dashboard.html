@@ -1,11 +1,41 @@
-{% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
+{% extends 'base.html' %}
+{% from 'macros.html' import csrf with context %}
 {% block title %}{{ _('Главная') }}{% endblock %}
 {% block content %}
-<div class="page-heading"><div><div class="eyebrow">{{ _('УПРАВЛЕНИЕ СИСТЕМОЙ') }}</div><h1>{{ _('Главная') }}</h1></div><a class="button" href="{{ url_for('admin.user_new') }}"><i data-lucide="user-plus"></i>{{ _('Добавить пользователя') }}</a></div>
+<div class="page-heading">
+  <div><div class="eyebrow">{{ _('УПРАВЛЕНИЕ СИСТЕМОЙ') }}</div><h1>{{ _('Главная') }}</h1></div>
+  {% if can_admin('users.manage') or can_admin('admins.manage') %}<a class="button" href="{{ url_for('admin.user_new') }}"><i data-lucide="user-plus"></i>{{ _('Добавить пользователя') }}</a>{% endif %}
+</div>
+
+{% if can_admin('maintenance.manage') %}
 <section class="maintenance-control"><div><h2>{{ _('Техническое обслуживание') }}</h2><p>{{ _('Студенты и преподаватели видят заглушку. Администраторы сохраняют доступ.') if g.maintenance else _('Сервис доступен студентам и преподавателям.') }}</p></div><form method="post" action="{{ url_for('admin.maintenance') }}">{{ csrf() }}<label class="check"><input type="checkbox" name="maintenance" value="on" {{ 'checked' if g.maintenance }}>{{ _('Включить обслуживание') }}</label><button class="button secondary" type="submit">{{ _('Применить') }}</button></form></section>
+{% endif %}
+
 <div class="stats four">{% for key,label in [('student',_('Студенты')),('teacher',_('Преподаватели')),('admin',_('Администраторы')),('events',_('Предстоящие занятия'))] %}<div><small>{{ label }}</small><strong>{{ counts[key] }}</strong><span>{{ _('Действующие') }}</span></div>{% endfor %}</div>
-<div class="two-columns"><section><h2>{{ _('Учётные записи') }}</h2><div class="list-row"><a href="{{ url_for('admin.users',status='graduated') }}">{{ _('Выпускники к удалению') }}</a><strong class="total {{ 'danger-text' if counts.graduates }}">{{ counts.graduates }}</strong></div><div class="list-row"><a href="{{ url_for('admin.trash') }}">{{ _('Корзина') }}</a><strong class="total">{{ counts.trash }}</strong></div><div class="list-row"><a href="{{ url_for('admin.catalogs') }}">{{ _('Группы, кафедры и дисциплины') }}</a></div></section>
-<section><h2>{{ _('Сценарии проверки') }}</h2><div class="scenario-actions"><form method="post" action="{{ url_for('admin.impersonate',role='student') }}">{{ csrf() }}<button class="button secondary" {{ 'disabled' if not demo_student or not demo_student.active }}><i data-lucide="graduation-cap"></i>{{ _('Студент') }}</button></form><form method="post" action="{{ url_for('admin.impersonate',role='teacher') }}">{{ csrf() }}<button class="button secondary" {{ 'disabled' if not demo_teacher or not demo_teacher.active }}><i data-lucide="presentation"></i>{{ _('Преподаватель') }}</button></form></div>
-<h2 class="spaced">{{ _('Блокировки входа') }}</h2>{% for gate in locked %}<div class="list-row"><a href="{{ url_for('admin.users',q=gate.login) }}">{{ gate.login }}</a><small>{{ _('До сброса администратором') if gate.permanent else _('До ') ~ (gate.locked_until|localtime) }}</small></div>{% else %}<p class="muted">{{ _('Активных блокировок нет.') }}</p>{% endfor %}</section></div>
-<div class="section-title"><h2>{{ _('Последние действия') }}</h2><a href="{{ url_for('admin.logs') }}">{{ _('Вся история') }}</a></div><div class="table-wrap"><table><thead><tr><th>{{ _('Когда') }}</th><th>{{ _('Кто') }}</th><th>{{ _('Действие') }}</th><th>{{ _('Объект') }}</th></tr></thead><tbody>{% for l in logs %}<tr><td>{{ l.created_at|localtime }}</td><td>{{ l.actor.full_name if l.actor else _('Система') }}</td><td>{{ l.action|action_label }}</td><td>{{ l.entity }}</td></tr>{% else %}<tr><td colspan="4">{{ _('Пока нет действий.') }}</td></tr>{% endfor %}</tbody></table></div>
+
+<div class="two-columns">
+  <section>
+    <h2>{{ _('Доступные функции') }}</h2>
+    {% if can_admin('users.manage') %}<div class="list-row"><a href="{{ url_for('admin.users',status='graduated') }}">{{ _('Выпускники к удалению') }}</a><strong class="total {{ 'danger-text' if counts.graduates }}">{{ counts.graduates }}</strong></div>{% endif %}
+    {% if can_admin('users.manage') or can_admin('admins.manage') %}<div class="list-row"><a href="{{ url_for('admin.trash') }}">{{ _('Корзина') }}</a><strong class="total">{{ counts.trash }}</strong></div>{% endif %}
+    {% if can_admin('catalogs.manage') %}<div class="list-row"><a href="{{ url_for('admin.catalogs') }}">{{ _('Группы, кафедры и дисциплины') }}</a></div>{% endif %}
+    {% if can_admin('database.export') or can_admin('database.clear') %}<div class="list-row"><a href="{{ url_for('database_admin.index') }}">{{ _('База данных') }}</a></div>{% endif %}
+    {% if not g.user.admin_permission_codes %}<p class="muted">{{ _('Дополнительные административные права пока не назначены.') }}</p>{% endif %}
+  </section>
+  <section>
+    <h2>{{ _('Мои закреплённые права') }}</h2>
+    {% for code,label,description in admin_permission_definitions if code in g.user.admin_permission_codes %}<div class="list-row"><strong>{{ label }}</strong><small>{{ description }}</small></div>{% else %}<p class="muted">{{ _('Доступны только главная страница, настройки, уведомления и чтение новостей.') }}</p>{% endfor %}
+  </section>
+</div>
+
+{% if can_admin('impersonation.use') or can_admin('users.manage') %}
+<div class="two-columns">
+  {% if can_admin('impersonation.use') %}<section><h2>{{ _('Сценарии проверки') }}</h2><div class="scenario-actions"><form method="post" action="{{ url_for('admin.impersonate',role='student') }}">{{ csrf() }}<button class="button secondary" {{ 'disabled' if not demo_student or not demo_student.active }}><i data-lucide="graduation-cap"></i>{{ _('Студент') }}</button></form><form method="post" action="{{ url_for('admin.impersonate',role='teacher') }}">{{ csrf() }}<button class="button secondary" {{ 'disabled' if not demo_teacher or not demo_teacher.active }}><i data-lucide="presentation"></i>{{ _('Преподаватель') }}</button></form></div></section>{% endif %}
+  {% if can_admin('users.manage') %}<section><h2>{{ _('Блокировки входа') }}</h2>{% for gate in locked %}<div class="list-row"><a href="{{ url_for('admin.users',q=gate.login) }}">{{ gate.login }}</a><small>{{ _('До сброса администратором') if gate.permanent else _('До ') ~ (gate.locked_until|localtime) }}</small></div>{% else %}<p class="muted">{{ _('Активных блокировок нет.') }}</p>{% endfor %}</section>{% endif %}
+</div>
+{% endif %}
+
+{% if can_admin('audit.view') %}
+<div class="section-title"><h2>{{ _('Последние действия') }}</h2><a href="{{ url_for('admin.logs') }}">{{ _('Вся история') }}</a></div><div class="table-wrap"><table><thead><tr><th>{{ _('Когда') }}</th><th>{{ _('Кто') }}</th><th>{{ _('Действие') }}</th><th>{{ _('Объект') }}</th></tr></thead><tbody>{% for log in logs %}<tr><td>{{ log.created_at|localtime }}</td><td>{{ log.actor.full_name if log.actor else _('Система') }}</td><td>{{ log.action|action_label }}</td><td>{{ log.entity }}</td></tr>{% else %}<tr><td colspan="4">{{ _('Пока нет действий.') }}</td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
 {% endblock %}

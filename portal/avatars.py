@@ -8,6 +8,7 @@ from sqlalchemy import select, delete
 
 from .auth import audit, roles_required
 from .models import db, User, UserAvatar, utcnow
+from .permissions import has_admin_permission
 
 bp = Blueprint('avatars', __name__)
 
@@ -42,7 +43,8 @@ def normalize_avatar(upload):
 @bp.get('/avatars/<int:user_id>')
 @roles_required()
 def image(user_id):
-    if user_id != g.user.id and g.user.role != 'admin':
+    if user_id != g.user.id and not (g.user.role == 'admin' and (
+            has_admin_permission(g.user, 'users.manage') or has_admin_permission(g.user, 'admins.manage'))):
         abort(404)
     avatar = db.get_or_404(UserAvatar, user_id)
     return send_file(BytesIO(avatar.image), mimetype='image/jpeg', download_name='avatar.jpg', max_age=0)

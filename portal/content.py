@@ -8,7 +8,8 @@ from flask import Blueprint, abort, current_app, flash, g, redirect, render_temp
 from flask_babel import gettext as _
 from sqlalchemy import select
 
-from .auth import audit, roles_required
+from .auth import audit, roles_required, admin_permissions_required
+from .permissions import has_admin_permission
 from .models import db, NewsPost, NewsRead, SiteSettings, User, utcnow
 
 
@@ -106,7 +107,7 @@ def about():
 
 
 @bp.post('/about')
-@roles_required('admin')
+@admin_permissions_required('about.manage')
 def save_about():
     try:
         settings = site_settings()
@@ -123,6 +124,8 @@ def save_about():
 
 def news_form(post=None):
     if g.user.role not in ('teacher', 'admin'):
+        abort(403)
+    if g.user.role == 'admin' and not has_admin_permission(g.user, 'news.manage'):
         abort(403)
     if post and g.user.role != 'admin' and post.author_id != g.user.id:
         abort(403)
@@ -219,6 +222,8 @@ def news_detail(post_id):
 @roles_required('teacher', 'admin')
 def news_delete(post_id):
     post = db.get_or_404(NewsPost, post_id)
+    if g.user.role == 'admin' and not has_admin_permission(g.user, 'news.manage'):
+        abort(403)
     if g.user.role != 'admin' and post.author_id != g.user.id:
         abort(403)
     title = post.title

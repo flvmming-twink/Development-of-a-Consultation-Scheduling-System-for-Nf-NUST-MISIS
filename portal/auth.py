@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from werkzeug.security import generate_password_hash, check_password_hash
 from .models import db, User, Group, LoginGate, AuditLog, utcnow
+from .permissions import has_admin_permission
 
 bp = Blueprint('auth', __name__)
 _dummy = generate_password_hash('not-an-account-password')
@@ -44,6 +45,20 @@ def roles_required(*roles):
             if not g.user:
                 return redirect(url_for('auth.login'))
             if roles and g.user.role not in roles:
+                abort(403)
+            return fn(*args, **kwargs)
+        return wrapped
+    return decorate
+
+
+def admin_permissions_required(*permissions, any_of=False):
+    def decorate(fn):
+        @wraps(fn)
+        def wrapped(*args, **kwargs):
+            if not g.user:
+                return redirect(url_for('auth.login'))
+            allowed = [has_admin_permission(g.user, permission) for permission in permissions]
+            if g.user.role != 'admin' or not ((any(allowed) if any_of else all(allowed)) if allowed else True):
                 abort(403)
             return fn(*args, **kwargs)
         return wrapped

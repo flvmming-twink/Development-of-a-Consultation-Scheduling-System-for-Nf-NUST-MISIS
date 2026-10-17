@@ -2,7 +2,7 @@
 {% from 'macros.html' import pagination with context %}
 {% block title %}{{ _('Новости') }}{% endblock %}
 {% block content %}
-<div class="page-heading"><div><h1>{{ _('Новости') }}{% if unread_news %}<span class="total">{{ unread_news }} {{ _('непрочитано') }}</span>{% endif %}</h1><p>{{ _('Объявления администраторов и преподавателей.') }}</p></div>{% if g.user.role in ('teacher','admin') %}<a class="button" href="{{ url_for('content.news_new') }}"><i data-lucide="plus"></i>{{ _('Опубликовать') }}</a>{% endif %}</div>
+<div class="page-heading"><div><h1>{{ _('Новости') }}{% if unread_news %}<span class="total">{{ unread_news }} {{ _('непрочитано') }}</span>{% endif %}</h1><p>{{ _('Объявления администраторов и преподавателей.') }}</p></div>{% if g.user.role=='teacher' or (g.user.role=='admin' and can_admin('news.manage')) %}<a class="button" href="{{ url_for('content.news_new') }}"><i data-lucide="plus"></i>{{ _('Опубликовать') }}</a>{% endif %}</div>
 <form class="filters news-filters" method="get">
   <label>{{ _('Преподаватель') }}<select name="teacher"><option value="">{{ _('Все преподаватели') }}</option>{% for teacher in teachers %}<option value="{{ teacher.id }}" {{ 'selected' if teacher_id==teacher.id }}>{{ teacher.full_name or teacher.login }}</option>{% endfor %}</select></label>
   <label>{{ _('Дата публикации') }}<input type="date" name="date" value="{{ selected_date.isoformat() if selected_date else '' }}"></label>

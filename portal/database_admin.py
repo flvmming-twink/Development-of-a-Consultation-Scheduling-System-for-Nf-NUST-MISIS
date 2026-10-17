@@ -14,8 +14,9 @@ from sqlalchemy import delete, func, or_, select, text, tuple_, update
 from sqlalchemy.exc import OperationalError
 from werkzeug.security import check_password_hash
 
-from .auth import audit, clear_gate, lock_gate, roles_required
-from .models import db, AuditLog, Booking, Department, Event, Group, LoginGate, NewsPost, NewsRead, Notification, Subject, User, UserAvatar, teacher_subject, utcnow
+from .auth import audit, clear_gate, lock_gate, admin_permissions_required
+from .models import db, AdminPermission, AuditLog, Booking, Department, Event, Group, LoginGate, NewsPost, NewsRead, Notification, Subject, User, UserAvatar, teacher_subject, utcnow
+from .permissions import has_admin_permission
 
 bp = Blueprint('database_admin', __name__, url_prefix='/admin/database')
 
@@ -79,6 +80,13 @@ def cleanup_plan(chosen):
         query = query.where(User.role == chosen['role'])
     users = [dict(row._mapping) for row in db.session.execute(query.order_by(User.id))]
     user_ids = [u['id'] for u in users]
+    admin_ids = [u['id'] for u in users if u['role'] == 'admin']
+    if admin_ids:
+        if not has_admin_permission(g.user, 'admins.manage'):
+            raise ValueError(_('В выбранную область входят администраторы. Для их удаления требуется отдельное право управления администраторами.'))
+        for admin in db.session.scalars(select(User).where(User.id.in_(admin_ids))).all():
+            if not admin.admin_permission_codes <= g.user.admin_permission_codes:
+                raise ValueError(_('В выбранную область входит администратор с недоступными вам правами.'))
     event_filter = Event.teacher_id.in_(user_ids)
     if scope == 'group':
         event_filter = or_(event_filter, Event.group_id == chosen['group_id'])
@@ -95,9 +103,13 @@ def cleanup_plan(chosen):
     if scope != 'all':
         news_reads_query = news_reads_query.where(NewsRead.user_id.in_(user_ids))
     news_reads = [list(row) for row in db.session.execute(news_reads_query)]
+    permission_rows = [list(row) for row in db.session.execute(select(
+        AdminPermission.user_id, AdminPermission.permission).where(
+            AdminPermission.user_id.in_(user_ids)).order_by(
+                AdminPermission.user_id, AdminPermission.permission))] if user_ids else []
     return dict(selection=chosen, users=users, events=event_ids, bookings=booking_ids,
         notifications=notification_ids, avatars=list(db.session.scalars(avatar_query)),
-        news_posts=news_posts, news_reads=news_reads,
+        news_posts=news_posts, news_reads=news_reads, admin_permissions=permission_rows,
         groups=ids(Group) if scope == 'all' else [], departments=ids(Department) if scope == 'all' else [],
         subjects=ids(Subject) if scope == 'all' else [])
 
@@ -119,13 +131,13 @@ def page(**kwargs):
 
 
 @bp.get('')
-@roles_required('admin')
+@admin_permissions_required('database.export', 'database.clear', any_of=True)
 def index():
     return page()
 
 
 @bp.post('/preview')
-@roles_required('admin')
+@admin_permissions_required('database.clear')
 def preview():
     try:
         chosen = selection(request.form)
@@ -167,7 +179,7 @@ def apply_cleanup(plan):
 
 
 @bp.post('/clear')
-@roles_required('admin')
+@admin_permissions_required('database.clear')
 def clear():
     try:
         proof = signer().loads(request.form.get('token', ''), max_age=600)
@@ -178,7 +190,7 @@ def clear():
         # Freeze membership and linked records through validation and deletion, including workers.
         db.session.execute(text('SET LOCAL lock_timeout = \'5s\''))
         db.session.execute(text('SELECT pg_advisory_xact_lock(824271)'))
-        db.session.execute(text('LOCK TABLE login_gates, users, events, bookings, notifications, news_posts, news_reads, user_avatars, teacher_subject, groups, departments, subjects, audit_log, site_settings IN EXCLUSIVE MODE'))
+        db.session.execute(text('LOCK TABLE login_gates, users, admin_permissions, events, bookings, notifications, news_posts, news_reads, user_avatars, teacher_subject, groups, departments, subjects, audit_log, site_settings IN EXCLUSIVE MODE'))
         plan = cleanup_plan(selection(proof['selection']))
         if fingerprint(plan) != proof['digest']:
             raise ValueError(_('Данные изменились после предварительного просмотра. Проверьте состав очистки заново.'))
@@ -232,7 +244,7 @@ def database_dump():
 
 
 @bp.post('/export')
-@roles_required('admin')
+@admin_permissions_required('database.export')
 def export():
     try:
         confirm_password()

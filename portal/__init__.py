@@ -1,3 +1,4 @@
+import mimetypes
 import os
 from datetime import timedelta
 from zoneinfo import ZoneInfo
@@ -7,6 +8,9 @@ from sqlalchemy.exc import IntegrityError
 from .models import db, User, LoginGate, NewsPost, NewsRead, Notification, SiteSettings, TutorialVideo, utcnow
 from flask_babel import gettext as _
 from sqlalchemy import and_, select, func
+from .permissions import ADMIN_PERMISSION_DEFINITIONS, has_admin_permission
+
+mimetypes.add_type('application/javascript', '.js')
 
 csrf = CSRFProtect()
 
@@ -134,7 +138,9 @@ def create_app(test_config=None):
                 'statuses': {'active':_('Активна'),'cancelled':_('Отменена'),'pending':_('Не отмечено'),'present':_('Присутствовал'),'absent':_('Не явился')},
                 'lead_hours': app.config['BOOKING_LEAD_HOURS'], 'timezone_name': app.config['APP_TIMEZONE'],
                 'tutorial_video': tutorial_video,
-                'show_tutorial': bool(getattr(g, 'user', None) and g.user.tutorial_seen_at is None)}
+                'show_tutorial': bool(getattr(g, 'user', None) and g.user.tutorial_seen_at is None),
+                'admin_permission_definitions': ADMIN_PERMISSION_DEFINITIONS,
+                'can_admin': lambda permission: has_admin_permission(getattr(g, 'user', None), permission)}
 
     @app.template_filter('action_label')
     def action_label(value):
@@ -160,7 +166,7 @@ def create_app(test_config=None):
             'maintenance_enabled':'Включено техническое обслуживание',
             'maintenance_disabled':'Выключено техническое обслуживание'
         }
-        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'), users_exported=_('Выгружены пользователи'), tutorial_updated=_('Обновлено обучающее видео'), tutorial_deleted=_('Удалено обучающее видео'), tutorial_dismissed=_('Закрыто обучающее видео'), about_updated=_('Обновлён раздел «О проекте»'), news_created=_('Опубликована новость'), news_updated=_('Изменена новость'), news_deleted=_('Удалена новость'))
+        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'), users_exported=_('Выгружены пользователи'), tutorial_updated=_('Обновлено обучающее видео'), tutorial_deleted=_('Удалено обучающее видео'), tutorial_dismissed=_('Закрыто обучающее видео'), about_updated=_('Обновлён раздел «О проекте»'), news_created=_('Опубликована новость'), news_updated=_('Изменена новость'), news_deleted=_('Удалена новость'), user_role_changed=_('Изменена роль пользователя'), user_login_changed=_('Изменён логин пользователя'), admin_permissions_updated=_('Изменены права администратора'))
         return _(labels.get(value, value))
 
     @app.errorhandler(CSRFError)

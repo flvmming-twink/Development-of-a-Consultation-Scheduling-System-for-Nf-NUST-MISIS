@@ -9,9 +9,15 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 from .models import db, User, Group, Subject, Event, Booking, utcnow
 from .auth import roles_required, audit
+from .permissions import has_admin_permission
 from .services import book_event, cancel_booking, cancel_event, save_event, booking_problem
 
 bp = Blueprint('main', __name__)
+
+
+def require_admin_event_permission():
+    if g.user.role == 'admin' and not has_admin_permission(g.user, 'events.manage'):
+        abort(403)
 
 @bp.get('/')
 @roles_required()
@@ -90,6 +96,7 @@ def bookings():
 @bp.post('/bookings/<int:booking_id>/cancel')
 @roles_required('student','admin')
 def cancel(booking_id):
+    require_admin_event_permission()
     try:
         cancel_booking(booking_id, g.user, request.form.get('reason','Отмена студентом'))
         db.session.commit()
@@ -112,6 +119,7 @@ def teacher():
 @bp.route('/events/<int:event_id>/edit', methods=['GET','POST'])
 @roles_required('teacher','admin')
 def event_form(event_id=None):
+    require_admin_event_permission()
     event = db.get_or_404(Event, event_id) if event_id else None
     if event and g.user.role == 'teacher' and event.teacher_id != g.user.id:
         abort(403)
@@ -131,6 +139,7 @@ def event_form(event_id=None):
 @bp.get('/events/<int:event_id>')
 @roles_required('student','teacher','admin')
 def event_detail(event_id):
+    require_admin_event_permission()
     event = db.get_or_404(Event, event_id)
     if g.user.role == 'student':
         problem = booking_problem(event, g.user)
@@ -148,6 +157,7 @@ def event_detail(event_id):
 @bp.post('/events/<int:event_id>/cancel')
 @roles_required('teacher','admin')
 def cancel_class(event_id):
+    require_admin_event_permission()
     try:
         cancel_event(event_id, g.user, request.form.get('reason',''))
         db.session.commit()
@@ -160,6 +170,7 @@ def cancel_class(event_id):
 @bp.post('/attendance/<int:booking_id>')
 @roles_required('teacher','admin')
 def attendance(booking_id):
+    require_admin_event_permission()
     booking = db.get_or_404(Booking, booking_id)
     if g.user.role == 'teacher' and booking.event.teacher_id != g.user.id:
         abort(403)
@@ -185,12 +196,14 @@ def journal_query():
 @bp.get('/journal')
 @roles_required('teacher','admin')
 def journal():
+    require_admin_event_permission()
     page = db.paginate(journal_query(), per_page=25, max_per_page=25, error_out=False)
     return render_template('journal.html', page=page, groups=db.session.scalars(select(Group).order_by(Group.name)).all(), subjects=db.session.scalars(select(Subject).order_by(Subject.name)).all() if g.user.role == 'admin' else g.user.subjects)
 
 @bp.get('/journal.xlsx')
 @roles_required('teacher','admin')
 def export_journal():
+    require_admin_event_permission()
     records = db.session.scalars(journal_query().limit(10001)).all()
     if len(records) > 10000:
         flash(_('Для выгрузки свыше 10 000 строк уточните фильтры.'), 'error')

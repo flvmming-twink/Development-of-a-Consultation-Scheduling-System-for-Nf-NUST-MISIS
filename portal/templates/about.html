@@ -3,7 +3,7 @@
 {% block title %}{{ _('О проекте') }}{% endblock %}
 {% block content %}
 <div class="page-heading"><div><h1>{{ _('О проекте') }}</h1><p>{{ _('Информация о системе записи на консультации.') }}</p></div></div>
-{% if g.user.role == 'admin' %}
+{% if g.user.role == 'admin' and can_admin('about.manage') %}
 <form method="post" class="panel rich-form">
   {{ csrf() }}
   {{ rich_editor(draft if draft is defined else settings.about_html, _('Описание проекта')) }}

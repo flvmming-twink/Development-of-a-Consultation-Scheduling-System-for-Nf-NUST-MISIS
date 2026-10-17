@@ -7,15 +7,15 @@
 <div class="stats four">
   {% for key, label in [('users',_('Пользователи')),('events',_('Занятия')),('bookings',_('Записи')),('avatars',_('Фотографии'))] %}<div><span>{{ label }}</span><strong>{{ counts[key] }}</strong></div>{% endfor %}
 </div>
-<section class="database-section">
+{% if can_admin('database.export') %}<section class="database-section">
   <h2>{{ _('Резервная копия PostgreSQL') }}</h2>
   <p class="muted">{{ _('Полная БД в формате .dump: пользователи, хеши паролей, фотографии, расписание и история. Храните файл в защищённом месте. Восстановление — через pg_restore или pgAdmin.') }}</p>
   <form method="post" action="{{ url_for('database_admin.export') }}" class="database-form">
     {{ csrf() }}<label>{{ _('Пароль администратора') }}<input type="password" name="password" required maxlength="128" autocomplete="current-password"></label>
     <button type="submit" class="button"><i data-lucide="download"></i>{{ _('Скачать резервную копию') }}</button>
   </form>
-</section>
-<section class="database-section">
+</section>{% endif %}
+{% if can_admin('database.clear') %}<section class="database-section">
   <h2>{{ _('Безвозвратная очистка') }}</h2>
   <p class="danger-text">{{ _('Очистка минует корзину. Удаляются выбранные пользователи, их записи и связанные занятия, включая данные действующих преподавателей. Восстановление возможно только из резервной копии.') }}</p>
   <p class="muted">{{ _('Текущий администратор и история действий сохраняются. При полной очистке удаляются также справочники. При очистке по фильтру справочники остаются; для группы удаляются также занятия этой группы.') }}</p>
@@ -35,7 +35,7 @@
 {% if plan %}
 <section class="database-section" id="cleanup-preview">
   <h2>{{ _('Будет удалено') }}</h2>
-  <dl>{% for key,label in [('users',_('Пользователи')),('events',_('Занятия')),('bookings',_('Записи')),('notifications',_('Уведомления')),('news_posts',_('Новости')),('news_reads',_('Отметки прочтения новостей')),('avatars',_('Фотографии')),('groups',_('Группы')),('departments',_('Кафедры')),('subjects',_('Дисциплины'))] %}<dt>{{ label }}</dt><dd>{{ plan[key]|length }}</dd>{% endfor %}</dl>
+  <dl>{% for key,label in [('users',_('Пользователи')),('admin_permissions',_('Закреплённые права')),('events',_('Занятия')),('bookings',_('Записи')),('notifications',_('Уведомления')),('news_posts',_('Новости')),('news_reads',_('Отметки прочтения новостей')),('avatars',_('Фотографии')),('groups',_('Группы')),('departments',_('Кафедры')),('subjects',_('Дисциплины'))] %}<dt>{{ label }}</dt><dd>{{ plan[key]|length }}</dd>{% endfor %}</dl>
   {% if plan.users %}<div class="table-wrap"><table><thead><tr><th>{{ _('Логин') }}</th><th>{{ _('ФИО') }}</th><th>{{ _('Роль') }}</th></tr></thead><tbody>{% for user in plan.users[:100] %}<tr><td>{{ user.login }}</td><td>{{ user.full_name or '—' }}</td><td>{{ roles[user.role] }}</td></tr>{% endfor %}</tbody></table></div>{% if plan.users|length > 100 %}<p class="muted">{{ _('Показаны первые 100 пользователей. Итоговые количества включают всех выбранных.') }}</p>{% endif %}{% endif %}
   <form method="post" action="{{ url_for('database_admin.clear') }}" class="database-form spaced">
     {{ csrf() }}<input type="hidden" name="token" value="{{ token }}">
@@ -45,5 +45,6 @@
     <button class="button danger" type="submit"><i data-lucide="trash-2"></i>{{ _('Удалить безвозвратно') }}</button>
   </form>
 </section>
+{% endif %}
 {% endif %}
 {% endblock %}

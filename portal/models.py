@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint, UniqueConstraint, ForeignKeyConstraint, text, func
 from sqlalchemy.dialects.postgresql import ExcludeConstraint
 from sqlalchemy.orm import validates
+from .permissions import ADMIN_PERMISSION_CODES
 
 db = SQLAlchemy()
 
@@ -65,6 +66,8 @@ class User(db.Model):
     department = db.relationship(Department)
     subjects = db.relationship('Subject', secondary=teacher_subject, back_populates='teachers')
     avatar = db.relationship('UserAvatar', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
+    permission_grants = db.relationship('AdminPermission', cascade='all, delete-orphan',
+        back_populates='user', passive_deletes=True, lazy='selectin')
     __table_args__ = (
         UniqueConstraint('login', 'role', name='uq_user_login_role'),
         CheckConstraint("role IN ('student','teacher','admin')", name='ck_user_role'),
@@ -107,6 +110,20 @@ class User(db.Model):
     @property
     def purge_at(self):
         return self.deleted_at + timedelta(days=10) if self.deleted_at else None
+
+    @property
+    def admin_permission_codes(self):
+        return frozenset(grant.permission for grant in self.permission_grants) if self.role == 'admin' else frozenset()
+
+
+class AdminPermission(db.Model):
+    __tablename__ = 'admin_permissions'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    permission = db.Column(db.String(40), primary_key=True)
+    user = db.relationship(User, back_populates='permission_grants')
+    __table_args__ = (CheckConstraint(
+        "permission IN (" + ','.join(repr(code) for code in ADMIN_PERMISSION_CODES) + ")",
+        name='ck_admin_permission_code'),)
 
 class LoginGate(db.Model):
     __tablename__ = 'login_gates'

@@ -1,23 +1,93 @@
-{% extends 'base.html' %}{% from 'macros.html' import csrf with context %}
+{% extends 'base.html' %}
+{% from 'macros.html' import csrf with context %}
 {% block title %}{{ _('Пользователь') if user else _('Новый пользователь') }}{% endblock %}
-{% block content %}<div class="page-heading"><div><h1>{{ user.login if user else _('Новый пользователь') }}</h1>{% if user %}<p>{{ roles[user.role] }}</p>{% endif %}</div><a href="{{ url_for('admin.users') }}">{{ _('К списку') }}</a></div>
+{% block content %}
+<div class="page-heading">
+  <div><h1>{{ user.login if user else _('Новый пользователь') }}</h1>{% if user %}<p>{{ roles[user.role] }}</p>{% endif %}</div>
+  <a href="{{ url_for('admin.users') }}">{{ _('К списку') }}</a>
+</div>
 {% if user and user.graduation_due %}<div class="alert error">{{ _('К удалению: срок обучения завершён.') }}</div>{% endif %}
-{% set f=request.form %}<div class="two-columns user-editor"><form class="panel" method="post">{{ csrf() }}
-{% if not user %}<label>{{ _('Роль') }}<select name="role" id="account-role">{% for key,label in roles.items() %}<option value="{{ key }}" {{ 'selected' if f.get('role','student')==key }}>{{ label }}</option>{% endfor %}</select></label><label>{{ _('Логин') }}<input name="login" value="{{ f.get('login','') }}" required maxlength="120" autocomplete="off"></label>{% endif %}
-<div {% if not user %}data-roles="teacher admin"{% endif %}>{% for key,label in [('last_name',_('Фамилия')),('first_name',_('Имя')),('middle_name',_('Отчество (при наличии)'))] %}<label>{{ label }}<input name="{{ key }}" maxlength="80" value="{{ f.get(key,(user|attr(key)) or '' if user else '') }}" {{ 'required' if not user and key!='middle_name' }}></label>{% endfor %}{% if user %}<label>{{ _('Основание исправления ФИО') }}<input name="reason" maxlength="300" placeholder="{{ _('Личное обращение') }}"></label>{% endif %}</div>
-{% if not user or user.role=='student' %}<div {% if not user %}data-roles="student"{% endif %}>
-<label>{{ _('Группа') }}<select name="group_id" id="group-select" data-inline-catalog="new-group"><option value="">{{ _('Выберите группу') }}</option>{% for gr in groups if gr.active or (user and user.group_id==gr.id) %}<option value="{{ gr.id }}" data-year="{{ gr.entry_year or '' }}" {{ 'selected' if f.get('group_id',user.group_id|string if user else '')==gr.id|string }}>{{ gr.name }}</option>{% endfor %}<option value="new" {{ 'selected' if f.get('new_group') }}>{{ _('+ Новая группа') }}</option></select></label>
-<div id="new-group" class="inline-catalog" hidden><label>{{ _('Название группы') }}<input name="new_group" maxlength="40" value="{{ f.get('new_group','') }}" placeholder="БПИ-26"></label><label>{{ _('Год поступления') }}<input name="admission_year" type="number" min="2000" max="2100" value="{{ f.get('admission_year','') }}" placeholder="2026"></label></div>
-<label>{{ _('Форма обучения') }}<select name="study_mode" id="study-mode"><option value="full_time" {{ 'selected' if f.get('study_mode',user.study_mode if user else '')!='part_time' }}>{{ _('Очная · 4 года') }}</option><option value="part_time" {{ 'selected' if f.get('study_mode',user.study_mode if user else '')=='part_time' }}>{{ _('Заочная · 5 лет') }}</option></select></label>
-<label>{{ _('Курс') }}<input name="course" id="student-course" type="number" min="1" max="5" value="{{ f.get('course',(user.current_course or 1) if user else 1) }}" data-academic-year="{{ now|localtime('%Y')|int - (1 if now|localtime('%m')|int < 9 else 0) }}"></label>
-{% if not user %}<p class="muted">{{ _('ФИО студент заполнит самостоятельно. Начальный пароль: Student.') }}</p>{% endif %}</div>{% endif %}
-{% if not user or user.role=='teacher' %}<div {% if not user %}data-roles="teacher"{% endif %}>
-<label>{{ _('Кафедра') }}<select name="department_id" data-inline-catalog="new-department"><option value="">{{ _('Выберите кафедру') }}</option>{% for d in departments if d.active or (user and user.department_id==d.id) %}<option value="{{ d.id }}" {{ 'selected' if f.get('department_id',user.department_id|string if user else '')==d.id|string }}>{{ d.name }}</option>{% endfor %}<option value="new" {{ 'selected' if f.get('new_department') }}>{{ _('+ Новая кафедра') }}</option></select></label>
-<div id="new-department" class="inline-catalog" hidden><label>{{ _('Название кафедры') }}<input name="new_department" maxlength="160" value="{{ f.get('new_department','') }}"></label></div>
-{% if user %}<label>{{ _('Дата увольнения') }}<input type="date" name="dismissed_on" max="{{ now|localtime('%Y-%m-%d') }}" value="{{ user.dismissed_on or '' }}"></label><p class="muted">{{ _('При увольнении вход отключается, будущие консультации отменяются.') }}</p>{% endif %}</div>{% endif %}
-{% if not user %}<div data-roles="teacher admin"><label>{{ _('Начальный пароль') }}<input type="password" name="initial_password" maxlength="128" autocomplete="new-password"></label><p class="muted">{{ _('Для преподавателя можно оставить пустым: фамилия в транслите. Для администратора: от 8 символов.') }}</p></div>{% endif %}
-<button class="button" type="submit"><i data-lucide="save"></i>{{ _('Сохранить') if user else _('Создать пользователя') }}</button></form>
-{% if user %}<section class="panel"><h2>{{ _('Доступ') }}</h2><p>{{ _('Активен') if user.active else _('Отключён') }}</p>{% if gate and gate.permanent %}<p class="danger-text">{{ _('Вход заблокирован до сброса пароля.') }}</p>{% elif gate and gate.locked_until and gate.locked_until>now %}<p>{{ _('Вход закрыт до') }} {{ gate.locked_until|localtime }}.</p>{% endif %}
-<form method="post" action="{{ url_for('admin.user_reset',user_id=user.id) }}" data-confirm="{{ _('Сбросить пароль до начального и завершить сеансы пользователя?') }}">{{ csrf() }}<button class="button secondary"><i data-lucide="key-round"></i>{{ _('Сбросить пароль и разблокировать') }}</button></form>
-{% if user.id!=g.user.id %}<form class="spaced" method="post" action="{{ url_for('admin.user_toggle',user_id=user.id) }}" data-confirm="{{ _('Изменить доступ? При отключении будущие записи и занятия будут отменены.') }}">{{ csrf() }}<button class="button secondary" {{ 'disabled' if user.dismissed_on }}><i data-lucide="power"></i>{{ _('Отключить') if user.active else _('Активировать') }}</button></form>
-<form class="spaced" method="post" action="{{ url_for('admin.user_delete',user_id=user.id) }}" data-confirm="{{ _('Перенести пользователя в корзину на 10 дней? Будущие записи и занятия будут отменены.') }}">{{ csrf() }}<button class="button secondary danger" {{ 'disabled' if user.role=='teacher' and not user.dismissed_on }}><i data-lucide="trash-2"></i>{{ _('В корзину') }}</button></form>{% if user.role=='teacher' and not user.dismissed_on %}<p class="muted">{{ _('Удаление доступно после указания даты увольнения.') }}</p>{% endif %}{% endif %}</section>{% endif %}</div>{% endblock %}
+{% set f=request.form %}
+{% set selected_role=f.get('role',user.role if user else (available_roles|first)) %}
+<div class="two-columns user-editor">
+<form class="panel" method="post" data-current-role="{{ user.role if user else '' }}">
+  {{ csrf() }}
+  <label>{{ _('Роль') }}
+    <select name="role" id="account-role" {{ 'disabled' if user and user.id==g.user.id }}>
+      {% for key,label in roles.items() if key in available_roles or (user and key==user.role) %}
+      <option value="{{ key }}" {{ 'selected' if selected_role==key }}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if user and user.id==g.user.id %}<input type="hidden" name="role" value="admin">{% endif %}
+  </label>
+  <label>{{ _('Логин') }}
+    <input name="login" value="{{ f.get('login',user.login if user else '') }}" required maxlength="120" autocomplete="off" {{ 'readonly' if user and user.id==g.user.id }}>
+  </label>
+
+  <div data-roles="student teacher admin">
+    {% for key,label in [('last_name',_('Фамилия')),('first_name',_('Имя')),('middle_name',_('Отчество (при наличии)'))] %}
+    <label>{{ label }}<input name="{{ key }}" maxlength="80" value="{{ f.get(key,(user|attr(key)) or '' if user else '') }}" {{ 'required' if key!='middle_name' and selected_role!='student' }}></label>
+    {% endfor %}
+    {% if user %}<label>{{ _('Основание изменения') }}<input name="reason" maxlength="300" value="{{ f.get('reason','') }}" placeholder="{{ _('Смена роли или личное обращение') }}"></label>{% endif %}
+  </div>
+
+  <div data-roles="student">
+    <label>{{ _('Группа') }}
+      <select name="group_id" id="group-select" data-inline-catalog="new-group">
+        <option value="">{{ _('Выберите группу') }}</option>
+        {% for gr in groups if gr.active or (user and user.group_id==gr.id) %}<option value="{{ gr.id }}" data-year="{{ gr.entry_year or '' }}" {{ 'selected' if f.get('group_id',user.group_id|string if user and user.group_id else '')==gr.id|string }}>{{ gr.name }}</option>{% endfor %}
+        <option value="new" {{ 'selected' if f.get('new_group') }}>{{ _('+ Новая группа') }}</option>
+      </select>
+    </label>
+    <div id="new-group" class="inline-catalog" hidden>
+      <label>{{ _('Название группы') }}<input name="new_group" maxlength="40" value="{{ f.get('new_group','') }}" placeholder="БПИ-26"></label>
+      <label>{{ _('Год поступления') }}<input name="admission_year" type="number" min="2000" max="2100" value="{{ f.get('admission_year','') }}" placeholder="2026"></label>
+    </div>
+    <label>{{ _('Форма обучения') }}<select name="study_mode" id="study-mode"><option value="full_time" {{ 'selected' if f.get('study_mode',user.study_mode if user else '')!='part_time' }}>{{ _('Очная · 4 года') }}</option><option value="part_time" {{ 'selected' if f.get('study_mode',user.study_mode if user else '')=='part_time' }}>{{ _('Заочная · 5 лет') }}</option></select></label>
+    <label>{{ _('Курс') }}<input name="course" id="student-course" type="number" min="1" max="5" value="{{ f.get('course',(user.current_course or 1) if user else 1) }}" data-academic-year="{{ now|localtime('%Y')|int - (1 if now|localtime('%m')|int < 9 else 0) }}"></label>
+    {% if not user %}<p class="muted">{{ _('ФИО студент заполнит самостоятельно. Начальный пароль: Student.') }}</p>{% endif %}
+  </div>
+
+  <div data-roles="teacher">
+    <label>{{ _('Кафедра') }}
+      <select name="department_id" data-inline-catalog="new-department">
+        <option value="">{{ _('Выберите кафедру') }}</option>
+        {% for department in departments if department.active or (user and user.department_id==department.id) %}<option value="{{ department.id }}" {{ 'selected' if f.get('department_id',user.department_id|string if user and user.department_id else '')==department.id|string }}>{{ department.name }}</option>{% endfor %}
+        <option value="new" {{ 'selected' if f.get('new_department') }}>{{ _('+ Новая кафедра') }}</option>
+      </select>
+    </label>
+    <div id="new-department" class="inline-catalog" hidden><label>{{ _('Название кафедры') }}<input name="new_department" maxlength="160" value="{{ f.get('new_department','') }}"></label></div>
+    {% if user %}<label>{{ _('Дата увольнения') }}<input type="date" name="dismissed_on" max="{{ now|localtime('%Y-%m-%d') }}" value="{{ f.get('dismissed_on',user.dismissed_on or '') }}"></label><p class="muted">{{ _('При увольнении вход отключается, будущие консультации отменяются.') }}</p>{% endif %}
+  </div>
+
+  <div data-roles="admin" class="admin-permissions">
+    <div class="section-title"><div><h2>{{ _('Права администратора') }}</h2><p>{{ _('Права закрепляются за учётной записью и проверяются для каждой операции.') }}</p></div></div>
+    {% set submitted=f.getlist('admin_permissions') %}
+    {% for code,label,description in admin_permission_definitions %}
+      {% set assigned=(code in submitted) if request.method=='POST' else (user and code in user.admin_permission_codes) %}
+      {% set grantable=code in grantable_permissions and not (user and user.id==g.user.id) %}
+      <label class="permission-option {{ 'locked' if not grantable }}">
+        <input type="checkbox" name="admin_permissions" value="{{ code }}" {{ 'checked' if assigned }} {{ 'disabled data-role-locked' if not grantable }}>
+        <span><strong>{{ label }}</strong><small>{{ description }}</small>{% if assigned and not grantable %}<small>{{ _('Закреплено администратором с соответствующими полномочиями.') }}</small>{% endif %}</span>
+      </label>
+    {% endfor %}
+    {% if not user or user.role!='admin' %}<label>{{ _('Начальный пароль администратора') }}<input type="password" name="initial_password" minlength="8" maxlength="128" autocomplete="new-password"></label><p class="muted">{{ _('Обязателен при назначении роли администратора: от 8 до 128 символов.') }}</p>{% endif %}
+  </div>
+
+  {% if not user %}<div data-roles="teacher"><label>{{ _('Начальный пароль') }}<input type="password" name="initial_password" maxlength="128" autocomplete="new-password"></label><p class="muted">{{ _('Для преподавателя можно оставить пустым: будет использована фамилия в транслите.') }}</p></div>{% endif %}
+  <button class="button" type="submit"><i data-lucide="save"></i>{{ _('Сохранить') if user else _('Создать пользователя') }}</button>
+</form>
+
+{% if user %}
+<section class="panel"><h2>{{ _('Доступ') }}</h2><p>{{ _('Активен') if user.active else _('Отключён') }}</p>
+  {% if gate and gate.permanent %}<p class="danger-text">{{ _('Вход заблокирован до сброса пароля.') }}</p>{% elif gate and gate.locked_until and gate.locked_until>now %}<p>{{ _('Вход закрыт до') }} {{ gate.locked_until|localtime }}.</p>{% endif %}
+  {% if target_manageable %}
+  <form method="post" action="{{ url_for('admin.user_reset',user_id=user.id) }}" data-confirm="{{ _('Сбросить пароль до начального и завершить сеансы пользователя?') }}">{{ csrf() }}<button class="button secondary"><i data-lucide="key-round"></i>{{ _('Сбросить пароль и разблокировать') }}</button></form>
+  <form class="spaced" method="post" action="{{ url_for('admin.user_toggle',user_id=user.id) }}" data-confirm="{{ _('Изменить доступ? При отключении будущие записи и занятия будут отменены.') }}">{{ csrf() }}<button class="button secondary" {{ 'disabled' if user.dismissed_on }}><i data-lucide="power"></i>{{ _('Отключить') if user.active else _('Активировать') }}</button></form>
+  <form class="spaced" method="post" action="{{ url_for('admin.user_delete',user_id=user.id) }}" data-confirm="{{ _('Перенести пользователя в корзину на 10 дней? Будущие записи и занятия будут отменены.') }}">{{ csrf() }}<button class="button secondary danger" {{ 'disabled' if user.role=='teacher' and not user.dismissed_on }}><i data-lucide="trash-2"></i>{{ _('В корзину') }}</button></form>
+  {% if user.role=='teacher' and not user.dismissed_on %}<p class="muted">{{ _('Удаление доступно после указания даты увольнения.') }}</p>{% endif %}
+  {% else %}<p class="muted">{{ _('У вашей учётной записи нет права изменять доступ этого пользователя.') }}</p>{% endif %}
+</section>
+{% endif %}
+</div>
+{% endblock %}

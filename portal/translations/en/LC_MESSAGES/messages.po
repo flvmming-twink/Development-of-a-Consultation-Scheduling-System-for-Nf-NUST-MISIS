@@ -1894,8 +1894,12 @@ msgid "Восстановление доступа"
 msgstr "Account access recovery"
 
 #: portal/templates/login.html
-msgid "Пожалуйста, обратитесь в 129 кабинет НФ НИТУ МИСИС к Егору Евгеньевичу Куренкову, или напишите на почту:"
-msgstr "Please visit Egor Evgenievich Kurenkov in room 129 at the NUST MISIS Novotroitsk branch, or email:"
+msgid ""
+"Пожалуйста, обратитесь в 129 кабинет НФ НИТУ МИСИС к Егору Евгеньевичу "
+"Куренкову, или напишите на почту:"
+msgstr ""
+"Please visit Egor Evgenievich Kurenkov in room 129 at the NUST MISIS "
+"Novotroitsk branch, or email:"
 
 #: portal/avatars.py:27
 msgid ""
@@ -2433,8 +2437,12 @@ msgstr "Confirm that your full name and group are correct."
 msgid "Выберите действующую группу с указанным годом поступления."
 msgstr "Select an active group with an admission year."
 
-msgid "Выбранная группа не относится к 1–4 курсу очного обучения. Обратитесь к администратору."
-msgstr "The selected group is not in years 1–4 of full-time study. Contact the administrator."
+msgid ""
+"Выбранная группа не относится к 1–4 курсу очного обучения. Обратитесь к "
+"администратору."
+msgstr ""
+"The selected group is not in years 1–4 of full-time study. Contact the "
+"administrator."
 
 msgid "Выберите файл Excel в формате .xlsx."
 msgstr "Select an Excel file in .xlsx format."
@@ -2458,7 +2466,9 @@ msgid "Номера студенческих должны находиться �
 msgstr "Student ID numbers must appear only in column A."
 
 #, python-format
-msgid "Строка %(value0)s: номер студенческого должен содержать не менее двух цифр."
+msgid ""
+"Строка %(value0)s: номер студенческого должен содержать не менее двух "
+"цифр."
 msgstr "Row %(value0)s: the student ID number must contain at least two digits."
 
 msgid "В столбце A нет номеров студенческих."
@@ -2469,13 +2479,21 @@ msgstr "Select an Excel file."
 
 #, python-format
 msgid "Добавлено студентов: %(value0)s. Пропущено повторов: %(value1)s."
-msgstr "Students added: %(value0)s. Existing or duplicate entries skipped: %(value1)s."
+msgstr ""
+"Students added: %(value0)s. Existing or duplicate entries skipped: "
+"%(value1)s."
 
 msgid "Я проверил ФИО и группу и подтверждаю правильность данных"
-msgstr "I have checked my full name and group and confirm that the information is correct"
+msgstr ""
+"I have checked my full name and group and confirm that the information is"
+" correct"
 
-msgid "ФИО и группа сохраняются один раз. После сохранения изменить их самостоятельно нельзя."
-msgstr "Your full name and group can be saved once and cannot then be changed by you."
+msgid ""
+"ФИО и группа сохраняются один раз. После сохранения изменить их "
+"самостоятельно нельзя."
+msgstr ""
+"Your full name and group can be saved once and cannot then be changed by "
+"you."
 
 msgid "Сохранить профиль"
 msgstr "Save profile"
@@ -2486,17 +2504,34 @@ msgstr "To book a consultation, enter your full name and group once in Settings.
 msgid "Массовое создание учётных записей из Excel."
 msgstr "Create student accounts in bulk from Excel."
 
-msgid "Загрузите файл .xlsx с одним листом. В каждой строке столбца A должен находиться только номер студенческого билета; заголовок не нужен."
-msgstr "Upload a single-worksheet .xlsx file. Each row in column A must contain only a student ID number; do not add a header."
+msgid ""
+"Загрузите файл .xlsx с одним листом. В каждой строке столбца A должен "
+"находиться только номер студенческого билета; заголовок не нужен."
+msgstr ""
+"Upload a single-worksheet .xlsx file. Each row in column A must contain "
+"only a student ID number; do not add a header."
 
-msgid "Не более 1500 строк и 1 МБ за один импорт. Уже существующие номера и повторы в файле будут пропущены."
-msgstr "Up to 1,500 rows and 1 MB per import. Existing numbers and duplicate rows will be skipped."
+msgid ""
+"Не более 1500 строк и 1 МБ за один импорт. Уже существующие номера и "
+"повторы в файле будут пропущены."
+msgstr ""
+"Up to 1,500 rows and 1 MB per import. Existing numbers and duplicate rows"
+" will be skipped."
 
-msgid "Начальный пароль создаётся автоматически: Student и первые две цифры номера. Например, для 1234567 пароль — Student12."
-msgstr "The initial password is generated automatically: Student followed by the first two digits. For example, 1234567 receives Student12."
+msgid ""
+"Начальный пароль создаётся автоматически: Student и первые две цифры "
+"номера. Например, для 1234567 пароль — Student12."
+msgstr ""
+"The initial password is generated automatically: Student followed by the "
+"first two digits. For example, 1234567 receives Student12."
 
-msgid "После первого входа студент должен один раз указать ФИО и группу в настройках. До этого записаться на консультацию нельзя."
-msgstr "After signing in for the first time, the student must enter their full name and group once in Settings. Consultation booking remains unavailable until then."
+msgid ""
+"После первого входа студент должен один раз указать ФИО и группу в "
+"настройках. До этого записаться на консультацию нельзя."
+msgstr ""
+"After signing in for the first time, the student must enter their full "
+"name and group once in Settings. Consultation booking remains unavailable"
+" until then."
 
 msgid "Файл Excel"
 msgstr "Excel file"
@@ -2570,8 +2605,12 @@ msgstr "RUTUBE guides for first sign-in and Settings."
 msgid "Обновлено:"
 msgstr "Updated:"
 
-msgid "Видео не настроено. Пользователь увидит сообщение о временной недоступности."
-msgstr "The video is not configured. The user will see an unavailable-video message."
+msgid ""
+"Видео не настроено. Пользователь увидит сообщение о временной "
+"недоступности."
+msgstr ""
+"The video is not configured. The user will see an unavailable-video "
+"message."
 
 msgid "Ссылка RUTUBE"
 msgstr "RUTUBE link"
@@ -2764,3 +2803,242 @@ msgstr "News text"
 
 msgid "Сохранить изменения"
 msgstr "Save changes"
+
+#: portal/__init__.py:166
+msgid "Изменена роль пользователя"
+msgstr "User role changed"
+
+#: portal/__init__.py:166
+msgid "Изменён логин пользователя"
+msgstr "User login changed"
+
+#: portal/__init__.py:166
+msgid "Изменены права администратора"
+msgstr "Administrator permissions changed"
+
+#: portal/admin.py:103
+msgid "Для студента логином должен быть номер студенческого из цифр."
+msgstr "A student login must be a numeric student ID."
+
+#: portal/admin.py:105
+msgid "Для преподавателя или администратора нужен логин корпоративной почты."
+msgstr "Teachers and administrators must use an institutional email username."
+
+#: portal/admin.py:109
+msgid "Учётная запись с таким логином и ролью уже существует."
+msgstr "An account with this login and role already exists."
+
+#: portal/admin.py:112
+msgid ""
+"При изменении логина выберите значение, которое не используется другой "
+"учётной записью."
+msgstr ""
+"When changing the login, choose a value that is not used by another "
+"account."
+
+#: portal/admin.py:169
+msgid ""
+"Нельзя лишить полномочий последнего действующего администратора, который "
+"управляет правами."
+msgstr ""
+"You cannot remove permissions from the last active administrator who can "
+"manage permissions."
+
+#: portal/admin.py:219 portal/templates/admin_user_form.html:64
+msgid "Права администратора"
+msgstr "Administrator permissions"
+
+#: portal/admin.py:329
+msgid "Выбран неизвестный набор прав администратора."
+msgstr "An unknown administrator permission set was selected."
+
+#: portal/admin.py:342
+msgid "Выберите существующую роль."
+msgstr "Select a valid role."
+
+#: portal/admin.py:346
+msgid "Нельзя изменить собственную роль или логин из административной панели."
+msgstr "You cannot change your own role or login from the admin panel."
+
+#: portal/admin.py:365
+msgid "Укажите основание изменения роли или логина пользователя."
+msgstr "Enter the reason for changing the user role or login."
+
+#: portal/admin.py:373
+msgid "Укажите основание изменения ФИО или роли пользователя."
+msgstr "Enter the reason for changing the user name or role."
+
+#: portal/admin.py:379
+msgid "Для преподавателя или администратора укажите фамилию и имя."
+msgstr "Enter a first and last name for a teacher or administrator."
+
+#: portal/admin.py:441
+msgid ""
+"При назначении администратора укажите начальный пароль от 8 до 128 "
+"символов."
+msgstr ""
+"When assigning the administrator role, enter an initial password of 8 to "
+"128 characters."
+
+#: portal/database_admin.py:86
+msgid ""
+"В выбранную область входят администраторы. Для их удаления требуется "
+"отдельное право управления администраторами."
+msgstr ""
+"The selection includes administrators. Deleting them requires the "
+"separate administrator-management permission."
+
+#: portal/database_admin.py:89
+msgid "В выбранную область входит администратор с недоступными вам правами."
+msgstr "The selection includes an administrator with permissions you do not have."
+
+#: portal/permissions.py:5
+msgid "Управление пользователями"
+msgstr "User management"
+
+#: portal/permissions.py:6
+msgid ""
+"Создание, изменение, блокировка, сброс паролей и удаление студентов и "
+"преподавателей."
+msgstr "Create, edit, block, reset passwords, and delete students and teachers."
+
+#: portal/permissions.py:7
+msgid "Администраторы и права"
+msgstr "Administrators and permissions"
+
+#: portal/permissions.py:8
+msgid "Назначение роли администратора и закрепление прав другим администраторам."
+msgstr "Assign the administrator role and permissions to other administrators."
+
+#: portal/permissions.py:10
+msgid "Массовое создание студенческих учётных записей из Excel."
+msgstr "Create student accounts in bulk from Excel."
+
+#: portal/permissions.py:12
+msgid "Выгрузка студентов, преподавателей и администраторов в Excel."
+msgstr "Export students, teachers, and administrators to Excel."
+
+#: portal/permissions.py:14
+msgid ""
+"Управление группами, кафедрами, дисциплинами и назначениями "
+"преподавателей."
+msgstr "Manage groups, departments, subjects, and teacher assignments."
+
+#: portal/permissions.py:15
+msgid "Занятия и журнал"
+msgstr "Sessions and journal"
+
+#: portal/permissions.py:16
+msgid "Создание и изменение занятий, отмена записей и работа с журналом."
+msgstr "Create and edit sessions, cancel bookings, and manage the journal."
+
+#: portal/permissions.py:18
+msgid "Публикация, изменение и удаление новостей от имени администрации."
+msgstr "Publish, edit, and delete news on behalf of the administration."
+
+#: portal/permissions.py:19
+msgid "Раздел «О проекте»"
+msgstr "About section"
+
+#: portal/permissions.py:20
+msgid "Редактирование форматированного описания проекта."
+msgstr "Edit the formatted project description."
+
+#: portal/permissions.py:22
+msgid "Добавление и удаление видеоинструкций для пользовательских ролей."
+msgstr "Add and remove video tutorials for user roles."
+
+#: portal/permissions.py:24
+msgid "Просмотр и выгрузка журнала действий администраторов и пользователей."
+msgstr "View and export the administrator and user activity log."
+
+#: portal/permissions.py:25
+msgid "Резервная копия БД"
+msgstr "Database backup"
+
+#: portal/permissions.py:26
+msgid "Выгрузка полной резервной копии PostgreSQL после подтверждения паролем."
+msgstr "Export a full PostgreSQL backup after password confirmation."
+
+#: portal/permissions.py:27
+msgid "Очистка БД"
+msgstr "Database cleanup"
+
+#: portal/permissions.py:28
+msgid "Безвозвратное удаление выбранных данных после отдельного подтверждения."
+msgstr "Permanently delete selected data after separate confirmation."
+
+#: portal/permissions.py:30
+msgid "Включение и отключение режима технического обслуживания."
+msgstr "Enable and disable maintenance mode."
+
+#: portal/permissions.py:31
+msgid "Проверка пользовательских сценариев"
+msgstr "User scenario preview"
+
+#: portal/permissions.py:32
+msgid "Переход в демонстрационные сценарии студента и преподавателя."
+msgstr "Open the student and teacher demonstration scenarios."
+
+#: portal/templates/admin_dashboard.html:18
+msgid "Доступные функции"
+msgstr "Available functions"
+
+#: portal/templates/admin_dashboard.html:23
+msgid "Дополнительные административные права пока не назначены."
+msgstr "No additional administrator permissions have been assigned yet."
+
+#: portal/templates/admin_dashboard.html:26
+msgid "Мои закреплённые права"
+msgstr "My assigned permissions"
+
+#: portal/templates/admin_dashboard.html:27
+msgid ""
+"Доступны только главная страница, настройки, уведомления и чтение "
+"новостей."
+msgstr ""
+"Only the home page, settings, notifications, and news reading are "
+"available."
+
+#: portal/templates/admin_database.html:38
+msgid "Закреплённые права"
+msgstr "Assigned permissions"
+
+#: portal/templates/admin_user_form.html:31
+msgid "Основание изменения"
+msgstr "Reason for change"
+
+#: portal/templates/admin_user_form.html:31
+msgid "Смена роли или личное обращение"
+msgstr "Role change or personal request"
+
+#: portal/templates/admin_user_form.html:64
+msgid "Права закрепляются за учётной записью и проверяются для каждой операции."
+msgstr "Permissions are assigned to the account and checked for every operation."
+
+#: portal/templates/admin_user_form.html:71
+msgid "Закреплено администратором с соответствующими полномочиями."
+msgstr "Assigned by an administrator with the corresponding permission."
+
+#: portal/templates/admin_user_form.html:74
+msgid "Начальный пароль администратора"
+msgstr "Initial administrator password"
+
+#: portal/templates/admin_user_form.html:74
+msgid "Обязателен при назначении роли администратора: от 8 до 128 символов."
+msgstr "Required when assigning the administrator role: 8 to 128 characters."
+
+#: portal/templates/admin_user_form.html:77
+msgid ""
+"Для преподавателя можно оставить пустым: будет использована фамилия в "
+"транслите."
+msgstr "For a teacher, leave blank to use the transliterated last name."
+
+#: portal/templates/admin_user_form.html:89
+msgid "У вашей учётной записи нет права изменять доступ этого пользователя."
+msgstr "Your account does not have permission to change this user’s access."
+
+#: portal/templates/admin_users.html:26
+#, python-format
+msgid "%(value0)s прав"
+msgstr "%(value0)s permissions"

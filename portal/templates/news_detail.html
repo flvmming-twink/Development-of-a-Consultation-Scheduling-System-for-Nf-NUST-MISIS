@@ -6,6 +6,6 @@
   <a class="back-link" href="{{ url_for('content.news') }}"><i data-lucide="arrow-left"></i>{{ _('Все новости') }}</a>
   <header><div class="news-meta"><span class="news-author">{{ _('Администратор') if post.author_role=='admin' else post.author_name }}</span><time>{{ post.published_at|localtime }}</time></div><h1>{{ post.title }}</h1></header>
   <div class="formatted-content">{{ post.body_html|safe }}</div>
-  {% if g.user.role=='admin' or post.author_id==g.user.id %}<div class="news-actions"><a class="button secondary" href="{{ url_for('content.news_edit',post_id=post.id) }}"><i data-lucide="pencil"></i>{{ _('Редактировать') }}</a><form method="post" action="{{ url_for('content.news_delete',post_id=post.id) }}" data-confirm="{{ _('Удалить эту новость без возможности восстановления?') }}">{{ csrf() }}<button class="button secondary danger" type="submit"><i data-lucide="trash-2"></i>{{ _('Удалить') }}</button></form></div>{% endif %}
+  {% if (g.user.role=='admin' and can_admin('news.manage')) or post.author_id==g.user.id %}<div class="news-actions"><a class="button secondary" href="{{ url_for('content.news_edit',post_id=post.id) }}"><i data-lucide="pencil"></i>{{ _('Редактировать') }}</a><form method="post" action="{{ url_for('content.news_delete',post_id=post.id) }}" data-confirm="{{ _('Удалить эту новость без возможности восстановления?') }}">{{ csrf() }}<button class="button secondary danger" type="submit"><i data-lucide="trash-2"></i>{{ _('Удалить') }}</button></form></div>{% endif %}
 </article>
 {% endblock %}

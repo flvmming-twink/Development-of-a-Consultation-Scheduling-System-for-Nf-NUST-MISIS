@@ -47,7 +47,7 @@ if (roleSelect) {
   const syncRole = () => { document.querySelectorAll('[data-roles]').forEach(section => {
     const visible = section.dataset.roles.split(' ').includes(roleSelect.value);
     section.hidden = !visible;
-    section.querySelectorAll('input,select').forEach(input => { input.disabled = !visible; });
+    section.querySelectorAll('input,select').forEach(input => { input.disabled = !visible || input.hasAttribute('data-role-locked'); });
   }); syncCatalogs(); };
   roleSelect.addEventListener('change', syncRole);
   syncRole();
