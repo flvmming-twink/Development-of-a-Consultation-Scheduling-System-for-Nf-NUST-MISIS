@@ -7,7 +7,7 @@ from zipfile import BadZipFile, ZipFile
 from datetime import date, datetime, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 from flask import Blueprint, abort, current_app, flash, g, redirect, render_template, request, send_file, session, url_for
-from sqlalchemy import select, func, or_
+from sqlalchemy import and_, select, func, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 from openpyxl import Workbook, load_workbook
@@ -466,31 +466,85 @@ def dashboard():
     locked = db.session.scalars(select(LoginGate).where(or_(LoginGate.permanent,
         LoginGate.locked_until > utcnow())).order_by(LoginGate.updated_at.desc()).limit(20)).all() \
         if has_admin_permission(g.user, 'users.manage') else []
-    demo_student = db.session.scalar(select(User).where(User.login == '2300431', User.role == 'student')) \
-        if has_admin_permission(g.user, 'impersonation.use') else None
-    demo_teacher = db.session.scalar(select(User).where(User.login == 'kurenkov.ee', User.role == 'teacher')) \
-        if has_admin_permission(g.user, 'impersonation.use') else None
+    scenario_available = {role: False for role in ('student', 'teacher')}
+    if has_admin_permission(g.user, 'impersonation.use'):
+        for role in scenario_available:
+            scenario_query = select(User.id).where(
+                User.role == role, User.active, User.deleted_at.is_(None))
+            if role == 'teacher':
+                scenario_query = scenario_query.where(User.dismissed_on.is_(None))
+            scenario_available[role] = db.session.scalar(scenario_query.limit(1)) is not None
     logs = db.session.scalars(select(AuditLog).order_by(AuditLog.id.desc()).limit(8)).all() \
         if has_admin_permission(g.user, 'audit.view') else []
     return render_template('admin_dashboard.html', counts=counts, locked=locked, logs=logs,
-        demo_student=demo_student, demo_teacher=demo_teacher)
+        scenario_available=scenario_available)
+
+
+def begin_impersonation(target):
+    if not target or target.role not in ('student', 'teacher') or target.deleted_at:
+        abort(404)
+    if not target.active or (target.role == 'teacher' and target.dismissed_on):
+        flash(_('Нельзя открыть режим для удалённой или отключённой учётной записи.'), 'error')
+        return None
+    admin = g.user
+    session.update(admin_uid=admin.id, admin_version=admin.session_version,
+        uid=target.id, version=target.session_version)
+    session.permanent = True
+    audit('admin_impersonation_started', target.id,
+        f'{admin.login} -> {target.role}:{target.login}', actor_id=admin.id)
+    db.session.commit()
+    flash(_('Открыт режим работы от лица %(value0)s.', value0=target.full_name or target.login), 'success')
+    return redirect(url_for('main.home'))
+
+
+@bp.get('/impersonation')
+@admin_permissions_required('impersonation.use')
+def impersonation():
+    query = select(User).where(User.role.in_(('student', 'teacher')), User.deleted_at.is_(None)).options(
+        selectinload(User.group), selectinload(User.department)).order_by(User.role, User.full_name, User.login)
+    role = request.args.get('role')
+    if role in ('student', 'teacher'):
+        query = query.where(User.role == role)
+    term = request.args.get('q', '').strip()[:120]
+    if term:
+        query = query.where(or_(User.login.ilike('%' + term + '%'), User.full_name.ilike('%' + term + '%')))
+    status = request.args.get('status', 'active')
+    if status == 'active':
+        query = query.where(User.active, or_(User.role != 'teacher', User.dismissed_on.is_(None)))
+    elif status == 'inactive':
+        query = query.where(or_(User.active.is_(False),
+            and_(User.role == 'teacher', User.dismissed_on.is_not(None))))
+    elif status != 'all':
+        abort(400)
+    page = db.paginate(query, per_page=50, max_per_page=50, error_out=False)
+    gates = {user.login: db.session.get(LoginGate, user.login) for user in page.items}
+    return render_template('admin_impersonation.html', page=page, gates=gates)
 
 @bp.post('/impersonate/<role>')
 @admin_permissions_required('impersonation.use')
 def impersonate(role):
-    targets = {'student': '2300431', 'teacher': 'kurenkov.ee'}
-    if role not in targets:
+    if role not in ('student', 'teacher'):
         abort(404)
-    target = db.session.scalar(select(User).where(User.login == targets[role], User.role == role))
-    if not target or not target.active:
-        flash(_('Демонстрационная учётная запись для этого сценария не найдена или отключена.'), 'error')
+    target_query = select(User).where(
+        User.role == role, User.active, User.deleted_at.is_(None))
+    if role == 'teacher':
+        target_query = target_query.where(User.dismissed_on.is_(None))
+    target = db.session.scalar(target_query.order_by(User.id).limit(1))
+    if not target:
+        flash(_('Для выбранного сценария нет активных учётных записей.'), 'error')
         return redirect(url_for('admin.dashboard'))
-    session.update(admin_uid=g.user.id, admin_version=g.user.session_version, uid=target.id, version=target.session_version)
-    session.permanent = True
-    audit('admin_impersonation_started', target.id, f'{g.user.login} → {target.role}:{target.login}')
-    db.session.commit()
-    flash(_('Открыт сценарий роли. Возврат в админскую панель доступен сверху страницы.'), 'success')
-    return redirect(url_for('main.home'))
+    return begin_impersonation(target)
+
+
+@bp.post('/impersonate/user/<int:user_id>')
+@admin_permissions_required('impersonation.use')
+def impersonate_user(user_id):
+    target = db.session.get(User, user_id)
+    result = begin_impersonation(target)
+    if result:
+        return result
+    from .i18n import safe_return
+    return redirect(safe_return(request.form.get('next') or url_for('admin.impersonation')))
 
 
 @bp.post('/maintenance')
@@ -515,7 +569,7 @@ def stop_impersonation():
     session.permanent = True
     audit('admin_impersonation_stopped', admin.id, actor_id=admin.id)
     db.session.commit()
-    flash(_('Вы вернулись в админскую панель.'), 'success')
+    flash(_('Режим работы от лица пользователя завершён.'), 'success')
     return redirect(url_for('admin.dashboard'))
 
 @bp.get('/users')

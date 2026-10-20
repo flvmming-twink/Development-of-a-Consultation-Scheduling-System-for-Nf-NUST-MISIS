@@ -3138,3 +3138,138 @@ msgstr "Information"
 #: portal/templates/events.html
 msgid "Открыть раздел"
 msgstr "Open section"
+
+#: portal/admin.py
+msgid "Нельзя открыть режим для удалённой или отключённой учётной записи."
+msgstr "Impersonation is unavailable for a deleted or disabled account."
+
+#: portal/admin.py
+#, python-format
+msgid "Открыт режим работы от лица %(value0)s."
+msgstr "You are now acting as %(value0)s."
+
+#: portal/admin.py
+msgid "Для выбранного сценария нет активных учётных записей."
+msgstr "There are no active accounts for the selected scenario."
+
+#: portal/admin.py
+msgid "Режим работы от лица пользователя завершён."
+msgstr "User impersonation mode has ended."
+
+#: portal/permissions.py
+msgid "Просмотр интерфейса и выполнение действий от имени выбранного студента или преподавателя."
+msgstr "View the interface and perform actions as a selected student or teacher."
+
+#: portal/templates/admin_dashboard.html portal/templates/admin_impersonation.html
+#: portal/templates/admin_user_form.html
+msgid "Работа от лица пользователя"
+msgstr "Act as a user"
+
+#: portal/templates/admin_dashboard.html
+msgid "Откройте кабинет выбранного студента или преподавателя и при необходимости выполните действия от его имени."
+msgstr "Open a selected student or teacher account and perform actions on their behalf when needed."
+
+#: portal/templates/admin_dashboard.html
+msgid "Открыть как студент"
+msgstr "Open as student"
+
+#: portal/templates/admin_dashboard.html
+msgid "Открыть как преподаватель"
+msgstr "Open as teacher"
+
+#: portal/templates/admin_dashboard.html
+msgid "Выбрать пользователя"
+msgstr "Select user"
+
+#: portal/templates/admin_impersonation.html portal/templates/base.html
+msgid "Режим пользователя"
+msgstr "User impersonation"
+
+#: portal/templates/admin_impersonation.html
+msgid "ПРОВЕРКА ПОЛЬЗОВАТЕЛЬСКИХ СЦЕНАРИЕВ"
+msgstr "USER SCENARIO REVIEW"
+
+#: portal/templates/admin_impersonation.html
+msgid "Выберите студента или преподавателя. В этом режиме можно просматривать кабинет и выполнять доступные пользователю действия."
+msgstr "Select a student or teacher. In this mode you can view their account and perform the actions available to that user."
+
+#: portal/templates/admin_impersonation.html
+msgid "Контролируемый административный режим"
+msgstr "Controlled administrative mode"
+
+#: portal/templates/admin_impersonation.html
+msgid "Обычный пароль пользователя не требуется. Вход в режим и ключевые изменения фиксируются с указанием администратора и выбранной учётной записи."
+msgstr "The user's password is not required. Starting the mode and key changes are logged with both the administrator and the selected account."
+
+#: portal/templates/admin_impersonation.html
+msgid "Студенты и преподаватели"
+msgstr "Students and teachers"
+
+#: portal/templates/admin_impersonation.html
+msgid "Активные"
+msgstr "Active"
+
+#: portal/templates/admin_impersonation.html
+msgid "Отключённые"
+msgstr "Disabled"
+
+#: portal/templates/admin_impersonation.html
+msgid "Заблокирован для входа"
+msgstr "Sign-in blocked"
+
+#: portal/templates/admin_impersonation.html
+msgid "Администратор всё равно может открыть кабинет."
+msgstr "An administrator can still open this account."
+
+#: portal/templates/admin_impersonation.html
+msgid "Временная блокировка входа"
+msgstr "Sign-in temporarily blocked"
+
+#: portal/templates/admin_impersonation.html
+msgid "Открыть кабинет"
+msgstr "Open account"
+
+#: portal/templates/admin_impersonation.html
+msgid "Недоступно"
+msgstr "Unavailable"
+
+#: portal/templates/admin_impersonation.html
+msgid "Подходящие пользователи не найдены."
+msgstr "No matching users found."
+
+#: portal/templates/admin_user_form.html
+msgid "Откройте кабинет с теми же данными и возможностями, которые видит этот пользователь."
+msgstr "Open the account with the same data and capabilities this user sees."
+
+#: portal/templates/admin_user_form.html portal/templates/admin_users.html
+msgid "Работать от лица"
+msgstr "Act as user"
+
+#: portal/templates/admin_user_form.html
+msgid "Отключённый аккаунт сначала необходимо активировать."
+msgstr "Enable the account before starting impersonation."
+
+#: portal/templates/admin_user_form.html
+msgid "Режим недоступен для уволенного преподавателя."
+msgstr "This mode is unavailable for a dismissed teacher."
+
+#: portal/templates/base.html
+msgid "Режим работы от лица пользователя"
+msgstr "User impersonation mode"
+
+#: portal/templates/base.html
+#, python-format
+msgid "Администратор %(value0)s работает как %(value1)s: %(value2)s (%(value3)s)."
+msgstr "Administrator %(value0)s is acting as %(value1)s: %(value2)s (%(value3)s)."
+
+#: portal/templates/base.html
+msgid "Без ФИО"
+msgstr "Name not provided"
+
+#: portal/templates/base.html
+msgid "Режим и ключевые изменения фиксируются в истории действий."
+msgstr "The mode and key changes are recorded in the audit history."
+
+#: portal/templates/base.html
+msgid "Завершить режим"
+msgstr "End mode"

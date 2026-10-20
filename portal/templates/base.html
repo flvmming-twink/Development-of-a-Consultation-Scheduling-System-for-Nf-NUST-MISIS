@@ -40,6 +40,7 @@
   {% else %}
     <a class="{{ 'selected' if ep=='admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">{{ _('Главная') }}</a>
     {% if can_admin('users.manage') or can_admin('admins.manage') %}<a class="{{ 'selected' if ep=='admin.users' }}" href="{{ url_for('admin.users') }}">{{ _('Пользователи') }}</a>{% endif %}
+    {% if can_admin('impersonation.use') %}<a class="{{ 'selected' if ep=='admin.impersonation' }}" href="{{ url_for('admin.impersonation') }}">{{ _('Режим пользователя') }}</a>{% endif %}
     {% if can_admin('catalogs.manage') %}<a class="{{ 'selected' if ep=='admin.catalogs' }}" href="{{ url_for('admin.catalogs') }}">{{ _('Справочники') }}</a>{% endif %}
     {% if can_admin('users.manage') or can_admin('admins.manage') %}<a class="{{ 'selected' if ep=='admin.trash' }}" href="{{ url_for('admin.trash') }}">{{ _('Корзина') }}</a>{% endif %}
     {% if can_admin('events.manage') %}<a class="{{ 'selected' if ep=='admin.events' }}" href="{{ url_for('admin.events') }}">{{ _('Все занятия') }}</a>{% endif %}
@@ -61,7 +62,7 @@
 {% endif %}
 <main id="main" class="main">
 {% if g.user and not maintenance_page and g.user.role != 'student' %}<div class="topline"><span>{{ _('КОНСУЛЬТАЦИИ · НФ МИСИС') }}</span><div class="actions">{{ language_switch() }}<span class="header-date">{{ now|localtime('%d.%m.%Y') }}</span><a class="notification-bell" href="{{ url_for('notifications.inbox') }}" title="{{ _('Уведомления') }}" aria-label="{{ _('Уведомления') }}" data-notifications-url="{{ url_for('notifications.count') }}"><i data-lucide="bell"></i><span data-notification-count>{{ unread_notifications or '' }}</span></a></div></div>{% endif %}
-{% if g.admin_user %}<div class="impersonation-bar"><div><strong>{{ _('Сценарий:') }} {{ roles[g.user.role] }}</strong><span>{{ _('Вы смотрите сайт как') }} {{ g.user.login }}{{ _('. Администратор:') }} {{ g.admin_user.login }}.</span></div><form method="post" action="{{ url_for('admin.stop_impersonation') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit">{{ _('Вернуться в админку') }}</button></form></div>{% endif %}
+{% if g.admin_user %}<div class="impersonation-bar" role="status"><i data-lucide="user-round-cog"></i><div><strong>{{ _('Режим работы от лица пользователя') }}</strong><span>{{ _('Администратор %(value0)s работает как %(value1)s: %(value2)s (%(value3)s).', value0=g.admin_user.login, value1=roles[g.user.role], value2=g.user.full_name or _('Без ФИО'), value3=g.user.login) }}</span><small>{{ _('Режим и ключевые изменения фиксируются в истории действий.') }}</small></div><form method="post" action="{{ url_for('admin.stop_impersonation') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="button secondary" type="submit"><i data-lucide="log-out"></i>{{ _('Завершить режим') }}</button></form></div>{% endif %}
 {% with messages = get_flashed_messages(with_categories=true) %}{% for category,message in messages %}<div role="status" class="alert {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
 {% block content %}{% endblock %}
 {% if g.user and not maintenance_page %}<footer>{{ _('Консультации · НФ НИТУ МИСИС') }} <span>{{ _('Поддержка учётных записей — администратор системы') }}</span></footer>{% endif %}

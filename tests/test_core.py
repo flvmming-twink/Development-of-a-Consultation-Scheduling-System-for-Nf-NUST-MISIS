@@ -198,7 +198,8 @@ def test_admin_impersonation_and_safe_delete(app,client):
     assert client.post('/admin/impersonate/student').status_code==302
     student_page=client.get('/events')
     assert student_page.status_code==200
-    assert 'Сценарий: Студент' in student_page.text
+    assert 'Режим работы от лица пользователя' in student_page.text
+    assert '2300431' in student_page.text
     assert client.post('/admin/stop-impersonation').status_code==302
     assert client.get('/admin/').status_code==200
     with app.app_context():

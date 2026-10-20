@@ -24,8 +24,13 @@ def hash_password(password):
     return generate_password_hash(password, method=current_app.config.get('PASSWORD_HASH_METHOD', 'scrypt:32768:8:1'))
 
 def audit(action, entity, details='', actor_id=None):
-    if actor_id is None and getattr(g, 'user', None):
-        actor_id = g.user.id
+    user = getattr(g, 'user', None)
+    admin = getattr(g, 'admin_user', None)
+    if actor_id is None and (admin or user):
+        actor_id = (admin or user).id
+    if admin and user and admin.id != user.id:
+        marker = f'acting_as={user.role}:{user.login}'
+        details = f'{marker}; {details}' if details else marker
     db.session.add(AuditLog(actor_id=actor_id, action=action, entity=str(entity), details=details))
 
 def lock_gate(login):

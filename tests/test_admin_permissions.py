@@ -1,6 +1,6 @@
 from sqlalchemy import select
 
-from portal.models import db, Department, Event, User
+from portal.models import db, AuditLog, Department, Event, LoginGate, User, utcnow
 from portal.permissions import ADMIN_PERMISSION_CODE_SET
 from conftest import sign_in
 
@@ -180,3 +180,82 @@ def test_admin_cannot_change_own_role_or_permissions(app, client):
         admin = db.session.get(User, ids['admin'])
         assert admin.role == 'admin'
         assert admin.admin_permission_codes == ADMIN_PERMISSION_CODE_SET
+
+
+def test_impersonation_permission_opens_specific_user_and_returns_to_admin(app, client):
+    ids = app.config['IDS']
+    sign_in(client, 'admin')
+
+    selector = client.get('/admin/impersonation?role=teacher')
+    assert selector.status_code == 200
+    assert 'second.ee' in selector.text
+    assert f'/admin/impersonate/user/{ids["second"]}' in selector.text
+
+    response = client.post(f'/admin/impersonate/user/{ids["second"]}')
+    assert response.status_code == 302
+    assert client.get('/teacher').status_code == 200
+    assert client.get('/admin/').status_code == 403
+
+    response = client.post('/admin/stop-impersonation')
+    assert response.status_code == 302
+    assert response.headers['Location'].endswith('/admin/')
+    assert client.get('/admin/').status_code == 200
+
+
+def test_limited_admin_needs_impersonation_permission(app, client):
+    ids = app.config['IDS']
+    sign_in(client, 'admin')
+    assert create_admin(client, 'without.impersonation', {'news.manage'}).status_code == 302
+    client.post('/logout')
+    assert client.post('/login', data={
+        'login': 'without.impersonation', 'password': 'Limited!123'}).status_code == 302
+
+    assert client.get('/admin/impersonation').status_code == 403
+    assert client.post(f'/admin/impersonate/user/{ids["student"]}').status_code == 403
+
+
+def test_impersonating_admin_can_open_locked_account_and_audit_actions(app, client):
+    ids = app.config['IDS']
+    with app.app_context():
+        student = db.session.get(User, ids['student'])
+        student.must_change_password = True
+        gate = db.session.get(LoginGate, student.login)
+        gate.permanent = True
+        gate.updated_at = utcnow()
+        db.session.commit()
+
+    sign_in(client, 'admin')
+    assert client.post(f'/admin/impersonate/user/{ids["student"]}').status_code == 302
+    assert client.get('/events').status_code == 200
+    assert client.post(f'/events/{ids["first"]}/book').status_code == 302
+
+    with app.app_context():
+        entry = db.session.scalar(select(AuditLog).where(
+            AuditLog.action == 'booking_created').order_by(AuditLog.id.desc()).limit(1))
+        assert entry.actor_id == ids['admin']
+        assert 'acting_as=student:2300431' in entry.details
+
+
+def test_admin_cannot_impersonate_admin_or_inactive_user(app, client):
+    ids = app.config['IDS']
+    with app.app_context():
+        student = db.session.get(User, ids['student'])
+        student.active = False
+        dismissed_teacher = db.session.get(User, ids['second'])
+        dismissed_teacher.dismissed_on = utcnow().date()
+        db.session.commit()
+
+    sign_in(client, 'admin')
+    active_teachers = client.get('/admin/impersonation?role=teacher')
+    assert 'second.ee' not in active_teachers.text
+    unavailable_teachers = client.get('/admin/impersonation?role=teacher&status=inactive')
+    assert 'second.ee' in unavailable_teachers.text
+    assert f'/admin/impersonate/user/{ids["second"]}' not in unavailable_teachers.text
+    assert client.post(f'/admin/impersonate/user/{ids["admin"]}').status_code == 404
+    response = client.post(f'/admin/impersonate/user/{ids["student"]}', follow_redirects=True)
+    assert response.status_code == 200
+    assert 'Нельзя открыть режим для удалённой или отключённой учётной записи.' in response.text
+    response = client.post(f'/admin/impersonate/user/{ids["second"]}', follow_redirects=True)
+    assert response.status_code == 200
+    assert 'Нельзя открыть режим для удалённой или отключённой учётной записи.' in response.text
+    assert client.get('/admin/').status_code == 200

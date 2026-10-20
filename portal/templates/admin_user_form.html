@@ -79,6 +79,9 @@
 </form>
 
 {% if user %}
+{% if can_admin('impersonation.use') and user.role in ('student','teacher') %}
+<section class="panel impersonation-panel"><div><h2>{{ _('Работа от лица пользователя') }}</h2><p>{{ _('Откройте кабинет с теми же данными и возможностями, которые видит этот пользователь.') }}</p></div><form method="post" action="{{ url_for('admin.impersonate_user',user_id=user.id) }}">{{ csrf() }}<input type="hidden" name="next" value="{{ request.path }}"><button class="button secondary" {{ 'disabled' if not user.active or (user.role=='teacher' and user.dismissed_on) }}><i data-lucide="scan-face"></i>{{ _('Работать от лица') }}</button></form>{% if user.role=='teacher' and user.dismissed_on %}<small>{{ _('Режим недоступен для уволенного преподавателя.') }}</small>{% elif not user.active %}<small>{{ _('Отключённый аккаунт сначала необходимо активировать.') }}</small>{% endif %}</section>
+{% endif %}
 <section class="panel"><h2>{{ _('Доступ') }}</h2><p>{{ _('Активен') if user.active else _('Отключён') }}</p>
   {% if gate and gate.permanent %}<p class="danger-text">{{ _('Вход заблокирован до сброса пароля.') }}</p>{% elif gate and gate.locked_until and gate.locked_until>now %}<p>{{ _('Вход закрыт до') }} {{ gate.locked_until|localtime }}.</p>{% endif %}
   {% if target_manageable %}

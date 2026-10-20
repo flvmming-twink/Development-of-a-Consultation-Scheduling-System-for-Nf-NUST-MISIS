@@ -91,7 +91,8 @@ def test_teacher_navigation_order_and_profile_link_without_name(app, client):
     student_client = app.test_client()
     sign_in(student_client)
     html = student_client.get('/events').text
-    assert 'class="sidebar-bottom" href="/settings"' in html
+    assert 'student-profile-link' in html
+    assert 'href="/settings"' in html
     assert 'Заполните ФИО' in html
 
 

@@ -88,7 +88,7 @@ def create_app(test_config=None):
             admin = db.session.get(User, admin_uid)
             admin_gate = db.session.get(LoginGate, admin.login) if admin else None
             admin_blocked = admin_gate and (admin_gate.permanent or (admin_gate.locked_until and admin_gate.locked_until > utcnow()))
-            if not admin or admin.role != 'admin' or not admin.active or admin.deleted_at or admin.session_version != session.get('admin_version') or admin_blocked:
+            if not admin or admin.role != 'admin' or not admin.active or admin.deleted_at or admin.session_version != session.get('admin_version') or admin_blocked or not has_admin_permission(admin, 'impersonation.use'):
                 session.clear()
                 return
             g.admin_user = admin
@@ -96,9 +96,11 @@ def create_app(test_config=None):
         if uid:
             user = db.session.get(User, uid)
             gate = db.session.get(LoginGate, user.login) if user else None
-            blocked = gate and (gate.permanent or (gate.locked_until and gate.locked_until > utcnow()))
-            if not user or not user.active or user.deleted_at or user.session_version != session.get('version') or blocked:
+            blocked = not g.admin_user and gate and (gate.permanent or (gate.locked_until and gate.locked_until > utcnow()))
+            invalid_impersonation_target = g.admin_user and user and user.role not in ('student', 'teacher')
+            if not user or not user.active or user.deleted_at or user.session_version != session.get('version') or blocked or invalid_impersonation_target:
                 session.clear()
+                g.admin_user = None
             else:
                 g.user = user
         if g.user:
@@ -108,7 +110,7 @@ def create_app(test_config=None):
             if request.endpoint == 'notifications.count':
                 return {'maintenance': True}, 503, {'Retry-After': '60'}
             return render_template('maintenance.html'), 503, {'Retry-After': '60'}
-        if g.user and g.user.must_change_password and request.endpoint not in ('auth.settings','auth.logout','static','language.change','main.service_status','admin.stop_impersonation','avatars.image','tutorials.status','tutorials.dismiss'):
+        if g.user and not g.admin_user and g.user.must_change_password and request.endpoint not in ('auth.settings','auth.logout','static','language.change','main.service_status','admin.stop_impersonation','avatars.image','tutorials.status','tutorials.dismiss'):
             flash(_('Установите собственный пароль, чтобы продолжить.'), 'info')
             return redirect(url_for('auth.settings'))
 
@@ -153,8 +155,8 @@ def create_app(test_config=None):
             'login_success':'Успешный вход', 'login_temporary_lock':'Блокировка на 5 минут',
             'login_permanent_lock':'Блокировка до обращения', 'catalog_updated':'Обновлён справочник',
             'assignment_added':'Назначена дисциплина', 'assignment_removed':'Снята дисциплина',
-            'admin_impersonation_started':'Администратор открыл сценарий роли',
-            'admin_impersonation_stopped':'Администратор вернулся в панель',
+            'admin_impersonation_started':'Начата работа от лица пользователя',
+            'admin_impersonation_stopped':'Завершена работа от лица пользователя',
             'event_created':'Создано занятие', 'event_updated':'Изменено занятие',
             'event_cancelled':'Отменено занятие', 'booking_created':'Студент записался',
             'booking_cancelled':'Запись отменена', 'attendance_changed':'Отмечена посещаемость',
