@@ -9,7 +9,9 @@
   <script defer src="{{ url_for('static',filename='lucide.min.js') }}"></script>
   <script defer src="{{ url_for('static',filename='app.js') }}"></script>
 </head>
-<body class="{{ 'authenticated' if g.user and not maintenance_page else 'guest' }}{{ ' student-shell' if g.user and not maintenance_page and g.user.role == 'student' else '' }}{{ ' login-page' if request.endpoint == 'auth.login' else '' }}" data-language="{{ language }}" data-selected-label="{{ _('Выбрано:') }}" data-show-password="{{ _('Показать пароль') }}" data-hide-password="{{ _('Скрыть пароль') }}">
+{% set site_announcement = g.site_settings if g.site_settings and g.site_settings.announcement_enabled and g.site_settings.announcement_text else none %}
+<body class="{{ 'authenticated' if g.user and not maintenance_page else 'guest' }}{{ ' student-shell' if g.user and not maintenance_page and g.user.role == 'student' else '' }}{{ ' login-page' if request.endpoint == 'auth.login' else '' }}{{ ' has-site-announcement' if site_announcement else '' }}" data-language="{{ language }}" data-selected-label="{{ _('Выбрано:') }}" data-show-password="{{ _('Показать пароль') }}" data-hide-password="{{ _('Скрыть пароль') }}">
+{% if site_announcement %}<div class="site-announcement site-announcement--{{ site_announcement.announcement_color }}" role="{{ 'alert' if site_announcement.announcement_color == 'danger' else 'status' }}" aria-label="{{ _('Важное уведомление') }}" data-site-announcement><div class="site-announcement-inner"><i data-lucide="{{ 'triangle-alert' if site_announcement.announcement_color in ('warning','danger') else 'info' }}"></i><span>{{ site_announcement.announcement_text }}</span></div></div>{% endif %}
 {% if g.user and not maintenance_page %}
 {% if g.user.role == 'student' %}
 {% set student_ep = request.endpoint %}

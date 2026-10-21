@@ -26,6 +26,8 @@ bp = Blueprint('admin', __name__, url_prefix='/admin')
 MOSCOW = ZoneInfo('Europe/Moscow')
 MAX_STUDENT_IMPORT = 1500
 MAX_XLSX_UNCOMPRESSED = 20 * 1024 * 1024
+ANNOUNCEMENT_COLORS = frozenset(('info', 'warning', 'danger', 'success', 'neutral'))
+MAX_ANNOUNCEMENT_LENGTH = 1000
 
 
 class StudentImportError(ValueError):
@@ -557,6 +559,41 @@ def maintenance():
         audit('maintenance_enabled' if enabled else 'maintenance_disabled', 'site')
     db.session.commit()
     flash(_('Режим обслуживания включён.') if enabled else _('Режим обслуживания выключен.'), 'success')
+    return redirect(url_for('admin.dashboard'))
+
+
+@bp.post('/announcement')
+@admin_permissions_required('maintenance.manage')
+def announcement():
+    setting = db.session.scalar(select(SiteSettings).where(SiteSettings.id == 1).with_for_update())
+    if not setting:
+        setting = SiteSettings(id=1)
+        db.session.add(setting)
+    enabled = request.form.get('announcement_enabled') == 'on'
+    announcement_text = request.form.get('announcement_text', '').replace('\r\n', '\n').replace('\r', '\n').strip()
+    color = request.form.get('announcement_color', 'info')
+    if len(announcement_text) > MAX_ANNOUNCEMENT_LENGTH:
+        db.session.rollback()
+        flash(_('Текст уведомления должен быть не длиннее 1000 символов.'), 'error')
+        return redirect(url_for('admin.dashboard'))
+    if enabled and not announcement_text:
+        db.session.rollback()
+        flash(_('Введите текст уведомления перед публикацией.'), 'error')
+        return redirect(url_for('admin.dashboard'))
+    if color not in ANNOUNCEMENT_COLORS:
+        db.session.rollback()
+        flash(_('Выберите цвет уведомления из предложенных вариантов.'), 'error')
+        return redirect(url_for('admin.dashboard'))
+    changed = (setting.announcement_enabled != enabled or
+        setting.announcement_text != announcement_text or setting.announcement_color != color)
+    setting.announcement_enabled = enabled
+    setting.announcement_text = announcement_text
+    setting.announcement_color = color
+    if changed:
+        audit('announcement_updated', 'site',
+            f'enabled={str(enabled).lower()}; color={color}; length={len(announcement_text)}')
+    db.session.commit()
+    flash(_('Уведомление над шапкой сохранено.'), 'success')
     return redirect(url_for('admin.dashboard'))
 
 @bp.post('/stop-impersonation')

@@ -1,5 +1,14 @@
 'use strict';
 if (window.lucide) lucide.createIcons();
+const siteAnnouncement = document.querySelector('[data-site-announcement]');
+if (siteAnnouncement) {
+  const syncAnnouncementHeight = () => {
+    document.documentElement.style.setProperty('--site-announcement-height', Math.ceil(siteAnnouncement.getBoundingClientRect().height) + 'px');
+  };
+  syncAnnouncementHeight();
+  if (window.ResizeObserver) new ResizeObserver(syncAnnouncementHeight).observe(siteAnnouncement);
+  else window.addEventListener('resize', syncAnnouncementHeight);
+}
 document.querySelectorAll('form[data-confirm]').forEach(form => {
   form.addEventListener('submit', event => { if (!confirm(form.dataset.confirm)) event.preventDefault(); });
 });

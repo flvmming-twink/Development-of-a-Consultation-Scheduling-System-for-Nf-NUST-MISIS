@@ -81,8 +81,11 @@ def create_app(test_config=None):
         g.user = None
         g.admin_user = None
         g.maintenance = False
+        g.site_settings = None
         if request.endpoint == 'static':
             return
+        settings = db.session.get(SiteSettings, 1)
+        g.site_settings = settings
         admin_uid = session.get('admin_uid')
         if admin_uid:
             admin = db.session.get(User, admin_uid)
@@ -104,7 +107,6 @@ def create_app(test_config=None):
             else:
                 g.user = user
         if g.user:
-            settings = db.session.get(SiteSettings, 1)
             g.maintenance = bool(settings and settings.maintenance)
         if g.maintenance and g.user.role != 'admin' and not g.admin_user and request.endpoint not in ('auth.logout', 'language.change', 'main.service_status', 'main.health'):
             if request.endpoint == 'notifications.count':
@@ -168,7 +170,7 @@ def create_app(test_config=None):
             'maintenance_enabled':'Включено техническое обслуживание',
             'maintenance_disabled':'Выключено техническое обслуживание'
         }
-        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'), users_exported=_('Выгружены пользователи'), tutorial_updated=_('Обновлено обучающее видео'), tutorial_deleted=_('Удалено обучающее видео'), tutorial_dismissed=_('Закрыто обучающее видео'), about_updated=_('Обновлён раздел «О проекте»'), news_created=_('Опубликована новость'), news_updated=_('Изменена новость'), news_deleted=_('Удалена новость'), user_role_changed=_('Изменена роль пользователя'), user_login_changed=_('Изменён логин пользователя'), admin_permissions_updated=_('Изменены права администратора'))
+        labels.update(avatar_updated=_('Изменена фотография профиля'), database_exported=_('Выгружена резервная копия БД'), database_cleared=_('Безвозвратная очистка БД'), database_auth_failed=_('Неудачное подтверждение пароля администратора'), audit_log_exported=_('Выгружена история действий'), users_exported=_('Выгружены пользователи'), tutorial_updated=_('Обновлено обучающее видео'), tutorial_deleted=_('Удалено обучающее видео'), tutorial_dismissed=_('Закрыто обучающее видео'), about_updated=_('Обновлён раздел «О проекте»'), news_created=_('Опубликована новость'), news_updated=_('Изменена новость'), news_deleted=_('Удалена новость'), user_role_changed=_('Изменена роль пользователя'), user_login_changed=_('Изменён логин пользователя'), admin_permissions_updated=_('Изменены права администратора'), announcement_updated=_('Обновлено общее уведомление сайта'))
         return _(labels.get(value, value))
 
     @app.errorhandler(CSRFError)

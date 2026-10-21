@@ -3273,3 +3273,91 @@ msgstr "The mode and key changes are recorded in the audit history."
 #: portal/templates/base.html
 msgid "Завершить режим"
 msgstr "End mode"
+
+#: portal/permissions.py
+msgid "Управление режимом технического обслуживания и общим уведомлением сайта."
+msgstr "Manage maintenance mode and the site-wide announcement."
+
+#: portal/admin.py
+msgid "Текст уведомления должен быть не длиннее 1000 символов."
+msgstr "Announcement text must be no longer than 1,000 characters."
+
+#: portal/admin.py
+msgid "Введите текст уведомления перед публикацией."
+msgstr "Enter announcement text before publishing."
+
+#: portal/admin.py
+msgid "Выберите цвет уведомления из предложенных вариантов."
+msgstr "Select an announcement color from the available options."
+
+#: portal/admin.py
+msgid "Уведомление над шапкой сохранено."
+msgstr "The header announcement has been saved."
+
+#: portal/__init__.py
+msgid "Обновлено общее уведомление сайта"
+msgstr "Updated site-wide announcement"
+
+#: portal/templates/base.html
+msgid "Важное уведомление"
+msgstr "Important announcement"
+
+#: portal/templates/admin_dashboard.html
+msgid "Уведомление над шапкой"
+msgstr "Header announcement"
+
+#: portal/templates/admin_dashboard.html
+msgid "Публикуется независимо от технического обслуживания и видно всем посетителям сайта."
+msgstr "It is published independently of maintenance mode and is visible to every site visitor."
+
+#: portal/templates/admin_dashboard.html
+msgid "Опубликовано"
+msgstr "Published"
+
+#: portal/templates/admin_dashboard.html
+msgid "Выключено"
+msgstr "Off"
+
+#: portal/templates/admin_dashboard.html
+msgid "Показывать уведомление"
+msgstr "Show announcement"
+
+#: portal/templates/admin_dashboard.html
+msgid "Текст уведомления"
+msgstr "Announcement text"
+
+#: portal/templates/admin_dashboard.html
+msgid "Например: сегодня с 14:00 возможны кратковременные перебои."
+msgstr "Example: brief service interruptions may occur today from 14:00."
+
+#: portal/templates/admin_dashboard.html
+msgid "До 1000 символов. HTML и ссылки не поддерживаются."
+msgstr "Up to 1,000 characters. HTML and links are not supported."
+
+#: portal/templates/admin_dashboard.html
+msgid "Цвет уведомления"
+msgstr "Announcement color"
+
+#: portal/templates/admin_dashboard.html
+msgid "Синий"
+msgstr "Blue"
+
+#: portal/templates/admin_dashboard.html
+msgid "Жёлтый"
+msgstr "Yellow"
+
+#: portal/templates/admin_dashboard.html
+msgid "Красный"
+msgstr "Red"
+
+#: portal/templates/admin_dashboard.html
+msgid "Зелёный"
+msgstr "Green"
+
+#: portal/templates/admin_dashboard.html
+msgid "Нейтральный"
+msgstr "Neutral"
+
+#: portal/templates/admin_dashboard.html
+msgid "Сохранить уведомление"
+msgstr "Save announcement"

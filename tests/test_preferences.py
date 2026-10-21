@@ -50,6 +50,67 @@ def test_maintenance_cannot_be_changed_by_student_and_admin_preview_bypasses(app
     assert client.get('/admin/').status_code == 200
 
 
+def test_admin_can_publish_site_announcement_for_every_page(app, client):
+    sign_in(client, 'admin')
+    message = '<script>alert(1)</script> Сегодня с 14:00 возможны перебои.'
+    response = client.post('/admin/announcement', data={
+        'announcement_enabled': 'on',
+        'announcement_text': message,
+        'announcement_color': 'warning',
+    }, follow_redirects=True)
+    assert response.status_code == 200
+    assert 'Уведомление над шапкой сохранено.' in response.text
+    assert 'site-announcement--warning' in response.text
+    assert '&lt;script&gt;alert(1)&lt;/script&gt;' in response.text
+    assert '<script>alert(1)</script>' not in response.text
+    with app.app_context():
+        settings = db.session.get(SiteSettings, 1)
+        assert settings.announcement_enabled
+        assert settings.announcement_text == message
+        assert settings.announcement_color == 'warning'
+
+    client.post('/logout')
+    login = client.get('/login')
+    assert login.status_code == 200
+    assert 'site-announcement--warning' in login.text
+    assert 'Сегодня с 14:00 возможны перебои.' in login.text
+
+    sign_in(client)
+    assert 'site-announcement--warning' in client.get('/events').text
+
+
+def test_announcement_is_independent_validated_and_admin_only(app, client):
+    sign_in(client)
+    assert client.post('/admin/announcement', data={
+        'announcement_enabled': 'on', 'announcement_text': 'Недоступно',
+        'announcement_color': 'danger'}).status_code == 403
+    client.post('/logout')
+    sign_in(client, 'admin')
+    client.post('/admin/announcement', data={
+        'announcement_enabled': 'on', 'announcement_text': 'Плановые работы',
+        'announcement_color': 'danger'})
+    empty = client.post('/admin/announcement', data={
+        'announcement_enabled': 'on', 'announcement_text': '   ',
+        'announcement_color': 'info'}, follow_redirects=True)
+    assert 'Введите текст уведомления перед публикацией.' in empty.text
+    invalid = client.post('/admin/announcement', data={
+        'announcement_text': 'Другой текст', 'announcement_color': 'transparent'},
+        follow_redirects=True)
+    assert 'Выберите цвет уведомления из предложенных вариантов.' in invalid.text
+    with app.app_context():
+        settings = db.session.get(SiteSettings, 1)
+        assert (settings.announcement_enabled, settings.announcement_text,
+            settings.announcement_color) == (True, 'Плановые работы', 'danger')
+
+    client.post('/admin/maintenance', data={'maintenance': 'on'})
+    client.post('/logout')
+    sign_in(client)
+    maintenance = client.get('/events')
+    assert maintenance.status_code == 503
+    assert 'Плановые работы' in maintenance.text
+    assert 'site-announcement--danger' in maintenance.text
+
+
 def test_language_before_login_persists_and_errors_are_translated(app, client):
     russian_page = client.get('/login').text
     assert 'Continue English' in russian_page
@@ -179,4 +240,8 @@ def test_migration_preserves_original_names_and_passwords(app):
             assert original == connection.execute(text('SELECT id, full_name, password_hash FROM users ORDER BY id')).all()
         user = db.session.get(User, app.config['IDS']['student'])
         assert (user.last_name, user.first_name, user.middle_name) == ('Куренков', 'Егор', 'Евгеньевич')
-        assert not db.session.get(SiteSettings, 1).maintenance
+        settings = db.session.get(SiteSettings, 1)
+        assert not settings.maintenance
+        assert not settings.announcement_enabled
+        assert settings.announcement_text == ''
+        assert settings.announcement_color == 'info'

@@ -94,7 +94,8 @@ def clean_rich_text(value, limit=50000):
 def site_settings():
     settings = db.session.get(SiteSettings, 1)
     if not settings:
-        settings = SiteSettings(id=1, maintenance=False, about_html='')
+        settings = SiteSettings(id=1, maintenance=False, about_html='', announcement_enabled=False,
+            announcement_text='', announcement_color='info')
         db.session.add(settings)
         db.session.flush()
     return settings

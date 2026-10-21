@@ -242,7 +242,15 @@ class SiteSettings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     maintenance = db.Column(db.Boolean, nullable=False, default=False)
     about_html = db.Column(db.Text, nullable=False, default='')
-    __table_args__ = (CheckConstraint('id = 1', name='ck_site_settings_singleton'),)
+    announcement_enabled = db.Column(db.Boolean, nullable=False, default=False)
+    announcement_text = db.Column(db.Text, nullable=False, default='')
+    announcement_color = db.Column(db.String(16), nullable=False, default='info')
+    __table_args__ = (
+        CheckConstraint('id = 1', name='ck_site_settings_singleton'),
+        CheckConstraint(
+            "announcement_color IN ('info','warning','danger','success','neutral')",
+            name='ck_site_announcement_color'),
+    )
 
 class TutorialVideo(db.Model):
     __tablename__ = 'tutorial_videos'
